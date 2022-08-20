@@ -16,4 +16,8 @@
     <ProjectReference Include="..\TreeSqlParser\TreeSqlParser.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Writers\" />
+  </ItemGroup>
+
 </Project>

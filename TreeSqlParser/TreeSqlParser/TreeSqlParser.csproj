@@ -10,4 +10,8 @@
     <PackageReference Include="TSQL.Parser" Version="1.5.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Writers\" />
+  </ItemGroup>
+
 </Project>
