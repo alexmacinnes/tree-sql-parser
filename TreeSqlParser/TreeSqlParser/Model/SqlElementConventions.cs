@@ -10,11 +10,12 @@ namespace TreeSqlParser.Model
 {
     public static class SqlElementConventions
     {
-        private class SqlElementPropertyInfo
+        #region Type Info
+        private class SqlElementTypeInfo
         {
             private static readonly HashSet<Type> ValueTypes = new HashSet<Type>
             {
-                typeof(string), 
+                typeof(string),
                 typeof(long), typeof(long?), typeof(int), typeof(int?), typeof(short), typeof(short?),
                 typeof(ulong), typeof(ulong?), typeof(uint), typeof(uint?), typeof(ushort), typeof(ushort?),
                 typeof(byte), typeof(char),
@@ -23,189 +24,305 @@ namespace TreeSqlParser.Model
                 typeof(bool), typeof(bool?)
             };
 
-            public PropertyInfo[] SingleElementProperties { get; }
-
-            public PropertyInfo[] ListProperties { get; }
-
-            public PropertyInfo[] ValueProperties { get; }
-
-            public PropertyInfo[] ValueListProperties { get; }
-
-            public PropertyInfo[] CloneableProperties { get; }
-
-            public PropertyInfo[] CloneableListProperties { get; }
-
-            public SqlElementPropertyInfo(Type t)
+            public SqlElementTypeInfo(Type t)
             {
-                static bool isSqlElement(Type x) => 
-                    typeof(SqlElement).IsAssignableFrom(x);
+                Name = t.Name;
 
-                static bool isListSqlElement(Type x) => 
-                    x.IsGenericType && x.GetGenericTypeDefinition() == typeof(List<>) && isSqlElement(x.GenericTypeArguments[0]);
-
-                static bool isValueType(Type x) =>
-                    ValueTypes.Contains(x) || x.IsEnum;
-
-                static bool isValueListType(Type x) =>
-                    x.IsGenericType && x.GetGenericTypeDefinition() == typeof(List<>) && isValueType(x.GenericTypeArguments[0]);
-
-                static bool isCloneable(Type x) =>
-                    typeof(ICloneable).IsAssignableFrom(x);
-
-                static bool isCloneableList(Type x) =>
-                    x.IsGenericType && x.GetGenericTypeDefinition() == typeof(List<>) && isCloneable(x.GenericTypeArguments[0]);
-
-                var readWriteProperties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                var readWriteProperties =
+                    t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .Where(x => x.CanRead && x.CanWrite && x.GetGetMethod() != null && x.GetSetMethod() != null)
                     .Where(x => x.Name != "Parent")
                     .ToArray();
 
-                SingleElementProperties = readWriteProperties.Where(x => isSqlElement(x.PropertyType)).ToArray();
-                ListProperties = readWriteProperties.Where(x => isListSqlElement(x.PropertyType)).ToArray();
-                ValueProperties = readWriteProperties.Where(x => isValueType(x.PropertyType)).ToArray();
-                ValueListProperties = readWriteProperties.Where(x => isValueListType(x.PropertyType)).ToArray();
-                CloneableProperties = readWriteProperties.Except(SingleElementProperties).Where(x => isCloneable(x.PropertyType)).ToArray();
-                CloneableListProperties = readWriteProperties.Except(ListProperties).Where(x => isCloneableList(x.PropertyType)).ToArray();
+                PropertyAdaptors = readWriteProperties.Select(PropertyAdaptor).ToArray();
+            }
 
-                var remaining = readWriteProperties
-                    .Except(SingleElementProperties)
-                    .Except(ListProperties)
-                    .Except(ValueProperties)
-                    .Except(ValueListProperties)
-                    .Except(CloneableProperties)
-                    .Except(CloneableListProperties)
-                    .ToArray();
+            private PropertyAdaptorBase PropertyAdaptor(PropertyInfo p)
+            {
+                static bool isSqlElement(Type x) =>
+                    typeof(SqlElement).IsAssignableFrom(x);
 
-                if (remaining.Any())
-                    throw new NotSupportedException("Can't clone");
+                static bool isEnum(Type x) =>
+                    x.IsEnum ||
+                    (x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Nullable<>) && x.GetGenericArguments()[0].IsEnum);
+
+                static bool isValueType(Type x) =>
+                    ValueTypes.Contains(x) || isEnum(x);
+
+                static bool isCloneable(Type x) =>
+                    typeof(ICloneable).IsAssignableFrom(x);
+
+                Type t = p.PropertyType;
+
+                if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    Type typeArg = t.GenericTypeArguments[0];
+                    if (isSqlElement(typeArg))
+                        return new SqlElementListPropertyAdaptor(p);
+                    if (isValueType(typeArg))
+                        return new ValueListPropertyAdaptor(p);
+                    if (isCloneable(typeArg))
+                        return new CloneableListPropertyAdaptor(p);
+                }
+                else
+                {
+                    if (isSqlElement(t))
+                        return new SqlElementPropertyAdaptor(p);
+                    if (isValueType(t))
+                        return new ValuePropertyAdaptor(p);
+                    if (isCloneable(t))
+                        return new CloneablePropertyAdaptor(p);
+                }
+
+                throw new InvalidOperationException("Unknown property type");
+            }
+
+            public string Name { get; set; }
+
+            public IList<PropertyAdaptorBase> PropertyAdaptors { get; }
+
+            public override string ToString() => Name;
+        }
+
+        #endregion
+
+        #region Property Adaptors
+
+        private abstract class PropertyAdaptorBase
+        {
+            protected PropertyInfo PropertyInfo { get; }
+            protected PropertyAdaptorBase(PropertyInfo propertyInfo)
+            {
+                PropertyInfo = propertyInfo;
+            }
+            public override string ToString() => GetType().Name + " :  " + PropertyInfo.Name;
+
+            public abstract void CloneProperty(SqlElement source, SqlElement target);
+
+            public virtual IEnumerable<SqlElement> GetChildren(SqlElement e) => Enumerable.Empty<SqlElement>();
+
+            public virtual bool TryReplaceChild(SqlElement containingElement, SqlElement childToReplace, SqlElement replacement) => false;
+        }
+
+        private class SqlElementPropertyAdaptor : PropertyAdaptorBase
+        {
+            public SqlElementPropertyAdaptor(PropertyInfo propertyInfo) : base(propertyInfo) { }
+
+            public override void CloneProperty(SqlElement source, SqlElement target)
+            {
+                if (source == null)
+                    return;
+
+                var e = PropertyInfo.GetValue(source) as SqlElement;
+                if (e == null)
+                    return;
+
+                var cloned = (SqlElement)CloneElement(e);
+                cloned.Parent = target;
+
+                PropertyInfo.SetValue(target, cloned);
+            }
+
+            public override IEnumerable<SqlElement> GetChildren(SqlElement e)
+            {
+                var child = (SqlElement)PropertyInfo.GetValue(e);
+                if (child != null)
+                    yield return child;
+            }
+
+            public override bool TryReplaceChild(SqlElement containingElement, SqlElement childToReplace, SqlElement replacement)
+            {
+                var e = (SqlElement)PropertyInfo.GetValue(containingElement);
+                if (object.ReferenceEquals(e, childToReplace))
+                {
+                    replacement.Parent = containingElement;
+                    PropertyInfo.SetValue(containingElement, replacement);
+
+                    return true;
+                }
+
+                return false;
             }
         }
 
-        internal static object CloneElement(SqlElement e)
+        private class SqlElementListPropertyAdaptor : PropertyAdaptorBase
         {
-            var elementTypeInfo = GetPropertyInfo(e);
-            var result = (SqlElement) Activator.CreateInstance(e.GetType());
-            
-            // clone each child element, and reparent
-            foreach (var p in elementTypeInfo.SingleElementProperties)
+            public SqlElementListPropertyAdaptor(PropertyInfo propertyInfo) : base(propertyInfo) { }
+
+            public override void CloneProperty(SqlElement source, SqlElement target)
             {
-                if (p.GetValue(e) is SqlElement propertyVal)
+                if (source == null)
+                    return;
+
+                var srcList = PropertyInfo.GetValue(source) as IList;
+                if (srcList != null)
                 {
-                    var clonedChild = CloneChildElement(propertyVal, result);
-                    p.SetValue(result, clonedChild);
+                    var clonedList = (IList)Activator.CreateInstance(srcList.GetType());
+                    foreach (var x in srcList)
+                    {
+                        var sourceElement = x as SqlElement;
+                        var cloned = Clone(sourceElement, target);
+                        clonedList.Add(cloned);
+                    }
+
+                    PropertyInfo.SetValue(target, clonedList);
                 }
             }
 
-            // clone each List of child elements, and reparent
-            foreach (var p in elementTypeInfo.ListProperties)
+            private SqlElement Clone(SqlElement source, SqlElement newParent)
             {
-                if (p.GetValue(e) is IList propertyVal)
+                var cloned = CloneElement(source);
+                if (cloned != null)
+                    cloned.Parent = newParent;
+                return cloned;
+            }
+
+            public override IEnumerable<SqlElement> GetChildren(SqlElement e)
+            {
+                var list = PropertyInfo.GetValue(e) as IList;
+                if (list != null)
                 {
-                    var clonedList = CloneChildElementList(propertyVal, result);
-                    p.SetValue(result, clonedList);
+                    foreach (var x in list)
+                    {
+                        if (x != null)
+                            yield return (SqlElement)x;
+                    }
                 }
             }
 
-            // value types can simply be copied across
-            foreach (var p in elementTypeInfo.ValueProperties)
+            public override bool TryReplaceChild(SqlElement containingElement, SqlElement childToReplace, SqlElement replacement)
             {
-                object propertyVal = p.GetValue(e);
-                p.SetValue(result, propertyVal);
-            }
+                var list = PropertyInfo.GetValue(containingElement) as IList;
+                if (list == null)
+                    return false;
 
-            // value lists can be copied to a new list
-            foreach (var p in elementTypeInfo.ValueListProperties)
-            {
-                var propertyVal = p.GetValue(e);
-                if (propertyVal != null)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    // call the list copy constructor
-                    var cloned = Activator.CreateInstance(propertyVal.GetType(), propertyVal);
-                    p.SetValue(result, cloned);
+                    var x = list[i];
+                    if (x == null)
+                        continue;
+
+                    if (object.ReferenceEquals(x, childToReplace))
+                    {
+                        replacement.Parent = containingElement;
+                        list[i] = replacement;
+
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        private class ValuePropertyAdaptor : PropertyAdaptorBase
+        {
+            public ValuePropertyAdaptor(PropertyInfo propertyInfo) : base(propertyInfo) { }
+
+            public override void CloneProperty(SqlElement source, SqlElement target)
+            {
+                var x = PropertyInfo.GetValue(source);
+                PropertyInfo.SetValue(target, x);
+            }
+        }
+
+        private class ValueListPropertyAdaptor : PropertyAdaptorBase
+        {
+            public ValueListPropertyAdaptor(PropertyInfo propertyInfo) : base(propertyInfo) { }
+
+            public override void CloneProperty(SqlElement source, SqlElement target)
+            {
+                if (source == null)
+                    return;
+
+                var sourceList = PropertyInfo.GetValue(source) as IList;
+                if (sourceList != null)
+                {
+                    var clonedList = (IList)Activator.CreateInstance(sourceList.GetType());
+                    foreach (var x in sourceList)
+                    {
+                        var cloned = x == null ? null : ((ICloneable)x).Clone();
+                        clonedList.Add(cloned);
+                    }
+
+                    PropertyInfo.SetValue(target, clonedList);
                 }
             }
+        }
 
-            // ICloneables can be cloned
-            foreach (var p in elementTypeInfo.CloneableProperties)
+        private class CloneablePropertyAdaptor : PropertyAdaptorBase
+        {
+            public CloneablePropertyAdaptor(PropertyInfo propertyInfo) : base(propertyInfo) { }
+
+            public override void CloneProperty(SqlElement source, SqlElement target)
             {
-                if (p.GetValue(e) is ICloneable propertyVal)
+                if (source == null)
+                    return;
+
+                var x = PropertyInfo.GetValue(source) as ICloneable;
+
+                if (x != null)
                 {
-                    var cloned = propertyVal.Clone();
-                    p.SetValue(result, cloned);
+                    var cloned = x.Clone();
+                    PropertyInfo.SetValue(target, cloned);
                 }
             }
+        }
 
-            // List<ICloneables> can be deep copied
-            foreach (var p in elementTypeInfo.CloneableListProperties)
+        private class CloneableListPropertyAdaptor : PropertyAdaptorBase
+        {
+            public CloneableListPropertyAdaptor(PropertyInfo propertyInfo) : base(propertyInfo) { }
+
+            public override void CloneProperty(SqlElement source, SqlElement target)
             {
-                if (p.GetValue(e) is IList propertyVal)
+                if (source == null)
+                    return;
+
+                var sourceList = PropertyInfo.GetValue(source) as IList;
+                if (sourceList != null)
                 {
-                    var cloned = CloneCloneableList(propertyVal);
-                    p.SetValue(result, cloned);
+                    var clonedList = (IList)Activator.CreateInstance(sourceList.GetType());
+                    foreach (var x in sourceList)
+                        clonedList.Add(x);
+
+                    PropertyInfo.SetValue(target, clonedList);
                 }
             }
+        }
 
+        #endregion
+
+        private static readonly ConcurrentDictionary<Type, SqlElementTypeInfo> typeInfos = new ConcurrentDictionary<Type, SqlElementTypeInfo>();
+
+        private static SqlElementTypeInfo GetTypeInfo(Type t)
+        {
+            var result = typeInfos.GetOrAdd(t, x => new SqlElementTypeInfo(x));
             return result;
         }
 
-        private static SqlElement CloneChildElement(SqlElement toClone, SqlElement newParent)
+        public static SqlElement CloneElement(SqlElement e)
         {
-            if (toClone == null)
+            if (e == null)
                 return null;
 
-            var cloned = (SqlElement) toClone.Clone();
-            cloned.Parent = newParent;
-            return cloned;
-        }
+            Type t = e.GetType();
+            var elementTypeInfo = GetTypeInfo(t);
+            var result = (SqlElement)Activator.CreateInstance(t);
 
-        private static IList CloneChildElementList(IList toClone, SqlElement newParent)
-        {
-            if (toClone == null)
-                return null;
-
-            var result = (IList) Activator.CreateInstance(toClone.GetType());
-            foreach (var x in toClone)
-            {
-                var cloned = CloneChildElement((SqlElement)x, newParent);
-                result.Add(cloned);
-            }
+            foreach (var p in elementTypeInfo.PropertyAdaptors)
+                p.CloneProperty(e, result);
 
             return result;
         }
-
-        private static IList CloneCloneableList(IList toClone)
-        {
-            if (toClone == null)
-                return null;
-
-            var result = (IList)Activator.CreateInstance(toClone.GetType());
-            foreach (var x in toClone)
-            {
-                var c = (x as ICloneable)?.Clone();
-                result.Add(c);
-            }
-
-            return result;
-        }
-
-        private static readonly ConcurrentDictionary<Type, SqlElementPropertyInfo> typeInfos = new ConcurrentDictionary<Type, SqlElementPropertyInfo>();
 
         public static IEnumerable<SqlElement> GetChildren(SqlElement e)
         {
-            var elementTypeInfo = GetPropertyInfo(e);
+            var elementTypeInfo = GetTypeInfo(e.GetType());
 
-            foreach (var p in elementTypeInfo.SingleElementProperties)
+            foreach (var p in elementTypeInfo.PropertyAdaptors)
             {
-                if (p.GetValue(e) is SqlElement propertyVal)
-                    yield return propertyVal;
-            }
-
-            foreach (var p in elementTypeInfo.ListProperties)
-            {
-                if (p.GetValue(e) is IList list)
-                    foreach (SqlElement x in list)
-                        if (x != null)
-                            yield return x;
+                foreach (var c in p.GetChildren(e))
+                    yield return c;
             }
         }
 
@@ -214,41 +331,15 @@ namespace TreeSqlParser.Model
             if (containingElement is null) throw new ArgumentNullException(nameof(containingElement));
             if (childToReplace is null) throw new ArgumentNullException(nameof(childToReplace));
 
-            var elementTypeInfo = GetPropertyInfo(containingElement);
+            var elementTypeInfo = GetTypeInfo(containingElement.GetType());
 
-            foreach (var p in elementTypeInfo.SingleElementProperties)
+            foreach (var p in elementTypeInfo.PropertyAdaptors)
             {
-                var propertyVal = (SqlElement)p.GetValue(containingElement);
-                if (ReferenceEquals(propertyVal, childToReplace))
-                {
-                    p.SetValue(containingElement, replacement);
+                if (p.TryReplaceChild(containingElement, childToReplace, replacement))
                     return true;
-                }
-            }
-
-            foreach (var p in elementTypeInfo.ListProperties)
-            {
-                if (p.GetValue(containingElement) is IList list)
-                {
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        if (ReferenceEquals(list[i], childToReplace))
-                        {
-                            list[i] = replacement;
-                            return true;
-                        }
-                    }
-                }
             }
 
             return false;
-        }
-
-        private static SqlElementPropertyInfo GetPropertyInfo(SqlElement e)
-        {
-            Type t = e.GetType();
-            var result = typeInfos.GetOrAdd(t, x => new SqlElementPropertyInfo(x));
-            return result;
         }
     }
 }
