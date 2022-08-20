@@ -16,7 +16,7 @@ namespace TreeSqlParser.Model
         {
             if (name.StartsWith("[") && name.EndsWith("]"))
             {
-                Name = name[1..^1];
+                Name = name.Substring(1, name.Length-2);
                 IsBracketed = true;
             }
             else

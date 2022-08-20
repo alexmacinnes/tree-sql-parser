@@ -7,8 +7,8 @@ namespace TreeSqlParser.Writers.Safe.Selects
 {
     public interface ISelectWriter
     {
-        public string SelectStatementSql(SelectStatement s);
+        string SelectStatementSql(SelectStatement s);
 
-        public string SelectSql(Select s);
+        string SelectSql(Select s);
     }
 }

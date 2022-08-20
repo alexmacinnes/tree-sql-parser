@@ -83,14 +83,22 @@ namespace TreeSqlParser.Parsing
                 dateTimeType = firstText.Substring(1);
             else
                 dateTimeType = tokenList.Take().Text;
-            
-            Column result = dateTimeType switch
+
+            Column result;
+            switch (dateTimeType)
             {
-                "d" => new DateColumn { Parent = parent, Value = DateTime.Parse(Unquote(tokenList.Take().Text)) },
-                "ts" => new DateTimeColumn { Parent = parent, Value = DateTime.Parse(Unquote(tokenList.Take().Text)) },
-                "t" => new TimeColumn { Parent = parent, Value = TimeSpan.Parse(Unquote(tokenList.Take().Text)) },
-                _ => throw new InvalidOperationException("Unknown datetime literal type: " + dateTimeType)
-            };
+                case "d":
+                    result = new DateColumn { Parent = parent, Value = DateTime.Parse(Unquote(tokenList.Take().Text)) };
+                    break;
+                case "ts":
+                    result = new DateTimeColumn { Parent = parent, Value = DateTime.Parse(Unquote(tokenList.Take().Text)) };
+                    break;
+                case "t":
+                    result = new TimeColumn { Parent = parent, Value = TimeSpan.Parse(Unquote(tokenList.Take().Text)) };
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown datetime literal type: " + dateTimeType);
+            }
 
             if (tokenList.Take().Text != "}")
                 throw new InvalidOperationException("Expected closing brace: }");
@@ -100,7 +108,7 @@ namespace TreeSqlParser.Parsing
 
         private static string Unquote(string text) =>
             text.Length > 1 && text.StartsWith("'") && text.EndsWith("'") ?
-            text[1..^1] :
+            text.Substring(1, text.Length-2) :
             throw new InvalidOperationException("Expected quoted text");
 
 
@@ -202,7 +210,7 @@ namespace TreeSqlParser.Parsing
                     if (t1.AsStringLiteral == null)
                         throw new NotSupportedException("Expected literal text column, found " + t1.Text);
 
-                    culture = t1.Text[1..^1];
+                    culture = t1.Text.Substring(1, t1.Text.Length - 2);
                     innerTokens.RemoveLastNTokens(2);
                 }
             }
@@ -487,7 +495,7 @@ namespace TreeSqlParser.Parsing
             }
             else if (nextToken.AsLiteral != null)
             {
-                result = new StringColumn { Parent = parent, Value = nextToken.Text[1..^1].Replace("''", "'") };
+                result = new StringColumn { Parent = parent, Value = nextToken.Text.Substring(1, nextToken.Text.Length-2).Replace("''", "'") };
             }
 
             if (result == null)

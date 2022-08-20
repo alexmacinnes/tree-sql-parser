@@ -17,14 +17,19 @@ namespace TreeSqlParser.Writers.Safe.Columns
 
         protected ICastWriter castWriter;
 
-        public string ColumnSql(Column c) => c switch
+        public string ColumnSql(Column c) 
         {
-            LiteralColumnBase x => literalWriter.LiteralSql(x),
-            ArithmeticChain x => arithmeticWriter.ArithmeticSql(x),
-            FunctionColumn x => functionWriter.FunctionSql(x),
-            AggregatedColumn x => aggregationWriter.AggregationSql(x),
-            CastColumn x => castWriter.CastSql(x),
-            _ => miscellaneousWriter.ColumnSql(c)
-        };
+            if (c is LiteralColumnBase lit)
+                return literalWriter.LiteralSql(lit);
+            if (c is ArithmeticChain arith)
+                return arithmeticWriter.ArithmeticSql(arith);
+            if (c is FunctionColumn func)
+                return functionWriter.FunctionSql(func);
+            if (c is AggregatedColumn agg)
+                return aggregationWriter.AggregationSql(agg);
+            if (c is CastColumn cst)
+                return castWriter.CastSql(cst);
+            return miscellaneousWriter.ColumnSql(c);
+        }
     }
 }

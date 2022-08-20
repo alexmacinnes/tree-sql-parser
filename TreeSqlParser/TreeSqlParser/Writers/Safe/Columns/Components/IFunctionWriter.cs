@@ -4,6 +4,6 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
 {
     public interface IFunctionWriter
     {
-        public string FunctionSql(FunctionColumn column);
+        string FunctionSql(FunctionColumn column);
     }
 }

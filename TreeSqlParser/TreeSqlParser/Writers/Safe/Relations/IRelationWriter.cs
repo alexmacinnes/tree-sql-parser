@@ -7,6 +7,6 @@ namespace TreeSqlParser.Writers.Safe.Relations
 {
     public interface IRelationWriter
     {
-        public string RelationSql(Relation r);
+        string RelationSql(Relation r);
     }
 }

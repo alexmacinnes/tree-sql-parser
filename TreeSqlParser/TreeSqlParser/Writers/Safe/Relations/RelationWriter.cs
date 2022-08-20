@@ -21,14 +21,15 @@ namespace TreeSqlParser.Writers.Safe.Relations
             this.supportsFullJoin = supportsFullJoin;
         }
 
-        public string RelationSql(Relation r) => r switch
+        public string RelationSql(Relation r) 
         {
-            Table x => TableSql(x),
-            JoinChain x => JoinChainSql(x),
-            BracketedRelation x => BracketedSql(x),
-            SubselectRelation x => SubselectSql(x),
-            _ => throw new InvalidOperationException("Unknown Relation type")
-        };
+            if (r is Table t) return TableSql(t);
+            if (r is JoinChain j) return JoinChainSql(j);
+            if (r is BracketedRelation b) return BracketedSql(b);
+            if (r is SubselectRelation s) return SubselectSql(s);
+
+            throw new InvalidOperationException("Unknown Relation type");
+        }
 
         private string SubselectSql(SubselectRelation s) =>
             $"({sqlWriter.GenerateSql(s.InnerSelect)})" +
@@ -61,15 +62,18 @@ namespace TreeSqlParser.Writers.Safe.Relations
             return result;
         }
 
-        private string JoinTypeSql(JoinType j) => j switch
+        private string JoinTypeSql(JoinType j)
         {
-            JoinType.InnerJoin => "INNER JOIN",
-            JoinType.LeftJoin => "LEFT JOIN",
-            JoinType.RightJoin => "RIGHT JOIN",
-            JoinType.FullJoin => "FULL JOIN",
-            JoinType.CrossJoin => "CROSS JOIN",
-            _ => throw new InvalidOperationException("Join Type not supported: " + j)
-        };
+            switch (j)
+            {
+                case JoinType.InnerJoin: return "INNER JOIN";
+                case JoinType.LeftJoin: return "LEFT JOIN";
+                case JoinType.RightJoin: return "RIGHT JOIN";
+                case JoinType.FullJoin: return "FULL JOIN";
+                case JoinType.CrossJoin: return "CROSS JOIN";
+                default: throw new InvalidOperationException("Join Type not supported: " + j);
+            }
+        }
 
         private string TableSql(Table t)
         {

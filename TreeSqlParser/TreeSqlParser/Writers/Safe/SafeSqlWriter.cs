@@ -21,14 +21,15 @@ namespace TreeSqlParser.Writers.Safe
 
         protected ISelectWriter SelectWriter { get; set; }
  
-        public string GenerateSql(SqlElement e) => e switch
+        public string GenerateSql(SqlElement e)
         {
-            Column x => ColumnWriter.ColumnSql(x),
-            Condition x => ConditionWriter.ConditionSql(x),
-            Relation x => RelationWriter.RelationSql(x),
-            SelectStatement x => SelectWriter.SelectStatementSql(x),
-            Select x => SelectWriter.SelectSql(x),
-            _ => throw new InvalidOperationException($"SqlElement of type {e.GetType().Name} not supported")
-        };       
+            if (e is Column col) return ColumnWriter.ColumnSql(col);
+            if (e is Condition con) return ConditionWriter.ConditionSql(con);
+            if (e is Relation r) return RelationWriter.RelationSql(r);
+            if (e is SelectStatement ss) return SelectWriter.SelectStatementSql(ss);
+            if (e is Select s) return SelectWriter.SelectSql(s);
+
+            throw new InvalidOperationException($"SqlElement of type {e.GetType().Name} not supported");
+        }      
     }
 }

@@ -4,6 +4,6 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
 {
     public interface IAggregationWriter
     {
-        public string AggregationSql(AggregatedColumn column);
+        string AggregationSql(AggregatedColumn column);
     }
 }

@@ -7,6 +7,6 @@ namespace TreeSqlParser.Writers.Safe.Identifiers
 {
     public interface IIdentifierWriter
     {
-        public string Delimit(SqlIdentifier i);
+        string Delimit(SqlIdentifier i);
     }
 }

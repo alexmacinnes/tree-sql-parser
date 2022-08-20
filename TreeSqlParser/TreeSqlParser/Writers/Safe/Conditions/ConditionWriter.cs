@@ -18,20 +18,21 @@ namespace TreeSqlParser.Writers.Safe.Conditions
             this.sqlWriter = sqlWriter;
         }
 
-        public string ConditionSql(Condition c) => c switch 
+        public string ConditionSql(Condition c) 
         {
-            ComparisonCondition x => ComparisonSql(x),
-            ConditionChain x => ConditionChainSql(x),
-            NotCondition x => NotSql(x),
-            BracketCondition x => BracketSql(x),
-            InListCondition x => InListSql(x),
-            InSubselectCondition x => InSubselectSql(x),
-            ExistsCondition x => ExistsSql(x),
-            BetweenCondition x => BetweenSql(x),
-            IsNullCondition x => IsNullSql(x),
-            NotNullCondition x => NotNullSql(x),
-            _ => throw new InvalidCastException("Unsupported condition type")
-        };
+            if (c is ComparisonCondition comp) return ComparisonSql(comp);
+            if (c is ConditionChain cond) return ConditionChainSql(cond);
+            if (c is NotCondition n) return NotSql(n);
+            if (c is BracketCondition br) return BracketSql(br);
+            if (c is InListCondition inl) return InListSql(inl);
+            if (c is InSubselectCondition ins) return InSubselectSql(ins);
+            if (c is ExistsCondition e) return ExistsSql(e);
+            if (c is BetweenCondition be) return BetweenSql(be);
+            if (c is IsNullCondition nl) return IsNullSql(nl);
+            if (c is NotNullCondition nnl) return NotNullSql(nnl);
+
+            throw new InvalidCastException("Unsupported condition type");
+        }
 
         private string NotNullSql(NotNullCondition x) =>
             $"{Sql(x.LeftColumn)} IS NOT NULL";
@@ -67,27 +68,33 @@ namespace TreeSqlParser.Writers.Safe.Conditions
             return sb.ToString();
         }
 
-        private string LogicSql(LogicCondition c) => c switch
+        private string LogicSql(LogicCondition c) 
         {
-            LogicCondition.And => "AND",
-            LogicCondition.Or => "OR",
-            _ => throw new InvalidOperationException("Unkown Logic Condition")
-        };
+            switch (c)
+            {
+                case LogicCondition.And: return "AND";
+                case LogicCondition.Or: return "OR";
+                default: throw new InvalidOperationException("Unkown Logic Condition");
+            }
+        }
 
         private string ComparisonSql(ComparisonCondition x) =>
             $"{Sql(x.LeftColumn)} {ComparisonOperatorSql(x.Comparison)} {Sql(x.RightColumn)}";
 
-        private string ComparisonOperatorSql(ColumnComparison c) => c switch
+        private string ComparisonOperatorSql(ColumnComparison c)
         {
-            ColumnComparison.Equals => "=",
-            ColumnComparison.LessThan => "<",
-            ColumnComparison.LessThanOrEqual => "<=",
-            ColumnComparison.GreaterThan => ">",
-            ColumnComparison.GreaterThanOrEqual => ">=",
-            ColumnComparison.NotEquals => "<>",
-            ColumnComparison.Like => "LIKE",
-            _ => throw new InvalidOperationException("Unknown column comparison")
-        };
+            switch (c)
+            {
+                case ColumnComparison.Equals: return "=";
+                case ColumnComparison.LessThan: return "<";
+                case ColumnComparison.LessThanOrEqual: return "<=";
+                case ColumnComparison.GreaterThan: return ">";
+                case ColumnComparison.GreaterThanOrEqual: return ">=";
+                case ColumnComparison.NotEquals: return "<>";
+                case ColumnComparison.Like: return "LIKE";
+                default: throw new InvalidOperationException("Unknown column comparison");
+            }
+        }
         
     }
 }

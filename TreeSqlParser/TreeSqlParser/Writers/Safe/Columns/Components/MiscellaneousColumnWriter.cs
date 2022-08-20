@@ -25,18 +25,27 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
 
         private string Delimit(SqlIdentifier i) => identifierWriter.Delimit(i);
 
-        public string ColumnSql(Column c) => c switch
+        public string ColumnSql(Column c) 
         {
-            PrimitiveColumn x => PrimitiveColumnSql(x),
-            AliasColumn x => AliasColumnSql(x),
-            BracketedColumn x => BracketedColumnSql(x),
-            IifColumn x => IifColumnSql(x),
-            CaseColumn x => CaseColumnSql(x),
-            SubselectColumn x => SubselectColumnSql(x),
-            StarColumn _ => StarColumn(),
-            NullColumn _ => NullColumn(),
-            _ => throw new NotSupportedException("Unsupported column type")
-        };
+            if (c is PrimitiveColumn p)
+                return PrimitiveColumnSql(p);
+            if (c is AliasColumn a)
+                return AliasColumnSql(a);
+            if (c is BracketedColumn b)
+                return BracketedColumnSql(b);
+            if (c is IifColumn i)
+                return IifColumnSql(i);
+            if (c is CaseColumn cs)
+                return CaseColumnSql(cs);
+            if (c is SubselectColumn s)
+                return SubselectColumnSql(s);
+            if (c is StarColumn)
+                return StarColumn();
+            if (c is NullColumn)
+                return NullColumn();
+
+            throw new NotSupportedException("Unsupported column type");
+        }
 
         protected virtual string NullColumn() => "NULL";
 

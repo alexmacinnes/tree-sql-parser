@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using TreeSqlParser.Model.Columns;
@@ -9,6 +10,15 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
     public abstract class ArithmeticWriter : IArithmeticWriter
     {
         private readonly IColumnWriter columnWriter;
+
+        private readonly IReadOnlyDictionary<ArithmeticOperator, string> OperatorToString = new Dictionary<ArithmeticOperator, string>()
+        {
+            { ArithmeticOperator.Plus, "+" },
+            { ArithmeticOperator.Minus, "-" },
+            { ArithmeticOperator.Multiply, "*" },
+            { ArithmeticOperator.Divide, "/" },
+            { ArithmeticOperator.Modulo, "%" }
+        };
 
         protected ArithmeticWriter(IColumnWriter columnWriter)
         {
@@ -112,26 +122,27 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
             }
         }
 
-        private string OperatorText(ArithmeticOperator x) => x switch
+        private string OperatorText(ArithmeticOperator x) 
         {
-            ArithmeticOperator.Plus => "+",
-            ArithmeticOperator.Minus => "-",
-            ArithmeticOperator.Multiply => "*",
-            ArithmeticOperator.Divide => "/",
-            ArithmeticOperator.Modulo => "%",
-            _ => throw new NotSupportedException("Unknwn ArithmeticOperator: " + x)
-        };
+            if (!(OperatorToString.TryGetValue(x, out string result)))
+                throw new NotSupportedException("Unknwn ArithmeticOperator: " + x);
 
-        private string ColumnSql(Column c) => c switch
+            return result;
+        }
+
+        private string ColumnSql(Column c) 
         {
-            CustomModuloFunction x => $"{ModuloReplacementFunction}({ColumnSql(x.LeftColumn)}, {ColumnSql(x.RightColumn)})",
-            ArithmeticChain x =>
-                ColumnSql(x.LeftColumn) +
+            if (c is CustomModuloFunction mod)
+                return $"{ModuloReplacementFunction}({ColumnSql(mod.LeftColumn)}, {ColumnSql(mod.RightColumn)})";
+
+            if (c is ArithmeticChain arith)
+                return ColumnSql(arith.LeftColumn) +
                 string.Join(
                     string.Empty,
-                    x.Operations.Select(o => OperatorText(o.Operator) + ColumnSql(o.RightColumn))),
-            _ => columnWriter.ColumnSql(c)
-        };
+                    arith.Operations.Select(o => OperatorText(o.Operator) + ColumnSql(o.RightColumn)));
+
+            return columnWriter.ColumnSql(c);
+        }
 
         [DebuggerDisplay("{DebuggerDisplay}")]
         private class CustomModuloFunction : Column

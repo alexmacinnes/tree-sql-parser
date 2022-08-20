@@ -39,43 +39,43 @@ namespace TreeSqlParser.Model
 
             private PropertyAdaptorBase PropertyAdaptor(PropertyInfo p)
             {
-                static bool isSqlElement(Type x) =>
-                    typeof(SqlElement).IsAssignableFrom(x);
-
-                static bool isEnum(Type x) =>
-                    x.IsEnum ||
-                    (x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Nullable<>) && x.GetGenericArguments()[0].IsEnum);
-
-                static bool isValueType(Type x) =>
-                    ValueTypes.Contains(x) || isEnum(x);
-
-                static bool isCloneable(Type x) =>
-                    typeof(ICloneable).IsAssignableFrom(x);
-
                 Type t = p.PropertyType;
 
                 if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))
                 {
                     Type typeArg = t.GenericTypeArguments[0];
-                    if (isSqlElement(typeArg))
+                    if (IsSqlElement(typeArg))
                         return new SqlElementListPropertyAdaptor(p);
-                    if (isValueType(typeArg))
+                    if (IsValueType(typeArg))
                         return new ValueListPropertyAdaptor(p);
-                    if (isCloneable(typeArg))
+                    if (IsCloneable(typeArg))
                         return new CloneableListPropertyAdaptor(p);
                 }
                 else
                 {
-                    if (isSqlElement(t))
+                    if (IsSqlElement(t))
                         return new SqlElementPropertyAdaptor(p);
-                    if (isValueType(t))
+                    if (IsValueType(t))
                         return new ValuePropertyAdaptor(p);
-                    if (isCloneable(t))
+                    if (IsCloneable(t))
                         return new CloneablePropertyAdaptor(p);
                 }
 
                 throw new InvalidOperationException("Unknown property type");
             }
+
+            private static bool IsCloneable(Type x) => 
+                typeof(ICloneable).IsAssignableFrom(x);
+
+            private static bool IsValueType(Type x) =>
+                ValueTypes.Contains(x) || isEnum(x);
+
+            private static bool isEnum(Type x) =>
+                x.IsEnum ||
+                (x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Nullable<>) && x.GetGenericArguments()[0].IsEnum);
+
+            private static bool IsSqlElement(Type x) =>
+                typeof(SqlElement).IsAssignableFrom(x);
 
             public string Name { get; set; }
 

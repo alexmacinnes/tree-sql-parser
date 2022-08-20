@@ -7,6 +7,6 @@ namespace TreeSqlParser.Writers.Safe.Conditions
 {
     public interface IConditionWriter
     {
-        public string ConditionSql(Condition c);
+        string ConditionSql(Condition c);
     }
 }

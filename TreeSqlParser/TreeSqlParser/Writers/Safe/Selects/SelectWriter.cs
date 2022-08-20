@@ -94,15 +94,18 @@ namespace TreeSqlParser.Writers.Safe.Selects
             return "FROM " + relations;
         }
 
-        protected virtual string SetModifierSql(SetModifier s) => s switch
+        protected virtual string SetModifierSql(SetModifier s)
         {
-            SetModifier.None => null,
-            SetModifier.Union => "UNION",
-            SetModifier.UnionAll => "UNION ALL",
-            SetModifier.Intersect => "INTERSECT",
-            SetModifier.Except => "EXCEPT",
-            _ => throw new InvalidOperationException("Unkown Set Modifier")
-        };
+            switch (s) 
+            {
+                case SetModifier.None: return null;
+                case SetModifier.Union: return "UNION";
+                case SetModifier.UnionAll: return "UNION ALL";
+                case SetModifier.Intersect: return "INTERSECT";
+                case SetModifier.Except: return "EXCEPT";
+                default: throw new InvalidOperationException("Unkown Set Modifier");
+            }
+        }
 
         private string Delimit(string name) => identifierWriter.Delimit(new SqlIdentifier { Name = name });
 
@@ -163,12 +166,13 @@ namespace TreeSqlParser.Writers.Safe.Selects
             if (x.Collate != null)
                 throw new InvalidOperationException("ORDER BY collation not supported");
 
-            string sort = x.SortOrder switch
+            string sort;
+            switch (x.SortOrder)
             {
-                ColumnSortOrder.Asc => string.Empty,
-                ColumnSortOrder.Desc => " DESC",
-                _ => throw new InvalidOperationException("Unknown column sort order")
-            };
+                case ColumnSortOrder.Asc: sort = string.Empty; break;
+                case ColumnSortOrder.Desc: sort = " DESC"; break;
+                default: throw new InvalidOperationException("Unknown column sort order");
+            }
 
             return sqlWriter.GenerateSql(x.Column) + sort;
         }

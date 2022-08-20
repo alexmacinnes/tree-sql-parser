@@ -25,16 +25,18 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
             return $"CAST({ColumnSql(c.Column)} AS {MapDataType(c.DataType)})";
         }
 
-        protected virtual string MapDataType(ColumnDataType dataType) =>
-            dataType.Value.ToUpperInvariant() switch
+        protected virtual string MapDataType(ColumnDataType dataType)
+        {
+            switch (dataType.Value.ToUpperInvariant())
             {
-                "VARCHAR" => VarChar(),
-                "NVARCHAR" => NVarChar(),
-                "INT" => Int(),
-                "REAL" => Real(),
-                "TIMESTAMP" => Timestamp(),
-                _ => throw new InvalidOperationException("Inavlid CAST. Valid types are VARCHAR, NVARCHAR, INT, REAL, TIMESTAMP")
-            };
+                case "VARCHAR": return VarChar();
+                case "NVARCHAR": return NVarChar();
+                case "INT": return Int();
+                case "REAL": return Real();
+                case "TIMESTAMP": return Timestamp();
+                default: throw new InvalidOperationException("Inavlid CAST. Valid types are VARCHAR, NVARCHAR, INT, REAL, TIMESTAMP");
+            }
+        }
 
         protected abstract string Int();
 
