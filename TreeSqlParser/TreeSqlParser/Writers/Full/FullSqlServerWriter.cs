@@ -17,57 +17,292 @@ namespace TreeSqlParser.Writers.Full
 {
     public class FullSqlServerWriter : ISqlWriter
     {
-        public string GenerateSql(SqlElement e)
+        #region Init
+
+        private Dictionary<Type, Func<SqlElement, string>> sqlFuncs;
+
+        public FullSqlServerWriter()
         {
-            if (e is SqlRootElement root) return GenerateSql(root.Child);
+            sqlFuncs = new Dictionary<Type, Func<SqlElement, string>>
+            {
+                { typeof(SqlRootElement), (x) => RootElementSql((SqlRootElement)x) },
 
-            //Analytics.cs
-            if (e is Over over) return OverSql(over);
-            if (e is OverExtent overExtent) return OverExtentSql(overExtent);
+                //Analytics.cs
+                { typeof(Over), (x) => OverSql((Over)x) },
+                { typeof(OverExtent), (x) => OverExtentSql((OverExtent)x) },
 
-            //Columns.cs
-            if (e is Column column) return ColumnSql(column);
-            if (e is ArithmeticOperation arithmeticOperation) return ArithmeticOperationSql(arithmeticOperation);
-            if (e is CaseBranch caseBranch) return CaseBranchSql(caseBranch);
+                //Columns.cs
+                { typeof(AggregatedColumn), (x) => AggregatedColumnSql((AggregatedColumn)x) },
+                { typeof(ArithmeticChain), (x) => ArithmeticChainSql((ArithmeticChain)x) },
+                { typeof(AliasColumn), (x) => AliasColumnSql((AliasColumn)x) },
+                { typeof(ArithmeticOperation), (x) => ArithmeticOperationSql((ArithmeticOperation)x) },
+                { typeof(BracketedColumn), (x) => BracketedColumnSql((BracketedColumn)x) },
+                { typeof(CaseBranch), (x) => CaseBranchSql((CaseBranch)x) },
+                { typeof(CaseColumn), (x) => CaseColumnSql((CaseColumn)x) },
+                { typeof(CastColumn), (x) => CastColumnSql((CastColumn)x) },
+                { typeof(ConvertColumn), (x) => ConvertColumnSql((ConvertColumn)x) },
+                { typeof(DateColumn), (x) => DateColumnSql((DateColumn)x) },
+                { typeof(DateTimeColumn), (x) => DateTimeColumnSql((DateTimeColumn)x) },
+                { typeof(DecimalColumn), (x) => DecimalColumnSql((DecimalColumn)x) },
+                { typeof(FunctionColumn), (x) => FunctionColumnSql((FunctionColumn)x) },
+                { typeof(IifColumn), (x) => IifColumnSql((IifColumn)x) },
+                { typeof(IntegerColumn), (x) => IntegerColumnSql((IntegerColumn)x) },
+                { typeof(NullColumn), (x) => NullColumnSql() },
+                { typeof(OrderByColumn), (x) => OrderByColumnSql((OrderByColumn)x) },
+                { typeof(OverColumn), (x) => OverColumnSql((OverColumn)x) },
+                { typeof(ParseColumn), (x) => ParseColumnSql((ParseColumn)x) },
+                { typeof(PrimitiveColumn), (x) => PrimitiveColumnSql((PrimitiveColumn)x) },
+                { typeof(StarColumn), (x) => StarColumnSql() },
+                { typeof(StringColumn), (x) => StringColumnSql((StringColumn)x) },
+                { typeof(SubselectColumn), (x) => SubselectColumnSql((SubselectColumn)x) },
+                { typeof(TimeColumn), (x) => TimeColumnSql((TimeColumn)x) },
+                { typeof(VariableColumn), (x) => VariableColumnSql((VariableColumn)x) },
+                
+                //Conditions.cs
+                { typeof(BetweenCondition), (x) => BetweenConditionSql((BetweenCondition)x) },
+                { typeof(BracketCondition), (x) => BracketedConditionSql((BracketCondition)x) },
+                { typeof(ComparisonCondition), (x) => ComparisonConditionSql((ComparisonCondition)x) },
+                { typeof(ConditionChain), (x) => ConditionChainSql((ConditionChain)x) },
+                { typeof(ExistsCondition), (x) => ExistsConditionSql((ExistsCondition)x) },
+                { typeof(InListCondition), (x) => InListConditionSql((InListCondition)x) },
+                { typeof(InSubselectCondition), (x) => InSubselectConditionSql((InSubselectCondition)x) },
+                { typeof(IsNullCondition), (x) => IsNullConditionSql((IsNullCondition)x) },
+                { typeof(LogicOperation), (x) => LogicOperationSql((LogicOperation)x) },
+                { typeof(NotCondition), (x) => NotConditionSql((NotCondition)x) },
+                { typeof(NotNullCondition), (x) => NotNullConditionSql((NotNullCondition)x) },
+                { typeof(SetCondition), (x) => SetConditionSql((SetCondition)x) },
 
-            //Conditions.cs
-            if (e is Condition condition) return ConditionSql(condition);
-            if (e is LogicOperation logicOperation) return LogicOperationSql(logicOperation);
+                //Grouping.cs
+                { typeof(GroupingSet), (x) => GroupingSetSql((GroupingSet)x) },
 
-            //Grouping.cs
-            if (e is GroupingSet groupingSet) return GroupingSetSql(groupingSet);
+                //Hints.cs
+                { typeof(SelectOptions), (x) => SelectOptionsSql((SelectOptions)x) },
 
-            //Hints.cs
-            if (e is SelectOptions selectOptions) return SelectOptionsSql(selectOptions);
+                //Pivoting.cs
+                { typeof(Pivot), (x) => PivotSql((Pivot)x) },
 
-            //Pivoting.cs
-            if (e is Pivot pivot) return PivotSql(pivot);
+                //Relations.cs
+                { typeof(BracketedRelation), (x) => BracketedRelationSql((BracketedRelation)x) },
+                { typeof(Join), (x) => JoinSql((Join)x) },
+                { typeof(JoinChain), (x) => JoinChainSql((JoinChain)x) },
+                { typeof(SubselectRelation), (x) => SubselectRelationSql((SubselectRelation)x) },
+                { typeof(Table), (x) => TableSql((Table)x) },
 
-            //Relations.cs
-            if (e is Relation relation) return RelationSql(relation);
-            if (e is Join join) return JoinSql(join);
-
-            //Selects.cs
-            if (e is SelectStatement selectStatement) return SelectStatementSql(selectStatement);
-            if (e is Select select) return SelectSql(select);
-            if (e is CteSelect cteSelect) return CteSql(cteSelect);
-            if (e is OrderBy orderBy) return OrderBySql(orderBy);
-            if (e is SelectTop selectTop) return SelectTopSql(selectTop);
-
-            throw new NotSupportedException("Unknown SqlElement type: " + e.GetType().Name);
+                //Selects.cs
+                { typeof(CteSelect), (x) => CteSql((CteSelect)x) },
+                { typeof(OrderBy), (x) => OrderBySql((OrderBy)x) },
+                { typeof(Select), (x) => SelectSql((Select)x) },
+                { typeof(SelectStatement), (x) => SelectStatementSql((SelectStatement)x) },
+                { typeof(SelectTop), (x) => SelectTopSql((SelectTop)x) },
+            };
         }
 
-        private string RelationSql(Relation x)
-        {
-            if (x is BracketedRelation bracketedRelation) return $"({RelationSql(bracketedRelation.InnerRelation)})";
-            if (x is SubselectRelation subselectRelation) return $"({SelectStatementSql(subselectRelation.InnerSelect)}) AS {SqlIdentifierSql(subselectRelation.Alias)}";
-            if (x is Table table) return $"{SqlIdentifierSql(table.Name)}" + (table.Alias == null ? string.Empty : $" AS {SqlIdentifierSql(table.Alias)}");
-            if (x is JoinChain joinChain) return JoinChainSql(joinChain);
+        #endregion
 
-            throw new NotSupportedException("Unknown Relation typoe: " + x.GetType().Name);
+        #region Public
+
+        public string GenerateSql(SqlElement x)
+        {
+            if (sqlFuncs.TryGetValue(x.GetType(), out var sqlFunc))
+                return sqlFunc(x);
+
+            throw new NotSupportedException("Unknown SqlElement tyoe: " + x.GetType().Name);
         }
 
-        private string JoinChainSql(JoinChain x)
+        #endregion
+
+        #region Protected
+
+        protected virtual string AliasColumnSql(AliasColumn x) =>
+            $"{ColumnSql(x.InnerColumn)} AS {SqlIdentifierSql(x.Alias)}";
+
+        protected virtual string AggregatedColumnSql(AggregatedColumn x) =>
+            $"{x.Aggregation.ToString().ToUpper()}({(x.Distinct ? "DISTINCT " : "")}{ColumnsSql(x.InnerColumns)})";
+
+        protected virtual string ArithmeticChainSql(ArithmeticChain x)
+        {
+            var sb = new StringBuilder();
+            sb.Append(ColumnSql(x.LeftColumn));
+            if (x.Operations != null)
+            {
+                foreach (var o in x.Operations)
+                    sb.Append($"{ArithmeticOperatorSql(o.Operator)}{ColumnSql(o.RightColumn)}");
+            }
+
+            return sb.ToString();
+        }
+
+        protected virtual string ArithmeticOperationSql(ArithmeticOperation x) =>
+            $"{ArithmeticOperatorSql(x.Operator)}{ColumnSql(x.RightColumn)}";
+
+        protected virtual string ArithmeticOperatorSql(ArithmeticOperator x)
+        {
+            switch (x)
+            {
+                case ArithmeticOperator.Plus: return "+";
+                case ArithmeticOperator.Minus: return "-";
+                case ArithmeticOperator.Multiply: return "*";
+                case ArithmeticOperator.Divide: return "/";
+                case ArithmeticOperator.Modulo: return "%";
+                case ArithmeticOperator.Concat: return "||";
+                default: throw new NotSupportedException("Unkown arithmetic operator: " + x.ToString());
+            }
+        }
+
+        protected virtual string BetweenConditionSql(BetweenCondition x) =>
+            $"{ColumnSql(x.LeftColumn)} BETWEEN {ColumnSql(x.LowerBound)} AND {ColumnSql(x.UpperBound)}";
+
+        protected virtual string BracketedColumnSql(BracketedColumn x) =>
+            $"({ColumnSql(x.InnerColumn)})";
+
+        protected virtual string BracketedConditionSql(BracketCondition x) =>
+            $"({ConditionSql(x.InnerCondition)})";
+
+        protected virtual string BracketedRelationSql(BracketedRelation x) =>
+            $"({RelationSql(x.InnerRelation)})";
+
+        protected virtual string CaseBranchSql(CaseBranch x) =>
+            $"WHEN {ConditionSql(x.Condition)} THEN {ColumnSql(x.Column)}";
+
+        protected virtual string CaseColumnSql(CaseColumn x)
+        {
+            var sb = new StringBuilder();
+            sb.Append("CASE");
+
+            foreach (var b in x.Branches)
+            {
+                sb.Append($" {CaseBranchSql(b)}");
+            }
+
+            if (x.DefaultColumn != null)
+            {
+                sb.Append(" ELSE ");
+                sb.Append(ColumnSql(x.DefaultColumn));
+            }
+
+            sb.Append(" END");
+
+            return sb.ToString();
+        }
+
+        protected virtual string CastColumnSql(CastColumn x) =>
+            $"{(x.TryCast ? "TRY_" : string.Empty)}CAST({ColumnSql(x.Column)} AS {x.DataType.Value})";
+
+        protected virtual string ColumnSql(Column x) => 
+            GenerateSql(x);
+
+        protected virtual string ColumnsSql(IEnumerable<Column> x) => 
+            string.Join(", ", x.Select(ColumnSql));
+
+        protected virtual string ComparisonConditionSql(ComparisonCondition x) =>
+            $"{ColumnSql(x.LeftColumn)}{ComparisonSql(x.Comparison)}{ColumnSql(x.RightColumn)}";
+
+        protected virtual string ComparisonSql(ColumnComparison c)
+        {
+            switch (c)
+            {
+                case ColumnComparison.Equals: return "=";
+                case ColumnComparison.LessThan: return "<";
+                case ColumnComparison.LessThanOrEqual: return "<=";
+                case ColumnComparison.GreaterThan: return ">";
+                case ColumnComparison.GreaterThanOrEqual: return ">=";
+                case ColumnComparison.NotEquals: return "<>";
+                case ColumnComparison.Like: return " LIKE ";
+                default: throw new NotSupportedException("Unknown column comparison: " + c.ToString());
+            }
+        }
+
+        protected virtual string ConditionChainSql(ConditionChain x)
+        {
+            var sb = new StringBuilder();
+            sb.Append(ConditionSql(x.LeftCondition));
+
+            if (x.OtherConditions != null)
+                foreach (var c in x.OtherConditions)
+                    sb.Append($" {LogicOperationSql(c)}");
+
+            return sb.ToString();
+        }
+
+        private string ConditionSql(Condition x) => 
+            GenerateSql(x);
+
+        protected virtual string ConvertColumnSql(ConvertColumn x) =>
+            $"{(x.TryConvert ? "TRY_" : string.Empty)}CONVERT({x.DataType.Value}, {ColumnSql(x.Column)}{(x.Style == null ? string.Empty : ", " + ColumnSql(x.Style))})";
+
+        protected virtual string CteSql(CteSelect s)
+        {
+            var sb = new StringBuilder();
+            sb.Append(s.Alias.Name);
+            sb.Append(" AS (");
+            sb.Append(SelectsSql(s.Selects));
+            sb.Append(")");
+
+            return sb.ToString();
+        }
+
+        protected virtual string DateColumnSql(DateColumn x) =>
+            $"{{d '{x.Value:yyyy-MM-dd}'}}";
+
+        protected virtual string DateTimeColumnSql(DateTimeColumn x) =>
+            $"{{ts '{x.Value:yyyy-MM-dd HH:mm:ss.FFFFFFF}'}}";
+
+        protected virtual string DecimalColumnSql(DecimalColumn x) =>
+            x.Value.ToString();
+
+        protected virtual string ExistsConditionSql(ExistsCondition x) =>
+            $"EXISTS ({SelectStatementSql(x.Subselect)})";
+
+        protected virtual string FunctionColumnSql(FunctionColumn x) =>
+            $"{SqlIdentifierSql(x.Name)}({ColumnsSql(x.Parameters)})";
+
+        protected virtual string GroupBySql(List<GroupingSet> x)
+        {
+            if (x?.Any() != true)
+                return string.Empty;
+
+            var sb = new StringBuilder();
+            sb.Append(" GROUP BY ");
+            if (x.Count == 1)
+                sb.Append(GroupingSetSql(x[0], false));
+            else
+            {
+                var setStrings = x.Select(s => GroupingSetSql(s, forceBrackets: true));
+                string fullText = $"GROUPING SETS ({string.Join(", ", setStrings)})";
+                sb.Append(fullText);
+            }
+
+            return sb.ToString();
+        }
+
+        protected virtual string GroupingSetSql(GroupingSet g, bool forceBrackets = false)
+        {
+            string columns = ColumnsSql(g.Columns);
+            string typeText = g.SetType == GroupingSetType.Columns ? null : g.SetType.ToString().ToUpper() + " ";
+            bool brackets = forceBrackets || typeText != null;
+
+            if (brackets)
+                return $"{typeText}({columns})";
+            else
+                return columns;
+        }
+
+        protected virtual string IifColumnSql(IifColumn x) =>
+            $"IIF({ConditionSql(x.Condition)}, {ColumnSql(x.TrueColumn)}, {ColumnSql(x.FalseColumn)})";
+
+        protected virtual string InListConditionSql(InListCondition x) =>
+            $"{ColumnSql(x.LeftColumn)} IN ({string.Join(",", x.RightColumns.Select(ColumnSql))})";
+
+        protected virtual string InSubselectConditionSql(InSubselectCondition x) =>
+            $"{ColumnSql(x.LeftColumn)} IN ({SelectStatementSql(x.Subselect)})";
+
+        protected virtual string IntegerColumnSql(IntegerColumn x) =>
+            x.Value.ToString();
+
+        protected virtual string IsNullConditionSql(IsNullCondition x) =>
+            $"{ColumnSql(x.LeftColumn)} IS NULL";
+
+        protected virtual string JoinChainSql(JoinChain x)
         {
             var sb = new StringBuilder();
             sb.Append(RelationSql(x.LeftRelation));
@@ -83,13 +318,13 @@ namespace TreeSqlParser.Writers.Full
             return sb.ToString();
         }
 
-        private string JoinSql(Join j) =>
-            $"{JoinTypeSql(j.JoinType)} {RelationSql(j.RightRelation)}" +
-            (j.Condition == null ? String.Empty : $" ON {ConditionSql(j.Condition)}");
+        protected virtual string JoinSql(Join x) =>
+            $"{JoinTypeSql(x.JoinType)} {RelationSql(x.RightRelation)}" +
+            (x.Condition == null ? String.Empty : $" ON {ConditionSql(x.Condition)}");
 
-        private string JoinTypeSql(JoinType j)
+        protected virtual string JoinTypeSql(JoinType x)
         {
-            switch (j)
+            switch (x)
             {
                 case JoinType.InnerJoin: return "INNER JOIN";
                 case JoinType.LeftJoin: return "LEFT JOIN";
@@ -98,131 +333,51 @@ namespace TreeSqlParser.Writers.Full
                 case JoinType.CrossJoin: return "CROSS JOIN";
                 case JoinType.CrossApply: return "CROSS APPLY";
                 case JoinType.OuterApply: return "OUTER APPLY";
-                default: throw new NotSupportedException("Unknown JoinType: " + j.ToString());
+                default: throw new NotSupportedException("Unknown JoinType: " + x.ToString());
             }
         }
 
-        private string PivotSql(Pivot p)
-        {
-            if (p == null) return string.Empty;
-            return $" PIVOT ({ColumnSql(p.AggregatedColumn)} FOR {ColumnSql(p.PivotColumn)} IN ({ColumnsSql(p.PivotValues)})) AS {SqlIdentifierSql(p.Alias)}";
-        }
+        protected virtual string LogicOperationSql(LogicOperation o) =>
+            $"{o.LogicCondition.ToString().ToUpperInvariant()} {ConditionSql(o.RightCondition)}";
 
-        private string GroupingSetSql(GroupingSet g, bool forceBrackets = false)
-        {
-            string columns = ColumnsSql(g.Columns);
-            string typeText = g.SetType == GroupingSetType.Columns ? null : g.SetType.ToString().ToUpper() + " ";
-            bool brackets = forceBrackets || typeText != null;
+        protected virtual string NotConditionSql(NotCondition x) =>
+            $"NOT {ConditionSql(x.InnerCondition)}";
 
-            if (brackets)
-                return $"{typeText}({columns})";
-            else
-                return columns;
-        }
+        protected virtual string NotNullConditionSql(NotNullCondition x) =>
+            $"{ColumnSql(x.LeftColumn)} IS NOT NULL";
 
-        private string ConditionSql(Condition c)
-        {
-            if (c is ComparisonCondition comparisonCondition)
-                return $"{ColumnSql(comparisonCondition.LeftColumn)}{ComparisonSql(comparisonCondition.Comparison)}{ColumnSql(comparisonCondition.RightColumn)}";
-            if (c is NotCondition notCondition)
-                return $"NOT {ConditionSql(notCondition.InnerCondition)}";
-            if (c is BracketCondition bracketCondition)
-                return $"({ConditionSql(bracketCondition.InnerCondition)})";
-            if (c is InListCondition inListCondition)
-                return $"{ColumnSql(inListCondition.LeftColumn)} IN ({string.Join(",", inListCondition.RightColumns.Select(ColumnSql))})";
-            if (c is InSubselectCondition inSubselectCondition)
-                return $"{ColumnSql(inSubselectCondition.LeftColumn)} IN ({SelectStatementSql(inSubselectCondition.Subselect)})";
-            if (c is ExistsCondition existsCondition)
-                return $"EXISTS ({SelectStatementSql(existsCondition.Subselect)})";
-            if (c is BetweenCondition betweenCondition)
-                return $"{ColumnSql(betweenCondition.LeftColumn)} BETWEEN {ColumnSql(betweenCondition.LowerBound)} AND {ColumnSql(betweenCondition.UpperBound)}";
-            if (c is IsNullCondition isNullCondition)
-                return $"{ColumnSql(isNullCondition.LeftColumn)} IS NULL";
-            if (c is NotNullCondition notNullCondition)
-                return $"{ColumnSql(notNullCondition.LeftColumn)} IS NOT NULL";
-            if (c is ConditionChain conditionChain)
-                return ConditionChainSql(conditionChain);
-            if (c is SetCondition setCondition)
-                return $"{ColumnSql(setCondition.LeftColumn)} {ComparisonSql(setCondition.Comparison)} {setCondition.SetConditionType.ToString().ToUpperInvariant()} {ColumnSql(setCondition.SubselectColumn)}";
+        protected virtual string NullColumnSql() => 
+            "NULL";
 
-            throw new NotSupportedException("Unknown condition type: " + c.GetType().Name);
-        }
+        protected virtual string OrderByColumnSql(OrderByColumn x) =>
+            $"{ColumnSql(x.Column)}{(x.Collate == null ? string.Empty : " COLLATE " + x.Collate)} {x.SortOrder.ToString().ToUpper()}";
 
-        private string ConditionChainSql(ConditionChain x)
+        protected virtual string OrderBySql(OrderBy o)
         {
             var sb = new StringBuilder();
-            sb.Append(ConditionSql(x.LeftCondition));
+            sb.Append(" ORDER BY ");
+            if (o.Columns.Any() == true)
+            {
+                var orders = o.Columns.Select(OrderByColumnSql);
+                sb.Append(string.Join(", ", orders));
+            }
 
-            if (x.OtherConditions != null)
-                foreach (var c in x.OtherConditions)
-                    sb.Append($" {LogicOperationSql(c)}");
+            if (o.Offset != null)
+                sb.Append($" OFFSET {ColumnSql(o.Offset)} ROWS");
+
+            if (o.Fetch != null)
+                sb.Append($" FETCH NEXT {ColumnSql(o.Fetch)} ROWS ONLY");
 
             return sb.ToString();
         }
 
-        private string LogicOperationSql(LogicOperation o) =>
-            $"{o.LogicCondition.ToString().ToUpperInvariant()} {ConditionSql(o.RightCondition)}";
+        protected virtual string OverColumnSql(OverColumn x) =>
+            $"{ColumnSql(x.Column)}{OverSql(x.Over)}";
 
-        private string ComparisonSql(ColumnComparison c)
-        {
-            switch (c)
-            {
-                case ColumnComparison.Equals: return "=";
-                case ColumnComparison.LessThan: return "<";
-                case ColumnComparison.LessThanOrEqual: return "<=";
-                case ColumnComparison.GreaterThan: return ">";
-                case ColumnComparison.GreaterThanOrEqual: return ">=";
-                case ColumnComparison.NotEquals: return "<>";
-                case ColumnComparison.Like: return " LIKE ";
-                default: throw new NotSupportedException("Unknown column comparison: " + c.ToString());
-            }
-        }
+        protected virtual string OverExtentSql(OverExtent e) =>
+           $"{e.ExtentType.ToString().ToUpperInvariant()} {(e.LowerBound?.ToString() ?? "null")} TO {(e.UpperBound?.ToString() ?? "null")}";
 
-        private string ColumnsSql(IEnumerable<Column> c) => string.Join(", ", c.Select(ColumnSql));
-
-        private string ColumnSql(Column x)
-        {
-            if (x is AliasColumn aliasColumn) 
-                return $"{ColumnSql(aliasColumn.InnerColumn)} AS {SqlIdentifierSql(aliasColumn.Alias)}";
-            if (x is LiteralColumnBase literalColumn)
-                return LiteralColumnSql(literalColumn);
-            if (x is StarColumn)
-                return "*";
-            if (x is PrimitiveColumn primitiveColumn)
-                return primitiveColumn.TableAlias == null 
-                    ? SqlIdentifierSql(primitiveColumn.Name) 
-                    : $"{SqlIdentifierSql(primitiveColumn.TableAlias)}.{SqlIdentifierSql(primitiveColumn.Name)}";
-            if (x is FunctionColumn functionColumn)
-                return $"{SqlIdentifierSql(functionColumn.Name)}({ColumnsSql(functionColumn.Parameters)})";
-            if (x is AggregatedColumn aggregatedColumn)
-                return $"{aggregatedColumn.Aggregation.ToString().ToUpper()}({(aggregatedColumn.Distinct ? "DISTINCT " : "")}{ColumnsSql(aggregatedColumn.InnerColumns)})";
-            if (x is BracketedColumn bracketedColumn)
-                return $"({ColumnSql(bracketedColumn.InnerColumn)})";
-            if (x is SubselectColumn subselectColumn)
-                return $"({SelectStatementSql(subselectColumn.InnerSelect)})";
-            if (x is CaseColumn caseColumn)
-                return CaseColumnSql(caseColumn);
-            if (x is ArithmeticChain arithmeticChain)
-                return ArithmeticChainSql(arithmeticChain);
-            if (x is NullColumn)
-                return "NULL";
-            if (x is CastColumn castColumn)
-                return $"{(castColumn.TryCast ? "TRY_" : string.Empty)}CAST({ColumnSql(castColumn.Column)} AS {castColumn.DataType.Value})";
-            if (x is ConvertColumn convertColumn)
-                return $"{(convertColumn.TryConvert ? "TRY_" : string.Empty)}CONVERT({convertColumn.DataType.Value}, {ColumnSql(convertColumn.Column)}{(convertColumn.Style == null ? string.Empty : ", " + ColumnSql(convertColumn.Style))})";
-            if (x is ParseColumn parseColumn)
-                return $"{(parseColumn.TryParse ? "TRY_" : string.Empty)}PARSE({ColumnSql(parseColumn.Column)} AS {parseColumn.DataType.Value}{(parseColumn.Culture == null ? string.Empty : " USING '" + parseColumn.Culture + "'")})";
-            if (x is VariableColumn variableColumn)
-                return $"@{variableColumn.VariableName}";
-            if (x is OverColumn overColumn)
-                return $"{ColumnSql(overColumn.Column)}{OverSql(overColumn.Over)}";
-            if (x is IifColumn iifColumn)
-                return $"IIF({ConditionSql(iifColumn.Condition)}, {ColumnSql(iifColumn.TrueColumn)}, {ColumnSql(iifColumn.FalseColumn)})";
-
-            throw new NotSupportedException("Unknown column type: " + x.GetType().Name);
-        }
-
-        private string OverSql(Over over)
+        protected virtual string OverSql(Over over)
         {
             if (over == null)
                 return string.Empty;
@@ -244,124 +399,35 @@ namespace TreeSqlParser.Writers.Full
             return $" OVER({string.Join(" ", elements)})";
         }
 
-        private string OverExtentSql(OverExtent e) =>
-            $"{e.ExtentType.ToString().ToUpperInvariant()} {(e.LowerBound?.ToString() ?? "null")} TO {(e.UpperBound?.ToString() ?? "null")}";
+        protected virtual string ParseColumnSql(ParseColumn x) =>
+            $"{(x.TryParse ? "TRY_" : string.Empty)}PARSE({ColumnSql(x.Column)} AS {x.DataType.Value}{(x.Culture == null ? string.Empty : " USING '" + x.Culture + "'")})";
 
-        private string ArithmeticChainSql(ArithmeticChain x)
+        protected virtual string PivotSql(Pivot p)
         {
-            var sb = new StringBuilder();
-            sb.Append(ColumnSql(x.LeftColumn));
-            if (x.Operations != null)
-            {
-                foreach (var o in x.Operations)
-                    sb.Append($"{ArithmeticOperatorSql(o.Operator)}{ColumnSql(o.RightColumn)}");
-            }
-
-            return sb.ToString();
+            return $" PIVOT ({ColumnSql(p.AggregatedColumn)} FOR {ColumnSql(p.PivotColumn)} IN ({ColumnsSql(p.PivotValues)})) AS {SqlIdentifierSql(p.Alias)}";
         }
 
-        private string ArithmeticOperationSql(ArithmeticOperation o) =>
-            $"{ArithmeticOperatorSql(o.Operator)}{ColumnSql(o.RightColumn)}";
+        protected virtual string PrimitiveColumnSql(PrimitiveColumn x) =>
+            x.TableAlias == null
+            ? SqlIdentifierSql(x.Name)
+            : $"{SqlIdentifierSql(x.TableAlias)}.{SqlIdentifierSql(x.Name)}";
 
-        private string ArithmeticOperatorSql(ArithmeticOperator o) 
-        {
-            switch (o)
-            {
-                case ArithmeticOperator.Plus: return "+";
-                case ArithmeticOperator.Minus: return "-";
-                case ArithmeticOperator.Multiply: return "*";
-                case ArithmeticOperator.Divide: return "/";
-                case ArithmeticOperator.Modulo: return "%";
-                case ArithmeticOperator.Concat: return "||";
-                default: throw new NotSupportedException("Unkown arithmetic operator: " + o.ToString());
-            }
-        }
+        private string RelationSql(Relation x) => 
+            GenerateSql(x);
 
-        private string CaseColumnSql(CaseColumn c)
-        {
-            var sb = new StringBuilder();
-            sb.Append("CASE");
+        protected virtual string RootElementSql(SqlRootElement x) => 
+            GenerateSql(x.Child);
 
-            foreach (var b in c.Branches)
-            {
-                sb.Append(" WHEN ");
-                sb.Append(ConditionSql(b.Condition));
-                sb.Append(" THEN ");
-                sb.Append(ColumnSql(b.Column));
-            }
+        protected virtual string SelectOptionsSql(SelectOptions o) =>
+            $" OPTION ({string.Join(",", o.Options)})";
 
-            if (c.DefaultColumn != null)
-            {
-                sb.Append(" ELSE ");
-                sb.Append(ColumnSql(c.DefaultColumn));
-            }
-
-            sb.Append(" END");
-
-            return sb.ToString();
-        }
-
-        private string CaseBranchSql(CaseBranch b) =>
-            $"WHEN {ConditionSql(b.Condition)} THEN {ColumnSql(b.Column)}";
-
-        private string SqlIdentifierSql(IEnumerable<SqlIdentifier> i) =>
-            string.Join(".", i.Select(SqlIdentifierSql));
-
-        private string SqlIdentifierSql(SqlIdentifier i) =>
-            i.IsBracketed ? $"[{i.Name}]" : i.Name;
-
-        private string LiteralColumnSql(LiteralColumnBase c)
-        {
-            if (c is IntegerColumn i)
-                return i.Value.ToString();
-            if (c is DecimalColumn m)
-                return m.Value.ToString();
-            if (c is StringColumn s)
-                return $"'{s.Value}'";
-            if (c is DateColumn d)
-                return $"{{d '{d.Value:yyyy-MM-dd}'}}";
-            if (c is DateTimeColumn dt)
-                return $"{{ts '{dt.Value:yyyy-MM-dd HH:mm:ss.FFFFFFF}'}}";
-            if (c is TimeColumn t)
-                return $"{{t '{t.Value}'}}";
-
-            throw new NotSupportedException("Unknown literal column type: " + c.GetType().Name);
-        }
-    
-
-        private string SelectStatementSql(SelectStatement s)
-        {
-            var sb = new StringBuilder();
-
-            if (s.WithSelects?.Any() == true)
-            {
-                sb.Append("WITH ");
-                var withs = s.WithSelects.Select(CteSql);
-                sb.Append(string.Join(", ", withs));
-                sb.Append(" ");
-            }
-
-            sb.Append(SelectsSql(s.Selects));
-
-            sb.Append(OrderBySql(s.OrderBy));
-
-            sb.Append(SelectOptionsSql(s.Options));
-
-            return sb.ToString();
-        }
-
-        private string SelectsSql(List<Select> selects)
-        {
-            var strings = selects.Select(SelectSql);
-            return string.Join(" ", strings);
-        }
-
-        private string SelectSql(Select s)
+        protected virtual string SelectSql(Select s)
         {
             var sb = new StringBuilder();
             sb.Append(SetModifierSql(s.SetModifier));
             sb.Append("SELECT ");
-            sb.Append(SelectTopSql(s.Top));
+            if (s.Top != null)
+                sb.Append(SelectTopSql(s.Top));
             if (s.Distinct)
                 sb.Append("DISTINCT ");
 
@@ -375,7 +441,8 @@ namespace TreeSqlParser.Writers.Full
                 sb.Append(string.Join(", ", relations));
             }
 
-            sb.Append(PivotSql(s.Pivot));
+            if (s.Pivot != null)
+                sb.Append(PivotSql(s.Pivot));
 
             if (s.WhereCondition != null)
                 sb.Append(" WHERE " + ConditionSql(s.WhereCondition));
@@ -388,68 +455,48 @@ namespace TreeSqlParser.Writers.Full
             return sb.ToString();
         }
 
-        private string GroupBySql(List<GroupingSet> g)
+        protected virtual string SelectsSql(List<Select> selects)
         {
-            if (g?.Any() != true)
-                return string.Empty;
-
-            var sb = new StringBuilder();
-            sb.Append(" GROUP BY ");
-            if (g.Count == 1)
-                sb.Append(GroupingSetSql(g[0], false));
-            else
-            {
-                var setStrings = g.Select(x => GroupingSetSql(x, true));
-                string fullText = $"GROUPING SETS ({string.Join(", ", setStrings)})";
-                sb.Append(fullText);
-            }
-
-            return sb.ToString();
+            var strings = selects.Select(SelectSql);
+            return string.Join(" ", strings);
         }
 
-        private string CteSql(CteSelect s)
+        protected virtual string SelectStatementSql(SelectStatement s)
         {
             var sb = new StringBuilder();
-            sb.Append(s.Alias.Name);
-            sb.Append(" AS (");
+
+            if (s.WithSelects?.Any() == true)
+            {
+                sb.Append("WITH ");
+                var withs = s.WithSelects.Select(CteSql);
+                sb.Append(string.Join(", ", withs));
+                sb.Append(" ");
+            }
+
             sb.Append(SelectsSql(s.Selects));
-            sb.Append(")");
+
+            if (s.OrderBy != null)
+                sb.Append(OrderBySql(s.OrderBy));
+
+            if (s.Options != null)
+                sb.Append(SelectOptionsSql(s.Options));
 
             return sb.ToString();
         }
 
-        private string OrderBySql (OrderBy o)
+        protected virtual string SelectTopSql(SelectTop t)
         {
-            if (o == null) return string.Empty;
+            string col = ColumnSql(t.Top);
+            string percent = t.Percent ? " PERCENT" : string.Empty;
+            string withTies = t.WithTies ? " WITH TIES" : string.Empty;
 
-            var sb = new StringBuilder();
-            sb.Append(" ORDER BY ");
-            if (o.Columns.Any() == true)
-            {
-                var orders = o.Columns.Select(OrderByColumnSql);
-                sb.Append(string.Join(", ", orders));
-            }
-
-            if (o.Offset != null)
-                sb.Append($" OFFSET {ColumnSql(o.Offset)} ROWS");
-
-            if (o.Fetch != null)
-                sb.Append($" FETCH NEXT {ColumnSql(o.Fetch)} ROWS ONLY");
-
-            return sb.ToString();
+            return $"TOP {col}{percent}{withTies} ";
         }
 
-        private string OrderByColumnSql(OrderByColumn o) =>
-            $"{ColumnSql(o.Column)}{(o.Collate == null ? string.Empty : " COLLATE " + o.Collate)} {o.SortOrder.ToString().ToUpper()}";
+        protected virtual string SetConditionSql(SetCondition x) =>
+           $"{ColumnSql(x.LeftColumn)} {ComparisonSql(x.Comparison)} {x.SetConditionType.ToString().ToUpperInvariant()} {ColumnSql(x.SubselectColumn)}";
 
-        private string SelectOptionsSql(SelectOptions o)
-        {
-            if (o == null) return string.Empty;
-
-            return $" OPTION ({string.Join(",", o.Options)})";
-        }
-
-        private string SetModifierSql(SetModifier s)
+        protected virtual string SetModifierSql(SetModifier s)
         {
             switch (s)
             {
@@ -466,16 +513,33 @@ namespace TreeSqlParser.Writers.Full
             }
         }
 
-        private string SelectTopSql(SelectTop t)
-        {
-            if (t == null)
-                return string.Empty;
+        protected virtual string SqlIdentifierSql(IEnumerable<SqlIdentifier> x) =>
+            string.Join(".", x.Select(SqlIdentifierSql));
 
-            string col = ColumnSql(t.Top);
-            string percent = t.Percent ? " PERCENT" : string.Empty;
-            string withTies = t.WithTies ? " WITH TIES" : string.Empty;
+        protected virtual string SqlIdentifierSql(SqlIdentifier x) =>
+            x.IsBracketed ? $"[{x.Name}]" : x.Name;
 
-            return $"TOP {col}{percent}{withTies} ";
-        }
+        protected virtual string StarColumnSql() => 
+            "*";
+
+        protected virtual string StringColumnSql(StringColumn x) =>
+            $"'{x.Value}'";
+
+        protected virtual string SubselectColumnSql(SubselectColumn x) =>
+            $"({SelectStatementSql(x.InnerSelect)})";
+
+        protected virtual string SubselectRelationSql(SubselectRelation x) =>
+            $"({SelectStatementSql(x.InnerSelect)}) AS {SqlIdentifierSql(x.Alias)}";
+
+        protected virtual string TableSql(Table x) =>
+           $"{SqlIdentifierSql(x.Name)}" + (x.Alias == null ? string.Empty : $" AS {SqlIdentifierSql(x.Alias)}");
+
+        protected virtual string TimeColumnSql(TimeColumn x) =>
+            $"{{t '{x.Value}'}}";
+
+        protected virtual string VariableColumnSql(VariableColumn x) =>
+            $"@{x.VariableName}";
+
+        #endregion
     }
 }
