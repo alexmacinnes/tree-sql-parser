@@ -5,6 +5,7 @@ using TreeSqlParser.Model;
 using NUnit.Framework;
 using System.Linq;
 using TreeSqlParser.Parsing;
+using TreeSqlParser.Writers.Full;
 
 namespace TreeSqlParser.Test.SelectParser_Tests
 {
@@ -16,7 +17,7 @@ namespace TreeSqlParser.Test.SelectParser_Tests
 
             AssertIntegrity(root);
             
-            string actual = SqlStringifier.DebugString(root);
+            string actual = new FullSqlServerWriter().GenerateSql(root);
             expected ??= sql;
 
             Assert.AreEqual(expected, actual);
