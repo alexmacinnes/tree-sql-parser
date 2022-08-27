@@ -9,7 +9,7 @@ namespace TreeSqlParser.Writers.Safe.Selects
 {
     public class OracleSelectWriter : SelectWriter
     {
-        public OracleSelectWriter(ISqlWriter sqlWriter, IIdentifierWriter identifierWriter) : base(sqlWriter, identifierWriter)
+        public OracleSelectWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
         {
         }
 

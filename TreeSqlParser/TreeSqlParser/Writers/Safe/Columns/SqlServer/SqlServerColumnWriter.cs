@@ -5,14 +5,14 @@ namespace TreeSqlParser.Writers.Safe.Columns.SqlServer
 {
     public class SqlServerColumnWriter : ColumnWriter
     {
-        public SqlServerColumnWriter(ISqlWriter sqlWriter, IIdentifierWriter identifierWriter)
+        public SqlServerColumnWriter(SafeSqlWriter sqlWriter)
         {
             this.literalWriter = new SqlServerLiteralWriter();
-            this.aggregationWriter = new AggregationWriter(this);
-            this.arithmeticWriter = new SqlServerArithmeticWriter(this);
-            this.functionWriter = new SqlServerFunctionWriter(this);
-            this.castWriter = new SqlServerCastWriter(this);
-            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter, identifierWriter, "IIF");
+            this.aggregationWriter = new AggregationWriter(sqlWriter);
+            this.arithmeticWriter = new SqlServerArithmeticWriter(sqlWriter);
+            this.functionWriter = new SqlServerFunctionWriter(sqlWriter);
+            this.castWriter = new SqlServerCastWriter(sqlWriter);
+            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter, "IIF");
         }
     }
 }

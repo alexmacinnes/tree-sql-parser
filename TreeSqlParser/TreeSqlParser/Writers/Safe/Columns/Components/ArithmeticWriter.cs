@@ -9,7 +9,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
 {
     public abstract class ArithmeticWriter : IArithmeticWriter
     {
-        private readonly IColumnWriter columnWriter;
+        private readonly SafeSqlWriter sqlWriter;
 
         private readonly IReadOnlyDictionary<ArithmeticOperator, string> OperatorToString = new Dictionary<ArithmeticOperator, string>()
         {
@@ -20,9 +20,9 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
             { ArithmeticOperator.Modulo, "%" }
         };
 
-        protected ArithmeticWriter(IColumnWriter columnWriter)
+        protected ArithmeticWriter(SafeSqlWriter sqlWriter)
         {
-            this.columnWriter = columnWriter;
+            this.sqlWriter = sqlWriter;
         }
 
         protected abstract string ModuloReplacementFunction { get; }
@@ -141,7 +141,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
                     string.Empty,
                     arith.Operations.Select(o => OperatorText(o.Operator) + ColumnSql(o.RightColumn)));
 
-            return columnWriter.ColumnSql(c);
+            return sqlWriter.ColumnSql(c);
         }
 
         [DebuggerDisplay("{DebuggerDisplay}")]

@@ -10,12 +10,11 @@ namespace TreeSqlParser.Writers.Safe
     {
         public SafeSqlServerWriter()
         {
-            var identifierWriter = new IdentifierWriter('[', ']');
-
-            this.ColumnWriter = new SqlServerColumnWriter(this, identifierWriter);
+            this.ColumnWriter = new SqlServerColumnWriter(this);
             this.ConditionWriter = new ConditionWriter(this);
-            this.RelationWriter = new RelationWriter(this, identifierWriter, true);
-            this.SelectWriter = new SelectWriter(this, identifierWriter);
+            this.RelationWriter = new RelationWriter(this, supportsFullJoin: true);
+            this.SelectWriter = new SelectWriter(this);
+            this.IdentifierWriter = new IdentifierWriter('[', ']');
         }
     }
 }

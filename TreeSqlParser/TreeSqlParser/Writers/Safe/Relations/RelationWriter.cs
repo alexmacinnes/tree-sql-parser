@@ -10,14 +10,12 @@ namespace TreeSqlParser.Writers.Safe.Relations
 {
     public class RelationWriter : IRelationWriter
     {
-        private readonly ISqlWriter sqlWriter;
-        private readonly IIdentifierWriter identifierWriter;
+        private readonly SafeSqlWriter sqlWriter;
         private readonly bool supportsFullJoin;
 
-        public RelationWriter(ISqlWriter sqlWriter, IIdentifierWriter identifierWriter, bool supportsFullJoin)
+        public RelationWriter(SafeSqlWriter sqlWriter, bool supportsFullJoin)
         {
             this.sqlWriter = sqlWriter;
-            this.identifierWriter = identifierWriter;
             this.supportsFullJoin = supportsFullJoin;
         }
 
@@ -33,7 +31,7 @@ namespace TreeSqlParser.Writers.Safe.Relations
 
         private string SubselectSql(SubselectRelation s) =>
             $"({sqlWriter.GenerateSql(s.InnerSelect)})" +
-            (s.Alias == null ? string.Empty : $" AS {identifierWriter.Delimit(s.Alias)}");
+            (s.Alias == null ? string.Empty : $" AS {sqlWriter.IdentifierSql(s.Alias)}");
 
         private string BracketedSql(BracketedRelation b) =>
             $"({RelationSql(b.InnerRelation)})";
@@ -77,11 +75,11 @@ namespace TreeSqlParser.Writers.Safe.Relations
 
         private string TableSql(Table t)
         {
-            var delimited = t.Name.Select(identifierWriter.Delimit);
+            var delimited = t.Name.Select(sqlWriter.IdentifierSql);
             string result = string.Join(".", delimited);
 
             if (t.Alias?.Name != null)
-                result += " AS " + identifierWriter.Delimit(t.Alias);
+                result += " AS " + sqlWriter.IdentifierSql(t.Alias);
 
             return result;
         }

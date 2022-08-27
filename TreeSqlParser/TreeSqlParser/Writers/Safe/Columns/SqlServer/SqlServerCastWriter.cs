@@ -7,7 +7,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.SqlServer
 {
     public class SqlServerCastWriter : CastWriter
     {
-        public SqlServerCastWriter(IColumnWriter columnWriter) : base(columnWriter)
+        public SqlServerCastWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
         {
         }
 

@@ -8,7 +8,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Oracle
 {
     public class OracleFunctionWriter : FunctionWriter
     {
-        public OracleFunctionWriter(IColumnWriter columnWriter) : base(columnWriter)
+        public OracleFunctionWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
         {
         }
 

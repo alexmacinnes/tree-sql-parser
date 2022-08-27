@@ -9,11 +9,11 @@ namespace TreeSqlParser.Writers.Safe.Conditions
 {
     public class ConditionWriter : IConditionWriter
     {
-        private readonly ISqlWriter sqlWriter;
+        private readonly SafeSqlWriter sqlWriter;
 
         private string Sql(SqlElement x) => sqlWriter.GenerateSql(x);
 
-        public ConditionWriter(ISqlWriter sqlWriter)
+        public ConditionWriter(SafeSqlWriter sqlWriter)
         {
             this.sqlWriter = sqlWriter;
         }

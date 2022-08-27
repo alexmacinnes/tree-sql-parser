@@ -5,14 +5,14 @@ namespace TreeSqlParser.Writers.Safe.Columns.Oracle
 {
     public class OracleColumnWriter : ColumnWriter
     {
-        public OracleColumnWriter(ISqlWriter sqlWriter, IIdentifierWriter identifierWriter)
+        public OracleColumnWriter(SafeSqlWriter sqlWriter)
         {
             this.literalWriter = new OracleLiteralWriter();
-            this.aggregationWriter = new AggregationWriter(this);
-            this.arithmeticWriter = new OracleArithmeticWriter(this);
-            this.functionWriter = new OracleFunctionWriter(this);
-            this.castWriter = new OracleCastWriter(this);
-            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter, identifierWriter, "IIF");
+            this.aggregationWriter = new AggregationWriter(sqlWriter);
+            this.arithmeticWriter = new OracleArithmeticWriter(sqlWriter);
+            this.functionWriter = new OracleFunctionWriter(sqlWriter);
+            this.castWriter = new OracleCastWriter(sqlWriter);
+            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter, "IIF");
         }
     }
 }

@@ -7,7 +7,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Oracle
 {
     public class OracleCastWriter : CastWriter
     {
-        public OracleCastWriter(IColumnWriter columnWriter) : base(columnWriter)
+        public OracleCastWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
         {
         }
 

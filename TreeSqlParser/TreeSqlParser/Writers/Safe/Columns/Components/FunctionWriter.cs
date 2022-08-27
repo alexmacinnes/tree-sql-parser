@@ -10,15 +10,15 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
         private readonly IDictionary<string, Func<FunctionColumn, string>> functionWriters =
             new Dictionary<string, Func<FunctionColumn, string>>(StringComparer.InvariantCultureIgnoreCase);
 
-        private IColumnWriter ColumnWriter { get; }
+        private SafeSqlWriter SqlWriter { get; }
 
-        protected string ColumnSql(Column c) => ColumnWriter.ColumnSql(c);
+        protected string ColumnSql(Column c) => SqlWriter.ColumnSql(c);
 
         protected string ColumnsSql(params Column[] c) => string.Join(", ", c.Select(ColumnSql));
 
-        public FunctionWriter(IColumnWriter columnWriter)
+        public FunctionWriter(SafeSqlWriter sqlWriter)
         {
-            ColumnWriter = columnWriter;
+            SqlWriter = sqlWriter;
 
             functionWriters["Abs"] = x => Abs(x.Parameters[0]);
             functionWriters["AddDays"] = x => AddDays(x.Parameters[0], x.Parameters[1]);

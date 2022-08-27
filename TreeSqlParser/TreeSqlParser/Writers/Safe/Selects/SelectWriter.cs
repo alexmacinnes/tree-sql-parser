@@ -12,14 +12,11 @@ namespace TreeSqlParser.Writers.Safe.Selects
 {
     public class SelectWriter : ISelectWriter
     {
-        private readonly IIdentifierWriter identifierWriter;
+        private readonly SafeSqlWriter sqlWriter;
 
-        private readonly ISqlWriter sqlWriter;
-
-        public SelectWriter(ISqlWriter sqlWriter, IIdentifierWriter identifierWriter) 
+        public SelectWriter(SafeSqlWriter sqlWriter) 
         {
             this.sqlWriter = sqlWriter;
-            this.identifierWriter = identifierWriter;
         }
 
         public virtual string SelectSql(Select s)
@@ -107,7 +104,7 @@ namespace TreeSqlParser.Writers.Safe.Selects
             }
         }
 
-        private string Delimit(string name) => identifierWriter.Delimit(new SqlIdentifier { Name = name });
+        private string Delimit(string name) => sqlWriter.IdentifierSql(new SqlIdentifier { Name = name });
 
 
         public string SelectStatementSql(SelectStatement s)

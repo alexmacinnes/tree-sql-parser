@@ -10,20 +10,18 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
     {
         private readonly string iifFunctionName;
 
-        private readonly ISqlWriter sqlWriter;
+        private readonly SafeSqlWriter sqlWriter;
 
-        private readonly IIdentifierWriter identifierWriter;
 
-        public MiscellaneousColumnWriter(ISqlWriter sqlWriter, IIdentifierWriter identifierWriter, string iifFunctionName)
+        public MiscellaneousColumnWriter(SafeSqlWriter sqlWriter, string iifFunctionName)
         {
             this.sqlWriter = sqlWriter;
-            this.identifierWriter = identifierWriter;
             this.iifFunctionName = iifFunctionName;
         }
 
         private string Sql(SqlElement x) => sqlWriter.GenerateSql(x);
 
-        private string Delimit(SqlIdentifier i) => identifierWriter.Delimit(i);
+        private string Delimit(SqlIdentifier i) => sqlWriter.IdentifierSql(i);
 
         public string ColumnSql(Column c) 
         {

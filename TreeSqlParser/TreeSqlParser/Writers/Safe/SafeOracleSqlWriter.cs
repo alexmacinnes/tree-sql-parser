@@ -10,12 +10,11 @@ namespace TreeSqlParser.Writers.Safe
     {
         public SafeOracleSqlWriter()
         {
-            var identifierWriter = new IdentifierWriter('"', '"');
-
-            this.ColumnWriter = new OracleColumnWriter(this, identifierWriter);
+            this.ColumnWriter = new OracleColumnWriter(this);
             this.ConditionWriter = new ConditionWriter(this);
-            this.RelationWriter = new RelationWriter(this, identifierWriter, true);
-            this.SelectWriter = new OracleSelectWriter(this, identifierWriter);
+            this.RelationWriter = new RelationWriter(this, supportsFullJoin: true);
+            this.SelectWriter = new OracleSelectWriter(this);
+            this.IdentifierWriter = new IdentifierWriter('"', '"');
         }
     }
 }

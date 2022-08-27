@@ -8,14 +8,14 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
 {
     public abstract class CastWriter : ICastWriter
     {
-        private readonly IColumnWriter columnWriter;
+        private readonly SafeSqlWriter sqlWriter;
 
-        protected CastWriter(IColumnWriter columnWriter)
+        protected CastWriter(SafeSqlWriter sqlWriter)
         {
-            this.columnWriter = columnWriter;
+            this.sqlWriter = sqlWriter;
         }
 
-        private string ColumnSql(Column c) => columnWriter.ColumnSql(c);
+        private string ColumnSql(Column c) => sqlWriter.ColumnSql(c);
 
         public virtual string CastSql(CastColumn c)
         {

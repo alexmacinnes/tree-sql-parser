@@ -4,7 +4,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.SqlServer
 {
     public class SqlServerArithmeticWriter : ArithmeticWriter
     {
-        public SqlServerArithmeticWriter(IColumnWriter columnWriter) : base(columnWriter)
+        public SqlServerArithmeticWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
         { }
 
         protected override string ModuloReplacementFunction => null;

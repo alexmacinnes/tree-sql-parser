@@ -9,7 +9,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
 {
     public class AggregationWriter : IAggregationWriter
     {
-        private readonly IColumnWriter columnWriter;
+        private readonly SafeSqlWriter sqlWriter;
 
         private static readonly ISet<Aggregation> validAggregations = new HashSet<Aggregation>
         {
@@ -20,9 +20,9 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
             Aggregation.Count
         };
 
-        public AggregationWriter(IColumnWriter columnWriter)
+        public AggregationWriter(SafeSqlWriter sqlWriter)
         {
-            this.columnWriter = columnWriter;
+            this.sqlWriter = sqlWriter;
         }
 
         public string AggregationSql(AggregatedColumn column)
@@ -32,7 +32,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
 
             string agg = column.Aggregation.ToString().ToUpperInvariant();
             string distinct = column.Distinct ? "DISTINCT " : string.Empty;
-            string columns = string.Join(", ", column.InnerColumns.Select(columnWriter.ColumnSql));
+            string columns = string.Join(", ", column.InnerColumns.Select(sqlWriter.ColumnSql));
 
             return $"{agg}({distinct}{columns})";
         }

@@ -4,7 +4,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Oracle
 {
     public class OracleArithmeticWriter : ArithmeticWriter
     {
-        public OracleArithmeticWriter(IColumnWriter columnWriter) : base(columnWriter)
+        public OracleArithmeticWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
         { }
 
         protected override string ModuloReplacementFunction => "MOD";
