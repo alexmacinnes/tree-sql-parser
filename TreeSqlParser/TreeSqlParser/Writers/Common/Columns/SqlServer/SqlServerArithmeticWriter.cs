@@ -1,10 +1,10 @@
-﻿using TreeSqlParser.Writers.Safe.Columns.Components;
+﻿using TreeSqlParser.Writers.Common.Columns.Components;
 
-namespace TreeSqlParser.Writers.Safe.Columns.SqlServer
+namespace TreeSqlParser.Writers.Common.Columns.SqlServer
 {
     public class SqlServerArithmeticWriter : ArithmeticWriter
     {
-        public SqlServerArithmeticWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
+        public SqlServerArithmeticWriter(CommonSqlWriter sqlWriter) : base(sqlWriter)
         { }
 
         protected override string ModuloReplacementFunction => null;

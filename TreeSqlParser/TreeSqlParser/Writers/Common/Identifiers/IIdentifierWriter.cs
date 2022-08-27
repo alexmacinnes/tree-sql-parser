@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using TreeSqlParser.Model;
 
-namespace TreeSqlParser.Writers.Safe.Identifiers
+namespace TreeSqlParser.Writers.Common.Identifiers
 {
     public interface IIdentifierWriter
     {

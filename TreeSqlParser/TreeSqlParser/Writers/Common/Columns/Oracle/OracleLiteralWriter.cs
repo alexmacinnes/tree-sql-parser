@@ -1,7 +1,7 @@
 ﻿using TreeSqlParser.Model.Columns;
-using TreeSqlParser.Writers.Safe.Columns.Components;
+using TreeSqlParser.Writers.Common.Columns.Components;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Oracle
+namespace TreeSqlParser.Writers.Common.Columns.Oracle
 {
     public class OracleLiteralWriter : LiteralWriter
     {

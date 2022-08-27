@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TreeSqlParser.Model.Selects;
-using TreeSqlParser.Writers.Safe.Identifiers;
+using TreeSqlParser.Writers.Common.Identifiers;
 
-namespace TreeSqlParser.Writers.Safe.Selects
+namespace TreeSqlParser.Writers.Common.Selects
 {
     public class OracleSelectWriter : SelectWriter
     {
-        public OracleSelectWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
+        public OracleSelectWriter(CommonSqlWriter sqlWriter) : base(sqlWriter)
         {
         }
 

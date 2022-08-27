@@ -5,16 +5,16 @@ using System.Text;
 using TreeSqlParser.Model.Relations;
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
-using TreeSqlParser.Writers.Safe;
+using TreeSqlParser.Writers.Common;
 
-namespace TreeSqlParser.Writers.Test.Safe.Relations
+namespace TreeSqlParser.Writers.Test.Common.Relations
 {
     public class RelationWriterTests
     {
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
-            { DbFamily.SqlServer, new SafeSqlServerWriter() },
-            { DbFamily.Oracle, new SafeOracleSqlWriter() }
+            { DbFamily.SqlServer, new CommonSqlServerWriter() },
+            { DbFamily.Oracle, new CommonOracleSqlWriter() }
         };
 
         private string Sql(Relation r, DbFamily db) => writers[db].GenerateSql(r);

@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using TreeSqlParser.Model.Columns;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Components
+namespace TreeSqlParser.Writers.Common.Columns.Components
 {
     public abstract class FunctionWriter : IFunctionWriter
     {
         private readonly IDictionary<string, Func<FunctionColumn, string>> functionWriters =
             new Dictionary<string, Func<FunctionColumn, string>>(StringComparer.InvariantCultureIgnoreCase);
 
-        private SafeSqlWriter SqlWriter { get; }
+        private CommonSqlWriter SqlWriter { get; }
 
         protected string ColumnSql(Column c) => SqlWriter.ColumnSql(c);
 
         protected string ColumnsSql(params Column[] c) => string.Join(", ", c.Select(ColumnSql));
 
-        public FunctionWriter(SafeSqlWriter sqlWriter)
+        public FunctionWriter(CommonSqlWriter sqlWriter)
         {
             SqlWriter = sqlWriter;
 

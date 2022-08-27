@@ -5,11 +5,11 @@ using System.Text;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Enums;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Components
+namespace TreeSqlParser.Writers.Common.Columns.Components
 {
     public class AggregationWriter : IAggregationWriter
     {
-        private readonly SafeSqlWriter sqlWriter;
+        private readonly CommonSqlWriter sqlWriter;
 
         private static readonly ISet<Aggregation> validAggregations = new HashSet<Aggregation>
         {
@@ -20,7 +20,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
             Aggregation.Count
         };
 
-        public AggregationWriter(SafeSqlWriter sqlWriter)
+        public AggregationWriter(CommonSqlWriter sqlWriter)
         {
             this.sqlWriter = sqlWriter;
         }

@@ -4,13 +4,13 @@ using System.Numerics;
 using System.Text;
 using TreeSqlParser.Model.Columns;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Components
+namespace TreeSqlParser.Writers.Common.Columns.Components
 {
     public abstract class CastWriter : ICastWriter
     {
-        private readonly SafeSqlWriter sqlWriter;
+        private readonly CommonSqlWriter sqlWriter;
 
-        protected CastWriter(SafeSqlWriter sqlWriter)
+        protected CastWriter(CommonSqlWriter sqlWriter)
         {
             this.sqlWriter = sqlWriter;
         }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TreeSqlParser.Writers.Safe.Columns.Components;
+using TreeSqlParser.Writers.Common.Columns.Components;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Oracle
+namespace TreeSqlParser.Writers.Common.Columns.Oracle
 {
     public class OracleCastWriter : CastWriter
     {
-        public OracleCastWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
+        public OracleCastWriter(CommonSqlWriter sqlWriter) : base(sqlWriter)
         {
         }
 

@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using TreeSqlParser.Model.Enums;
 using TreeSqlParser.Model.Relations;
-using TreeSqlParser.Writers.Safe.Identifiers;
+using TreeSqlParser.Writers.Common.Identifiers;
 
-namespace TreeSqlParser.Writers.Safe.Relations
+namespace TreeSqlParser.Writers.Common.Relations
 {
     public class RelationWriter : IRelationWriter
     {
-        private readonly SafeSqlWriter sqlWriter;
+        private readonly CommonSqlWriter sqlWriter;
         private readonly bool supportsFullJoin;
 
-        public RelationWriter(SafeSqlWriter sqlWriter, bool supportsFullJoin)
+        public RelationWriter(CommonSqlWriter sqlWriter, bool supportsFullJoin)
         {
             this.sqlWriter = sqlWriter;
             this.supportsFullJoin = supportsFullJoin;

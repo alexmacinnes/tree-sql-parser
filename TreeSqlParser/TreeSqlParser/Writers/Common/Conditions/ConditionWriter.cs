@@ -5,15 +5,15 @@ using TreeSqlParser.Model;
 using TreeSqlParser.Model.Conditions;
 using TreeSqlParser.Model.Enums;
 
-namespace TreeSqlParser.Writers.Safe.Conditions
+namespace TreeSqlParser.Writers.Common.Conditions
 {
     public class ConditionWriter : IConditionWriter
     {
-        private readonly SafeSqlWriter sqlWriter;
+        private readonly CommonSqlWriter sqlWriter;
 
         private string Sql(SqlElement x) => sqlWriter.GenerateSql(x);
 
-        public ConditionWriter(SafeSqlWriter sqlWriter)
+        public ConditionWriter(CommonSqlWriter sqlWriter)
         {
             this.sqlWriter = sqlWriter;
         }

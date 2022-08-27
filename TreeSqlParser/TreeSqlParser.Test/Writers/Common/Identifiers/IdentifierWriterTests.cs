@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using TreeSqlParser.Model;
-using TreeSqlParser.Writers.Safe.Identifiers;
+using TreeSqlParser.Writers.Common.Identifiers;
 
-namespace TreeSqlParser.Writers.Test.Safe.Identifiers
+namespace TreeSqlParser.Writers.Test.Common.Identifiers
 {
     public class IdentifierWriterTests
     {

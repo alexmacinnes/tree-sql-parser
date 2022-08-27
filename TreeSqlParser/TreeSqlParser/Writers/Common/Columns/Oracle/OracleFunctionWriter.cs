@@ -2,13 +2,13 @@
 using System.Linq;
 using System.Text;
 using TreeSqlParser.Model.Columns;
-using TreeSqlParser.Writers.Safe.Columns.Components;
+using TreeSqlParser.Writers.Common.Columns.Components;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Oracle
+namespace TreeSqlParser.Writers.Common.Columns.Oracle
 {
     public class OracleFunctionWriter : FunctionWriter
     {
-        public OracleFunctionWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
+        public OracleFunctionWriter(CommonSqlWriter sqlWriter) : base(sqlWriter) 
         {
         }
 

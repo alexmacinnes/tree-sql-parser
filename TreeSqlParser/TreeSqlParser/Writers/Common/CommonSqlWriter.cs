@@ -4,15 +4,15 @@ using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Conditions;
 using TreeSqlParser.Model.Relations;
 using TreeSqlParser.Model.Selects;
-using TreeSqlParser.Writers.Safe.Columns;
-using TreeSqlParser.Writers.Safe.Conditions;
-using TreeSqlParser.Writers.Safe.Identifiers;
-using TreeSqlParser.Writers.Safe.Relations;
-using TreeSqlParser.Writers.Safe.Selects;
+using TreeSqlParser.Writers.Common.Columns;
+using TreeSqlParser.Writers.Common.Conditions;
+using TreeSqlParser.Writers.Common.Identifiers;
+using TreeSqlParser.Writers.Common.Relations;
+using TreeSqlParser.Writers.Common.Selects;
 
-namespace TreeSqlParser.Writers.Safe
+namespace TreeSqlParser.Writers.Common
 {
-    public class SafeSqlWriter : ISqlWriter
+    public class CommonSqlWriter : ISqlWriter
     {
         protected IColumnWriter ColumnWriter { get; set; }
 

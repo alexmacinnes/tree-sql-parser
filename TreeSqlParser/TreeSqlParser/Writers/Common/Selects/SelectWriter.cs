@@ -5,16 +5,16 @@ using TreeSqlParser.Model;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Enums;
 using TreeSqlParser.Model.Selects;
-using TreeSqlParser.Writers.Safe.Columns;
-using TreeSqlParser.Writers.Safe.Identifiers;
+using TreeSqlParser.Writers.Common.Columns;
+using TreeSqlParser.Writers.Common.Identifiers;
 
-namespace TreeSqlParser.Writers.Safe.Selects
+namespace TreeSqlParser.Writers.Common.Selects
 {
     public class SelectWriter : ISelectWriter
     {
-        private readonly SafeSqlWriter sqlWriter;
+        private readonly CommonSqlWriter sqlWriter;
 
-        public SelectWriter(SafeSqlWriter sqlWriter) 
+        public SelectWriter(CommonSqlWriter sqlWriter) 
         {
             this.sqlWriter = sqlWriter;
         }

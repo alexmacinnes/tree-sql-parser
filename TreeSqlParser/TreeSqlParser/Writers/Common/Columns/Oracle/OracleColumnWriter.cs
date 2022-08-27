@@ -1,11 +1,11 @@
-﻿using TreeSqlParser.Writers.Safe.Columns.Components;
-using TreeSqlParser.Writers.Safe.Identifiers;
+﻿using TreeSqlParser.Writers.Common.Columns.Components;
+using TreeSqlParser.Writers.Common.Identifiers;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Oracle
+namespace TreeSqlParser.Writers.Common.Columns.Oracle
 {
     public class OracleColumnWriter : ColumnWriter
     {
-        public OracleColumnWriter(SafeSqlWriter sqlWriter)
+        public OracleColumnWriter(CommonSqlWriter sqlWriter)
         {
             this.literalWriter = new OracleLiteralWriter();
             this.aggregationWriter = new AggregationWriter(sqlWriter);

@@ -1,6 +1,6 @@
 ﻿using TreeSqlParser.Model.Columns;
 
-namespace TreeSqlParser.Writers.Safe.Columns
+namespace TreeSqlParser.Writers.Common.Columns
 {
     public interface IColumnWriter
     {

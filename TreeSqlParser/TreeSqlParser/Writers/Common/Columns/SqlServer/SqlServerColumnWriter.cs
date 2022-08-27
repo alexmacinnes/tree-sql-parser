@@ -1,11 +1,11 @@
-﻿using TreeSqlParser.Writers.Safe.Columns.Components;
-using TreeSqlParser.Writers.Safe.Identifiers;
+﻿using TreeSqlParser.Writers.Common.Columns.Components;
+using TreeSqlParser.Writers.Common.Identifiers;
 
-namespace TreeSqlParser.Writers.Safe.Columns.SqlServer
+namespace TreeSqlParser.Writers.Common.Columns.SqlServer
 {
     public class SqlServerColumnWriter : ColumnWriter
     {
-        public SqlServerColumnWriter(SafeSqlWriter sqlWriter)
+        public SqlServerColumnWriter(CommonSqlWriter sqlWriter)
         {
             this.literalWriter = new SqlServerLiteralWriter();
             this.aggregationWriter = new AggregationWriter(sqlWriter);

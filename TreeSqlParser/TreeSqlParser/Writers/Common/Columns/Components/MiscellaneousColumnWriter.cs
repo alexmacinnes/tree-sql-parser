@@ -2,18 +2,18 @@
 using System.Text;
 using TreeSqlParser.Model;
 using TreeSqlParser.Model.Columns;
-using TreeSqlParser.Writers.Safe.Identifiers;
+using TreeSqlParser.Writers.Common.Identifiers;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Components
+namespace TreeSqlParser.Writers.Common.Columns.Components
 {
     public class MiscellaneousColumnWriter : IMiscellaneousColumnWriter
     {
         private readonly string iifFunctionName;
 
-        private readonly SafeSqlWriter sqlWriter;
+        private readonly CommonSqlWriter sqlWriter;
 
 
-        public MiscellaneousColumnWriter(SafeSqlWriter sqlWriter, string iifFunctionName)
+        public MiscellaneousColumnWriter(CommonSqlWriter sqlWriter, string iifFunctionName)
         {
             this.sqlWriter = sqlWriter;
             this.iifFunctionName = iifFunctionName;

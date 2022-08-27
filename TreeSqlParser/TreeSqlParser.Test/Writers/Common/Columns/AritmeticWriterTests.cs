@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
-using TreeSqlParser.Writers.Safe;
+using TreeSqlParser.Writers.Common;
 
-namespace TreeSqlParser.Writers.Test.Safe.Columns
+namespace TreeSqlParser.Writers.Test.Common.Columns
 {
     public class AritmeticWriterTests
     {
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
-            { DbFamily.SqlServer, new SafeSqlServerWriter() },
-            { DbFamily.Oracle, new SafeOracleSqlWriter() }
+            { DbFamily.SqlServer, new CommonSqlServerWriter() },
+            { DbFamily.Oracle, new CommonOracleSqlWriter() }
         };
 
         private Column ParseColumn(string sql) =>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using TreeSqlParser.Model.Columns;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Components
+namespace TreeSqlParser.Writers.Common.Columns.Components
 {
     public interface ICastWriter
     {

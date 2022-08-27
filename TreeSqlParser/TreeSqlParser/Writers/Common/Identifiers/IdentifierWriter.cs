@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using TreeSqlParser.Model;
 
-namespace TreeSqlParser.Writers.Safe.Identifiers
+namespace TreeSqlParser.Writers.Common.Identifiers
 {
     public class IdentifierWriter : IIdentifierWriter
     {

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TreeSqlParser.Writers.Safe.Columns.Components;
+using TreeSqlParser.Writers.Common.Columns.Components;
 
-namespace TreeSqlParser.Writers.Safe.Columns.SqlServer
+namespace TreeSqlParser.Writers.Common.Columns.SqlServer
 {
     public class SqlServerCastWriter : CastWriter
     {
-        public SqlServerCastWriter(SafeSqlWriter sqlWriter) : base(sqlWriter)
+        public SqlServerCastWriter(CommonSqlWriter sqlWriter) : base(sqlWriter)
         {
         }
 

@@ -5,11 +5,11 @@ using System.Linq;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Enums;
 
-namespace TreeSqlParser.Writers.Safe.Columns.Components
+namespace TreeSqlParser.Writers.Common.Columns.Components
 {
     public abstract class ArithmeticWriter : IArithmeticWriter
     {
-        private readonly SafeSqlWriter sqlWriter;
+        private readonly CommonSqlWriter sqlWriter;
 
         private readonly IReadOnlyDictionary<ArithmeticOperator, string> OperatorToString = new Dictionary<ArithmeticOperator, string>()
         {
@@ -20,7 +20,7 @@ namespace TreeSqlParser.Writers.Safe.Columns.Components
             { ArithmeticOperator.Modulo, "%" }
         };
 
-        protected ArithmeticWriter(SafeSqlWriter sqlWriter)
+        protected ArithmeticWriter(CommonSqlWriter sqlWriter)
         {
             this.sqlWriter = sqlWriter;
         }
