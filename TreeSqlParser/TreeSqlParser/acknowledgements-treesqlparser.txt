@@ -1,0 +1,3 @@
+﻿TreeSqlParser uses the excellent TSQL.Parser to provide SQL tokenization.
+
+https://github.com/bruce-dunwiddie/tsql-parser
