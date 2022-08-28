@@ -14,7 +14,6 @@
 		<copyright>Copyright © 2022</copyright>
 		<tags>sql parser sql-server tsql oracle translate</tags>
 		<dependencies>
-			<group targetFramework=".NETStandard2.0" />
 			<dependency id="Newtonsoft.Json" version="13.0.1" />
 			<dependency id="TSQL.Parser" version="2.5.0" />
 		</dependencies>
