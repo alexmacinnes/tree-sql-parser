@@ -27,6 +27,7 @@ namespace TreeSqlParser.Writers.Common
  
         public virtual string GenerateSql(SqlElement e)
         {
+            if (e is SqlRootElement root) return GenerateSql(root.Child);
             if (e is Column col) return ColumnSql(col);
             if (e is Condition con) return ConditionSql(con);
             if (e is Relation r) return RelationSql(r);

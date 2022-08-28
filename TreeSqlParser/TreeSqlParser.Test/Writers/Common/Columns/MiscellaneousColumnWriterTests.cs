@@ -15,7 +15,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
     {
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
-            { DbFamily.SqlServer, new CommonSqlServerWriter() },
+            { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
             { DbFamily.Oracle, new CommonOracleSqlWriter() }
         };
 

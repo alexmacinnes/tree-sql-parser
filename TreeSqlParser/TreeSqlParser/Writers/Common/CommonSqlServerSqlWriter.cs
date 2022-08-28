@@ -6,9 +6,9 @@ using TreeSqlParser.Writers.Common.Selects;
 
 namespace TreeSqlParser.Writers.Common
 {
-    public class CommonSqlServerWriter : CommonSqlWriter
+    public class CommonSqlServerSqlWriter : CommonSqlWriter
     {
-        public CommonSqlServerWriter()
+        public CommonSqlServerSqlWriter()
         {
             this.ColumnWriter = new SqlServerColumnWriter(this);
             this.ConditionWriter = new ConditionWriter(this);
