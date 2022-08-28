@@ -1,3 +1,4 @@
 ﻿TreeSqlParser uses the excellent TSQL.Parser to provide SQL tokenization.
+TSQl.Parser is distributed under the Apache 2.0 license.
 
 https://github.com/bruce-dunwiddie/tsql-parser

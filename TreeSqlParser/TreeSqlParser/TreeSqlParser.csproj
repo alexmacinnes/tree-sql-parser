@@ -9,6 +9,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\..\LICENSE-treesqlparser" Link="LICENSE-treesqlparser">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="TSQL.Parser" Version="2.5.0" />

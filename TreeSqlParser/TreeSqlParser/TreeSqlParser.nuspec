@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+	<metadata>
+		<id>Tree-Sql-Parser</id>
+		<version>0.1.0</version>
+		<title>Tree-Sql-Parser</title>
+		<authors>Alex MacInnes</authors>
+		<owners>Alex MacInnes</owners>
+		<license type="expression">Apache-2.0</license>
+		<projectUrl>https://github.com/alexmacinnes/tree-sql-parser</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>Library for Parsing, Transforming and Translating SQL queries</description>
+		<releaseNotes>Initial prerelease</releaseNotes>
+		<copyright>Copyright © 2022</copyright>
+		<tags>sql parser sql-server tsql oracle translate</tags>
+		<dependencies>
+			<group targetFramework=".NETStandard2.0" />
+			<dependency id="Newtonsoft.Json" version="13.0.1" />
+			<dependency id="TSQL.Parser" version="2.5.0" />
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="bin\Release\netstandard2.0\TreeSqlParser.dll" target="lib\netstandard2.0" />
+		<file src="bin\Release\netstandard2.0\acknowledgements-treesqlparser.txt" target="lib\netstandard2.0" />
+		<file src="bin\Release\netstandard2.0\LICENSE-treesqlparser" target="lib\netstandard2.0" />
+	</files>
+</package>
