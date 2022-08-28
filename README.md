@@ -29,6 +29,17 @@ Modify AST
 // modify statement to: "select id, UPPER(surname) from dbo.people"
 var nameColumn = root.Flatten().OfType<PrimitiveColumn>().Single(x => x.Name.Name == "surname");
 var toUpperColumn = SelectParser.ParseColumn("UPPER(surname)");
+
+// remove nameColumn from the AST and replace it with toUpperColumn
 nameColumn.ReplaceSelf(toUpperColumn);
 ```
+Translate AST to SQL
+```cs
+// FullSqlServerWriter has full support for SQL Server syntax
+string fullSqlServerSql = new FullSqlServerWriter().GenerateSql(root);
 
+// CommonSqlWriters have more limited support, which can be translated to a variety of dialects
+// Currently SQL Server and Oracle are provided. More to follow.
+string commonSqlServerSql = new CommonSqlServerSqlWriter().GenerateSql(root);
+string commonOracleSql = new CommonOracleSqlWriter().GenerateSql(root);
+```
