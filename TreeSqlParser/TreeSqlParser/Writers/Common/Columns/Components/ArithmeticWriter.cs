@@ -7,7 +7,7 @@ using TreeSqlParser.Model.Enums;
 
 namespace TreeSqlParser.Writers.Common.Columns.Components
 {
-    public abstract class ArithmeticWriter : IArithmeticWriter
+    public class ArithmeticWriter : IArithmeticWriter
     {
         private readonly CommonSqlWriter sqlWriter;
 
@@ -20,12 +20,12 @@ namespace TreeSqlParser.Writers.Common.Columns.Components
             { ArithmeticOperator.Modulo, "%" }
         };
 
-        protected ArithmeticWriter(CommonSqlWriter sqlWriter)
+        public ArithmeticWriter(CommonSqlWriter sqlWriter)
         {
             this.sqlWriter = sqlWriter;
         }
 
-        protected abstract string ModuloReplacementFunction { get; }
+        protected virtual string ModuloReplacementFunction => null;
 
         public string ArithmeticSql(ArithmeticChain a)
         {

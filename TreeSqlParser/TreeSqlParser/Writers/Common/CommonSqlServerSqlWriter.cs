@@ -8,7 +8,7 @@ namespace TreeSqlParser.Writers.Common
 {
     public class CommonSqlServerSqlWriter : CommonSqlWriter
     {
-        public CommonSqlServerSqlWriter()
+        public CommonSqlServerSqlWriter() : base("SQL Server")
         {
             this.ColumnWriter = new SqlServerColumnWriter(this);
             this.ConditionWriter = new ConditionWriter(this);

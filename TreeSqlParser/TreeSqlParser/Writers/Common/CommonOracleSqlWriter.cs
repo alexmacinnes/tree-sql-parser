@@ -8,7 +8,7 @@ namespace TreeSqlParser.Writers.Common
 {
     public class CommonOracleSqlWriter : CommonSqlWriter
     {
-        public CommonOracleSqlWriter()
+        public CommonOracleSqlWriter() : base("Oracle")
         {
             this.ColumnWriter = new OracleColumnWriter(this);
             this.ConditionWriter = new ConditionWriter(this);

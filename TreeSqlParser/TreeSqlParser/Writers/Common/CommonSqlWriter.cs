@@ -14,6 +14,8 @@ namespace TreeSqlParser.Writers.Common
 {
     public class CommonSqlWriter : ISqlWriter
     {
+        public string Name { get; }
+
         protected IColumnWriter ColumnWriter { get; set; }
 
         protected IConditionWriter ConditionWriter { get; set; }
@@ -22,9 +24,10 @@ namespace TreeSqlParser.Writers.Common
 
         protected ISelectWriter SelectWriter { get; set; }
 
-        protected IIdentifierWriter IdentifierWriter { get; set; }  
+        protected IIdentifierWriter IdentifierWriter { get; set; }
 
- 
+        public CommonSqlWriter(string name) => Name = name;
+
         public virtual string GenerateSql(SqlElement e)
         {
             if (e is SqlRootElement root) return GenerateSql(root.Child);

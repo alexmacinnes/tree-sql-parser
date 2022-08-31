@@ -14,7 +14,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() }
+            { DbFamily.Oracle, new CommonOracleSqlWriter() },
+            { DbFamily.MySql, new CommonMySqlSqlWriter() }
         };
 
         private Column ParseColumn(string sql) =>
@@ -32,6 +33,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS nvarchar)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS nvarchar2(255))");
+            AssertSql(c, DbFamily.MySql, "CAST(NULL AS nchar)");
         }
 
         [Test]
@@ -41,6 +43,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS varchar)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS varchar2(255))");
+            AssertSql(c, DbFamily.MySql, "CAST(NULL AS char)");
         }
 
         [Test]
@@ -50,6 +53,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS int)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS int)");
+            AssertSql(c, DbFamily.MySql, "CAST(NULL AS signed)");
         }
 
         [Test]
@@ -59,6 +63,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS real)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS number)");
+            AssertSql(c, DbFamily.MySql, "CAST(NULL AS decimal)");
         }
 
         [Test]
@@ -68,6 +73,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS timestamp)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS datetime)");
+            AssertSql(c, DbFamily.MySql, "CAST(NULL AS datetime)");
         }
     }
 }

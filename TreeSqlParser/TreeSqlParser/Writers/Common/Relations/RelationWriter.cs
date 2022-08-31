@@ -67,7 +67,10 @@ namespace TreeSqlParser.Writers.Common.Relations
                 case JoinType.InnerJoin: return "INNER JOIN";
                 case JoinType.LeftJoin: return "LEFT JOIN";
                 case JoinType.RightJoin: return "RIGHT JOIN";
-                case JoinType.FullJoin: return "FULL JOIN";
+                case JoinType.FullJoin: 
+                    return supportsFullJoin 
+                        ? "FULL JOIN" 
+                        : throw new NotSupportedException($"Full Join is not supported on {sqlWriter.Name}");
                 case JoinType.CrossJoin: return "CROSS JOIN";
                 default: throw new InvalidOperationException("Join Type not supported: " + j);
             }

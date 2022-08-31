@@ -13,7 +13,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() }
+            { DbFamily.Oracle, new CommonOracleSqlWriter() },
+            { DbFamily.MySql, new CommonMySqlSqlWriter() }
         };
 
         private Column ParseColumn(string sql) =>
@@ -39,7 +40,6 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
                     "");
             }
         }
-
 
         [TestCase("SUM(1)")]
         [TestCase("MAX(1)")]

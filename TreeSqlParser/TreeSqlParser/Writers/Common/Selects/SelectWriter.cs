@@ -12,7 +12,7 @@ namespace TreeSqlParser.Writers.Common.Selects
 {
     public class SelectWriter : ISelectWriter
     {
-        private readonly CommonSqlWriter sqlWriter;
+        protected readonly CommonSqlWriter sqlWriter;
 
         public SelectWriter(CommonSqlWriter sqlWriter) 
         {

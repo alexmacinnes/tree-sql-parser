@@ -7,6 +7,7 @@ namespace TreeSqlParser.Writers.Test
     internal enum DbFamily
     {
         SqlServer,
-        Oracle
+        Oracle,
+        MySql
     }
 }

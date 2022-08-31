@@ -9,12 +9,13 @@ using TreeSqlParser.Writers.Common;
 
 namespace TreeSqlParser.Writers.Test.Common.Columns
 {
-    class LiteralWriterTests
+    public class LiteralWriterTests
     {
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() }
+            { DbFamily.Oracle, new CommonOracleSqlWriter() },
+            { DbFamily.MySql, new CommonMySqlSqlWriter() }
         };
 
         private Column ParseColumn(string sql) =>
@@ -46,6 +47,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             Assert.AreEqual("{d '2020-12-31'}", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("DATE '2020-12-31'", Sql(c, DbFamily.Oracle));
+            Assert.AreEqual("DATE('2020-12-31')", Sql(c, DbFamily.MySql));
         }
 
         [Test]
@@ -55,6 +57,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             Assert.AreEqual("{ts '2020-12-31 23:58:59'}", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59'", Sql(c, DbFamily.Oracle));
+            Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59')", Sql(c, DbFamily.MySql));
         }
 
         [Test]
@@ -64,6 +67,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             Assert.AreEqual("{ts '2020-12-31 23:58:59.1234567'}", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59.1234567'", Sql(c, DbFamily.Oracle));
+            Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59.1234567')", Sql(c, DbFamily.MySql));
         }
     }
 }

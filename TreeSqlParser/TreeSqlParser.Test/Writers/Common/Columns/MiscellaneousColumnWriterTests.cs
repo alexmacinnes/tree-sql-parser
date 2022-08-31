@@ -16,7 +16,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() }
+            { DbFamily.Oracle, new CommonOracleSqlWriter() },
+            { DbFamily.MySql, new CommonMySqlSqlWriter() }
         };
 
         private string Sql(Column c, DbFamily db) => writers[db].GenerateSql(c);
@@ -26,7 +27,6 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
         [TestCase("*")]
         [TestCase("(1)")]
-        [TestCase("IIF(1 = 2, 3, 4)")]
         [TestCase("CASE WHEN 1 = 2 THEN 3 WHEN 4 = 5 THEN 6 END")]
         [TestCase("CASE WHEN 1 = 2 THEN 3 WHEN 4 = 5 THEN 6 ELSE 7 END")]
         public void SqlSameOnAllDbs(string sql)
@@ -41,12 +41,23 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         }
 
         [Test]
+        public void IifColumn()
+        {
+            var c = ParseColumn("IIF(1 = 2, 3, 4)");
+
+            Assert.AreEqual("IIF(1 = 2, 3, 4)", Sql(c, DbFamily.SqlServer));
+            Assert.AreEqual("IIF(1 = 2, 3, 4)", Sql(c, DbFamily.Oracle));
+            Assert.AreEqual("IF(1 = 2, 3, 4)", Sql(c, DbFamily.MySql));
+        }
+
+        [Test]
         public void SubselectColumn()
         {
             var c = ParseColumn("(SELECT 1)");
 
             Assert.AreEqual("(SELECT 1)", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("(SELECT 1 FROM dual)", Sql(c, DbFamily.Oracle));
+            Assert.AreEqual("(SELECT 1)", Sql(c, DbFamily.MySql));
         }
 
         [Test]
@@ -56,6 +67,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             Assert.AreEqual("1 AS [foo]", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("1 AS \"foo\"", Sql(c, DbFamily.Oracle));
+            Assert.AreEqual("1 AS `foo`", Sql(c, DbFamily.MySql));
         }
 
         [Test]
@@ -65,6 +77,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             Assert.AreEqual("[x].[y]", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("\"x\".\"y\"", Sql(c, DbFamily.Oracle));
+            Assert.AreEqual("`x`.`y`", Sql(c, DbFamily.MySql));
         }
 
         [Test]
@@ -74,6 +87,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             Assert.AreEqual("[x]", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("\"x\"", Sql(c, DbFamily.Oracle));
+            Assert.AreEqual("`x`", Sql(c, DbFamily.MySql));
         }
     }
 }

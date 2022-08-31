@@ -14,10 +14,20 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() }
+            { DbFamily.Oracle, new CommonOracleSqlWriter() },
+            { DbFamily.MySql, new CommonMySqlSqlWriter() }
         };
 
-        private string Sql(Relation r, DbFamily db) => writers[db].GenerateSql(r);
+        private string Sql(Relation r, DbFamily db)
+        {
+            try
+            {
+                return writers[db].GenerateSql(r);
+            } catch (Exception e)
+            {
+                return "EXCEPTION: " + e.Message;
+            }         
+        }
 
         private Relation ParseRelation(string sql) =>
             ((SelectStatement)SelectParser.ParseSelectStatement("select * from " + sql).Child).Selects[0].From[0];
@@ -29,6 +39,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x]", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\"", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("`x`", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -38,6 +49,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x].[y]", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\".\"y\"", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("`x`.`y`", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -47,6 +59,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("([x])", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("(\"x\")", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("(`x`)", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -56,6 +69,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("(SELECT * FROM [x]) AS [foo]", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("(SELECT * FROM \"x\") AS \"foo\"", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("(SELECT * FROM `x`) AS `foo`", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -65,6 +79,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("`x` INNER JOIN `y` ON 1 = 2", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -74,6 +89,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x] LEFT JOIN [y] ON 1 = 2", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" LEFT JOIN \"y\" ON 1 = 2", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("`x` LEFT JOIN `y` ON 1 = 2", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -83,6 +99,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x] RIGHT JOIN [y] ON 1 = 2", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" RIGHT JOIN \"y\" ON 1 = 2", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("`x` RIGHT JOIN `y` ON 1 = 2", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -92,6 +109,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x] FULL JOIN [y] ON 1 = 2", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" FULL JOIN \"y\" ON 1 = 2", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("EXCEPTION: Full Join not supported", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -101,6 +119,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x] CROSS JOIN [y]", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" CROSS JOIN \"y\"", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("`x` CROSS JOIN `y`", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -110,6 +129,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4", Sql(relation, DbFamily.MySql));
         }
 
         [Test]
@@ -119,6 +139,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             Assert.AreEqual("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4", Sql(relation, DbFamily.Oracle));
+            Assert.AreEqual("`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4", Sql(relation, DbFamily.MySql));
         }
     }
 }

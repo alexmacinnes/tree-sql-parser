@@ -13,7 +13,8 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
         private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() }
+            { DbFamily.Oracle, new CommonOracleSqlWriter() },
+            { DbFamily.MySql, new CommonMySqlSqlWriter() }
         };
 
         private string Sql(SelectStatement s, DbFamily db) => writers[db].GenerateSql(s);
@@ -28,6 +29,7 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
 
             Assert.AreEqual("SELECT 1, 2 AS [foo]", Sql(s, DbFamily.SqlServer));
             Assert.AreEqual("SELECT 1, 2 AS \"foo\" FROM dual", Sql(s, DbFamily.Oracle));
+            Assert.AreEqual("SELECT 1, 2 AS `foo`", Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -41,6 +43,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 FROM \"x\", \"y\" LEFT JOIN \"z\" ON 2 = 3", 
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT 1 FROM `x`, `y` LEFT JOIN `z` ON 2 = 3",
+                Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -54,6 +59,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 FROM \"x\", \"y\" LEFT JOIN \"z\" ON 2 = 3",
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT 1 FROM `x`, `y` LEFT JOIN `z` ON 2 = 3",
+                Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -67,6 +75,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 FROM dual GROUP BY 2, 3",
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT 1 GROUP BY 2, 3",
+                Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -80,6 +91,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 FROM dual HAVING COUNT(*) > 1",
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT 1 HAVING COUNT(*) > 1",
+                Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -93,6 +107,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 FROM \"foo\" WHERE 2 = 3 GROUP BY 4 HAVING SUM(5) > 6",
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT 1 FROM `foo` WHERE 2 = 3 GROUP BY 4 HAVING SUM(5) > 6",
+                Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -106,6 +123,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT * FROM (SELECT 1 FROM dual)",
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT * FROM (SELECT 1)",
+                Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -119,6 +139,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT \"x\" FROM dual ORDER BY 1 FETCH NEXT 500 ROWS ONLY",
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT `x` ORDER BY 1 LIMIT 500",
+                Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -132,6 +155,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT \"x\" FROM dual ORDER BY 1 OFFSET 500 ROWS",
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT `x` ORDER BY 1 LIMIT 500, 2147483647",
+                Sql(s, DbFamily.MySql));
         }
 
         [Test]
@@ -145,6 +171,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT \"x\" FROM dual ORDER BY 1 OFFSET 1500 ROWS FETCH NEXT 500 ROWS ONLY",
                 Sql(s, DbFamily.Oracle));
+            Assert.AreEqual(
+                "SELECT `x` ORDER BY 1 LIMIT 1500, 500",
+                Sql(s, DbFamily.MySql));
         }
     }
 }
