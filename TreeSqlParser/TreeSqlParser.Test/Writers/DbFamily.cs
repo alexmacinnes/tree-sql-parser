@@ -8,6 +8,7 @@ namespace TreeSqlParser.Writers.Test
     {
         SqlServer,
         Oracle,
-        MySql
+        MySql,
+        Sqlite
     }
 }

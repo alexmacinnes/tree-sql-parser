@@ -15,7 +15,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
             { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() }
+            { DbFamily.MySql, new CommonMySqlSqlWriter() },
+            { DbFamily.Sqlite, new CommonSqliteSqlWriter() }
         };
 
         private string Sql(Relation r, DbFamily db)
@@ -40,6 +41,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x]", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\"", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("`x`", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("[x]", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -50,6 +52,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x].[y]", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\".\"y\"", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("`x`.`y`", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("[x].[y]", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -60,6 +63,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("([x])", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("(\"x\")", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("(`x`)", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("([x])", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -70,6 +74,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("(SELECT * FROM [x]) AS [foo]", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("(SELECT * FROM \"x\") AS \"foo\"", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("(SELECT * FROM `x`) AS `foo`", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("(SELECT * FROM [x]) AS [foo]", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -80,6 +85,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("`x` INNER JOIN `y` ON 1 = 2", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -90,6 +96,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x] LEFT JOIN [y] ON 1 = 2", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" LEFT JOIN \"y\" ON 1 = 2", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("`x` LEFT JOIN `y` ON 1 = 2", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("[x] LEFT JOIN [y] ON 1 = 2", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -100,6 +107,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x] RIGHT JOIN [y] ON 1 = 2", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" RIGHT JOIN \"y\" ON 1 = 2", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("`x` RIGHT JOIN `y` ON 1 = 2", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("[y] LEFT JOIN [x] ON 1 = 2", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -110,6 +118,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x] FULL JOIN [y] ON 1 = 2", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" FULL JOIN \"y\" ON 1 = 2", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("EXCEPTION: Full Join not supported", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("EXCEPTION: Full Join not supported", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -120,6 +129,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x] CROSS JOIN [y]", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" CROSS JOIN \"y\"", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("`x` CROSS JOIN `y`", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("[x] CROSS JOIN [y]", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -130,6 +140,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", Sql(relation, DbFamily.Sqlite));
         }
 
         [Test]
@@ -140,6 +151,47 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", Sql(relation, DbFamily.SqlServer));
             Assert.AreEqual("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4", Sql(relation, DbFamily.Oracle));
             Assert.AreEqual("`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4", Sql(relation, DbFamily.MySql));
+            Assert.AreEqual("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", Sql(relation, DbFamily.Sqlite));
+        }
+
+        [Test]
+        public void RewriteChainedRightJoins()
+        {
+            var relation = ParseRelation("x RIGHT JOIN y ON 1 = 2 RIGHT JOIN z ON 3 = 4");
+            string result = Sql(relation, DbFamily.Sqlite);
+            string expected = "[z] LEFT JOIN ([y] LEFT JOIN [x] ON 1 = 2) ON 3 = 4";
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        public void RewriteSeparatedRightJoins()
+        {
+            var relation = ParseRelation("a RIGHT JOIN b ON 1 = 2 LEFT JOIN c ON 3 = 4 RIGHT JOIN d ON 5 = 6");
+            string result = Sql(relation, DbFamily.Sqlite);
+            string expected = "[d] LEFT JOIN ([b] LEFT JOIN [a] ON 1 = 2 LEFT JOIN [c] ON 3 = 4) ON 5 = 6";
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        public void RewriteRightJoinWithFollowingJoins()
+        {
+            var relation = ParseRelation("a LEFT JOIN b ON 1 = 2 RIGHT JOIN c ON 3 = 4 LEFT JOIN d ON 5 = 6");
+            string result = Sql(relation, DbFamily.Sqlite);
+            string expected = "[c] LEFT JOIN ([a] LEFT JOIN [b] ON 1 = 2) ON 3 = 4 LEFT JOIN [d] ON 5 = 6";
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        public void RewriteNestedRightJoins()
+        {
+            var relation = ParseRelation("a LEFT JOIN b RIGHT JOIN c ON 3 = 4 ON 1 = 2");
+            string result = Sql(relation, DbFamily.Sqlite);
+            string expected = "[a] LEFT JOIN [c] LEFT JOIN [b] ON 3 = 4 ON 1 = 2";
+
+            Assert.AreEqual(expected, result);
         }
     }
 }

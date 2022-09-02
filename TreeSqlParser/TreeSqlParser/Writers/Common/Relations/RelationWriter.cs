@@ -12,11 +12,13 @@ namespace TreeSqlParser.Writers.Common.Relations
     {
         private readonly CommonSqlWriter sqlWriter;
         private readonly bool supportsFullJoin;
+        private readonly bool supportsRightJoin;
 
-        public RelationWriter(CommonSqlWriter sqlWriter, bool supportsFullJoin)
+        public RelationWriter(CommonSqlWriter sqlWriter, bool supportsRightJoin = true, bool supportsFullJoin = true)
         {
             this.sqlWriter = sqlWriter;
             this.supportsFullJoin = supportsFullJoin;
+            this.supportsRightJoin = supportsRightJoin;
         }
 
         public string RelationSql(Relation r) 
@@ -38,6 +40,9 @@ namespace TreeSqlParser.Writers.Common.Relations
 
         private string JoinChainSql(JoinChain c)
         {
+            if (!supportsRightJoin)
+                c = RearrangeRightJoins(c);
+
             var sb = new StringBuilder(RelationSql(c.LeftRelation));
             foreach (var j in c.Joins)
             {
@@ -46,6 +51,67 @@ namespace TreeSqlParser.Writers.Common.Relations
             }
 
             return sb.ToString();
+        }
+
+        private JoinChain RearrangeRightJoins(JoinChain c)
+        {
+            bool hasRightJoin = c.Joins?.Any(x => x.JoinType == JoinType.RightJoin) == true;
+            if (!hasRightJoin)
+                return c;
+
+            var modified = (JoinChain)c.Clone();
+            while (true)
+            {
+                int rightIndex = modified.Joins.FindIndex(x => x.JoinType == JoinType.RightJoin);
+                if (rightIndex == -1)
+                    break;
+
+                if (rightIndex == 0)
+                {
+                    // swap the order of the terms
+                    var temp = modified.LeftRelation;
+                    modified.LeftRelation = modified.Joins[0].RightRelation;
+                    modified.Joins[0].RightRelation = temp;
+
+                    // and switch the join direction
+                    modified.Joins[0].JoinType = JoinType.LeftJoin;
+                    
+                    continue;           //skip rest of loop
+                }
+
+                // everything after the right joined item
+                var followingJoins = modified.Joins.Skip(rightIndex + 1).ToList();
+
+                // everything before the right joined item
+                var precedingJoinChain = new BracketedRelation
+                {
+                    InnerRelation = new JoinChain
+                    {
+                        LeftRelation = modified.LeftRelation,
+                        Joins = modified.Joins.Take(rightIndex).ToList()
+                    }
+                };
+
+                // rearrange, move right joined relation to head
+                var newJoinChain = new JoinChain
+                {
+                    LeftRelation = modified.Joins[rightIndex].RightRelation,
+                    Joins = new List<Join>
+                    {
+                        new Join
+                        {
+                            JoinType = JoinType.LeftJoin,
+                            RightRelation = precedingJoinChain,
+                            Condition = modified.Joins[rightIndex].Condition,
+                        }
+                    }
+                };
+
+                newJoinChain.Joins.AddRange(followingJoins);
+                modified = newJoinChain;
+            }
+
+            return modified;
         }
 
         private string JoinSql(Join j)
