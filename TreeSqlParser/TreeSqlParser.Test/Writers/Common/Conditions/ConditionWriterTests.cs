@@ -15,7 +15,8 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
             { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() }
+            { DbFamily.MySql, new CommonMySqlSqlWriter() },
+            { DbFamily.Sqlite, new CommonSqliteSqlWriter() },
         };
 
         private string Sql(Condition c, DbFamily db) => writers[db].GenerateSql(c);
@@ -56,6 +57,7 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
             Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, DbFamily.SqlServer));
             Assert.AreEqual("1 IN (SELECT 2 FROM dual)", Sql(condition, DbFamily.Oracle));
             Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, DbFamily.MySql));
+            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, DbFamily.Sqlite));
         }
 
         [Test]
@@ -66,6 +68,7 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
             Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, DbFamily.SqlServer));
             Assert.AreEqual("EXISTS (SELECT 1 FROM dual)", Sql(condition, DbFamily.Oracle));
             Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, DbFamily.MySql));
+            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, DbFamily.Sqlite));
         }
     }
 }

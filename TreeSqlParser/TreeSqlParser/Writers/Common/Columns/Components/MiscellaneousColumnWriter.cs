@@ -8,18 +8,14 @@ namespace TreeSqlParser.Writers.Common.Columns.Components
 {
     public class MiscellaneousColumnWriter : IMiscellaneousColumnWriter
     {
-        private readonly string iifFunctionName;
-
         private readonly CommonSqlWriter sqlWriter;
 
-
-        public MiscellaneousColumnWriter(CommonSqlWriter sqlWriter, string iifFunctionName)
+        public MiscellaneousColumnWriter(CommonSqlWriter sqlWriter)
         {
             this.sqlWriter = sqlWriter;
-            this.iifFunctionName = iifFunctionName;
         }
 
-        private string Sql(SqlElement x) => sqlWriter.GenerateSql(x);
+        protected string Sql(SqlElement x) => sqlWriter.GenerateSql(x);
 
         private string Delimit(SqlIdentifier i) => sqlWriter.IdentifierSql(i);
 
@@ -67,7 +63,7 @@ namespace TreeSqlParser.Writers.Common.Columns.Components
         }
 
         protected virtual string IifColumnSql(IifColumn c) =>
-            $"{iifFunctionName}({Sql(c.Condition)}, {Sql(c.TrueColumn)}, {Sql(c.FalseColumn)})";
+            $"IIF({Sql(c.Condition)}, {Sql(c.TrueColumn)}, {Sql(c.FalseColumn)})";
 
         private string BracketedColumnSql(BracketedColumn c) =>
             "(" + Sql(c.InnerColumn) + ")";

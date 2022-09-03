@@ -14,7 +14,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
             { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() }
+            { DbFamily.MySql, new CommonMySqlSqlWriter() },
+            { DbFamily.Sqlite, new CommonSqliteSqlWriter() },
         };
 
         private Column ParseColumn(string sql) =>

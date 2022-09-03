@@ -12,7 +12,7 @@ namespace TreeSqlParser.Writers.Common.Columns.Oracle
             this.arithmeticWriter = new OracleArithmeticWriter(sqlWriter);
             this.functionWriter = new OracleFunctionWriter(sqlWriter);
             this.castWriter = new OracleCastWriter(sqlWriter);
-            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter, "IIF");
+            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter);
         }
     }
 }

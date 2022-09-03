@@ -12,7 +12,7 @@ namespace TreeSqlParser.Writers.Common.Columns.MySql
             this.arithmeticWriter = new ArithmeticWriter(sqlWriter);
             this.functionWriter = new MySqlFunctionWriter(sqlWriter);
             this.castWriter = new MySqlCastWriter(sqlWriter);
-            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter, "IF");
+            this.miscellaneousWriter = new MySqlMiscellaneousColumnWriter(sqlWriter);
         }
     }
 }

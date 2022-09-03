@@ -12,7 +12,7 @@ namespace TreeSqlParser.Writers.Common.Columns.Sqlite
             this.arithmeticWriter = new ArithmeticWriter(sqlWriter);
             this.functionWriter = null; //TODO
             this.castWriter = null; //TODO
-            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter, "IIF");
+            this.miscellaneousWriter = new SqliteMiscellaneousColumnWriter(sqlWriter);
         }
     }
 }

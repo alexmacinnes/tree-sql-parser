@@ -13,7 +13,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
             { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() }
+            { DbFamily.MySql, new CommonMySqlSqlWriter() },
+            { DbFamily.Sqlite, new CommonSqliteSqlWriter() },
         };
 
         private Column ParseColumn(string sql) =>
@@ -32,6 +33,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1%2");
             AssertSql(c, DbFamily.Oracle, "MOD(1, 2)");
             AssertSql(c, DbFamily.MySql, "1%2");
+            AssertSql(c, DbFamily.Sqlite, "1%2");
         }
 
         [Test]
@@ -42,6 +44,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1+2%3");
             AssertSql(c, DbFamily.Oracle, "1+MOD(2, 3)");
             AssertSql(c, DbFamily.MySql, "1+2%3");
+            AssertSql(c, DbFamily.Sqlite, "1+2%3");
         }
 
         [Test]
@@ -52,6 +55,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1%2%3%4");
             AssertSql(c, DbFamily.Oracle, "MOD(MOD(MOD(1, 2), 3), 4)");
             AssertSql(c, DbFamily.MySql, "1%2%3%4");
+            AssertSql(c, DbFamily.Sqlite, "1%2%3%4");
         }
 
         [Test]
@@ -62,6 +66,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1*2%3*4");
             AssertSql(c, DbFamily.Oracle, "MOD(1*2, 3)*4");
             AssertSql(c, DbFamily.MySql, "1*2%3*4");
+            AssertSql(c, DbFamily.Sqlite, "1*2%3*4");
         }
 
         [Test]
@@ -72,6 +77,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1*2%3*4%5");
             AssertSql(c, DbFamily.Oracle, "MOD(MOD(1*2, 3)*4, 5)");
             AssertSql(c, DbFamily.MySql, "1*2%3*4%5");
+            AssertSql(c, DbFamily.Sqlite, "1*2%3*4%5");
         }
 
         [Test]
@@ -82,6 +88,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1*2%3+4%5");
             AssertSql(c, DbFamily.Oracle, "MOD(1*2, 3)+MOD(4, 5)");
             AssertSql(c, DbFamily.MySql, "1*2%3+4%5");
+            AssertSql(c, DbFamily.Sqlite, "1*2%3+4%5");
         }
 
         [Test]
@@ -92,6 +99,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1*2%3*4+5*6");
             AssertSql(c, DbFamily.Oracle, "MOD(1*2, 3)*4+5*6");
             AssertSql(c, DbFamily.MySql, "1*2%3*4+5*6");
+            AssertSql(c, DbFamily.Sqlite, "1*2%3*4+5*6");
         }
 
 
@@ -103,6 +111,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1+2%3-4");
             AssertSql(c, DbFamily.Oracle, "1+MOD(2, 3)-4");
             AssertSql(c, DbFamily.MySql, "1+2%3-4");
+            AssertSql(c, DbFamily.Sqlite, "1+2%3-4");
         }
 
         [Test]
@@ -113,6 +122,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "1+2%3%4-5");
             AssertSql(c, DbFamily.Oracle, "1+MOD(MOD(2, 3), 4)-5");
             AssertSql(c, DbFamily.MySql, "1+2%3%4-5");
+            AssertSql(c, DbFamily.Sqlite, "1+2%3%4-5");
         }
     }
 }

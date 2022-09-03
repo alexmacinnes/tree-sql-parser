@@ -12,7 +12,7 @@ namespace TreeSqlParser.Writers.Common.Columns.SqlServer
             this.arithmeticWriter = new ArithmeticWriter(sqlWriter);
             this.functionWriter = new SqlServerFunctionWriter(sqlWriter);
             this.castWriter = new SqlServerCastWriter(sqlWriter);
-            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter, "IIF");
+            this.miscellaneousWriter = new MiscellaneousColumnWriter(sqlWriter);
         }
     }
 }

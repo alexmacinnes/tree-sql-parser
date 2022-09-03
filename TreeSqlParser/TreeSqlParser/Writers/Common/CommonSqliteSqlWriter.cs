@@ -13,7 +13,7 @@ namespace TreeSqlParser.Writers.Common
             this.ColumnWriter = new SqliteColumnWriter(this);
             this.ConditionWriter = new ConditionWriter(this);
             this.RelationWriter = new RelationWriter(this, supportsRightJoin: false, supportsFullJoin: false);
-            this.SelectWriter = new SelectWriter(this);
+            this.SelectWriter = new SqliteSelectWriter(this);
             this.IdentifierWriter = new IdentifierWriter('[', ']');
         }
     }

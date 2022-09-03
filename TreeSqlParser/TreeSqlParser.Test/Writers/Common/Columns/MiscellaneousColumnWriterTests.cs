@@ -17,7 +17,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
             { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() }
+            { DbFamily.MySql, new CommonMySqlSqlWriter() },
+            { DbFamily.Sqlite, new CommonSqliteSqlWriter() },
         };
 
         private string Sql(Column c, DbFamily db) => writers[db].GenerateSql(c);
@@ -48,6 +49,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("IIF(1 = 2, 3, 4)", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("IIF(1 = 2, 3, 4)", Sql(c, DbFamily.Oracle));
             Assert.AreEqual("IF(1 = 2, 3, 4)", Sql(c, DbFamily.MySql));
+            Assert.AreEqual("CASE WHEN 1 = 2 THEN 3 ELSE 4 END", Sql(c, DbFamily.Sqlite));
         }
 
         [Test]
@@ -58,6 +60,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("(SELECT 1)", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("(SELECT 1 FROM dual)", Sql(c, DbFamily.Oracle));
             Assert.AreEqual("(SELECT 1)", Sql(c, DbFamily.MySql));
+            Assert.AreEqual("(SELECT 1)", Sql(c, DbFamily.Sqlite));
         }
 
         [Test]
@@ -68,6 +71,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("1 AS [foo]", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("1 AS \"foo\"", Sql(c, DbFamily.Oracle));
             Assert.AreEqual("1 AS `foo`", Sql(c, DbFamily.MySql));
+            Assert.AreEqual("1 AS [foo]", Sql(c, DbFamily.Sqlite));
         }
 
         [Test]
@@ -78,6 +82,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("[x].[y]", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("\"x\".\"y\"", Sql(c, DbFamily.Oracle));
             Assert.AreEqual("`x`.`y`", Sql(c, DbFamily.MySql));
+            Assert.AreEqual("[x].[y]", Sql(c, DbFamily.Sqlite));
         }
 
         [Test]
@@ -88,6 +93,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("[x]", Sql(c, DbFamily.SqlServer));
             Assert.AreEqual("\"x\"", Sql(c, DbFamily.Oracle));
             Assert.AreEqual("`x`", Sql(c, DbFamily.MySql));
+            Assert.AreEqual("[x]", Sql(c, DbFamily.Sqlite));
         }
     }
 }
