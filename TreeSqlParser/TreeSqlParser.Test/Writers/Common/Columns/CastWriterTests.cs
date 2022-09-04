@@ -15,7 +15,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
             { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() }
+            { DbFamily.MySql, new CommonMySqlSqlWriter() },
+            { DbFamily.Sqlite, new CommonSqliteSqlWriter() }
         };
 
         private Column ParseColumn(string sql) =>
@@ -34,6 +35,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS nvarchar)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS nvarchar2(255))");
             AssertSql(c, DbFamily.MySql, "CAST(NULL AS nchar)");
+            AssertSql(c, DbFamily.Sqlite, "CAST(NULL AS nvarchar)");
         }
 
         [Test]
@@ -44,6 +46,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS varchar)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS varchar2(255))");
             AssertSql(c, DbFamily.MySql, "CAST(NULL AS char)");
+            AssertSql(c, DbFamily.Sqlite, "CAST(NULL AS varchar)");
         }
 
         [Test]
@@ -54,6 +57,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS int)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS int)");
             AssertSql(c, DbFamily.MySql, "CAST(NULL AS signed)");
+            AssertSql(c, DbFamily.Sqlite, "CAST(NULL AS int)");
         }
 
         [Test]
@@ -64,6 +68,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS real)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS number)");
             AssertSql(c, DbFamily.MySql, "CAST(NULL AS decimal)");
+            AssertSql(c, DbFamily.Sqlite, "CAST(NULL AS real)");
         }
 
         [Test]
@@ -74,6 +79,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CAST(NULL AS timestamp)");
             AssertSql(c, DbFamily.Oracle, "CAST(NULL AS datetime)");
             AssertSql(c, DbFamily.MySql, "CAST(NULL AS datetime)");
+            AssertSql(c, DbFamily.Sqlite, "DATETIME(NULL)");
         }
     }
 }

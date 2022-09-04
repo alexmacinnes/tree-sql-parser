@@ -15,7 +15,7 @@ namespace TreeSqlParser.Writers.Common.Columns.Components
             this.sqlWriter = sqlWriter;
         }
 
-        private string ColumnSql(Column c) => sqlWriter.ColumnSql(c);
+        protected string ColumnSql(Column c) => sqlWriter.ColumnSql(c);
 
         public virtual string CastSql(CastColumn c)
         {
