@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Selects;
@@ -13,13 +14,24 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
             { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() }
+            { DbFamily.MySql, new CommonMySqlSqlWriter() },
+            { DbFamily.Sqlite, new CommonSqliteSqlWriter() },
         };
 
         private Column ParseColumn(string sql) =>
-            ((SelectStatement)SelectParser.ParseSelectStatement("select " + sql).Child).Selects[0].Columns[0];
+            SelectParser.ParseColumn(sql);
 
-        private string Sql(Column c, DbFamily db) => writers[db].GenerateSql(c);
+        private string Sql(Column c, DbFamily db)
+        {
+            try
+            {
+                return writers[db].GenerateSql(c);
+            }
+            catch (Exception x)
+            {
+                return "EXCEPTION: " + x.Message;
+            }
+        }
 
         private void AssertSql(Column c, DbFamily db, string expected) =>
             Assert.AreEqual(expected, Sql(c, db));
@@ -32,6 +44,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "ABS(-1.23)");
             AssertSql(c, DbFamily.Oracle, "ABS(-1.23)");
             AssertSql(c, DbFamily.MySql, "ABS(-1.23)");
+            AssertSql(c, DbFamily.Sqlite, "ABS(-1.23)");
         }
 
         [Test]
@@ -42,6 +55,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "DATEADD(d, 365, {d '2000-12-31'})");
             AssertSql(c, DbFamily.Oracle, "(DATE '2000-12-31' + 365)");
             AssertSql(c, DbFamily.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (365) DAY)");
+            AssertSql(c, DbFamily.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(365)||' DAYS')");
         }
 
         [Test]
@@ -52,6 +66,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "DATEADD(m, 3, {d '2000-12-31'})");
             AssertSql(c, DbFamily.Oracle, "ADD_MONTHS(DATE '2000-12-31', 3)");
             AssertSql(c, DbFamily.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) MONTH)");
+            AssertSql(c, DbFamily.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(3)||' MONTHS')");
         }
 
         [Test]
@@ -62,6 +77,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "DATEADD(y, 3, {d '2000-12-31'})");
             AssertSql(c, DbFamily.Oracle, "ADD_MONTHS(DATE '2000-12-31', 12 * (3)");
             AssertSql(c, DbFamily.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) YEAR)");
+            AssertSql(c, DbFamily.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(3)||' YEARS')");
         }
 
         [Test]
@@ -72,6 +88,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CEILING(1.23)");
             AssertSql(c, DbFamily.Oracle, "CEIL(1.23)");
             AssertSql(c, DbFamily.MySql, "CEIL(1.23)");
+            AssertSql(c, DbFamily.Sqlite, "(CAST(1.23 AS INT) + (1.23 > CAST(1.23 AS INT)))");
         }
 
         [Test]
@@ -82,6 +99,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CHARINDEX('abcde', 'd')");
             AssertSql(c, DbFamily.Oracle, "INSTR('d', 'abcde')");
             AssertSql(c, DbFamily.MySql, "INSTR('d', 'abcde')");
+            AssertSql(c, DbFamily.Sqlite, "INSTR('d', 'abcde')");
         }
 
         [Test]
@@ -92,6 +110,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CHARINDEX('abcde', 'd', 2)");
             AssertSql(c, DbFamily.Oracle, "INSTR('d', 'abcde', 2)");
             AssertSql(c, DbFamily.MySql, "IFNULL((NULLIF(INSTR(SUBSTR('d', 2, 'abcde'), 0)) + 2 - 1, 0)");
+            AssertSql(c, DbFamily.Sqlite, "IFNULL((NULLIF(INSTR(SUBSTR('d', 2, 'abcde'), 0)) + 2 - 1), 0)");
         }
 
         [Test]
@@ -102,6 +121,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CHOOSE(2, 'one', 'two', 'three')");
             AssertSql(c, DbFamily.Oracle, "CASE WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END");
             AssertSql(c, DbFamily.MySql, "ELT(2, 'one', 'two', 'three')");
+            AssertSql(c, DbFamily.Sqlite, "CASE  WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END");
         }
 
         [Test]
@@ -112,6 +132,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "COALESCE(1, 2, 3)");
             AssertSql(c, DbFamily.Oracle, "COALESCE(1, 2, 3)");
             AssertSql(c, DbFamily.MySql, "COALESCE(1, 2, 3)");
+            AssertSql(c, DbFamily.Sqlite, "COALESCE(1, 2, 3)");
         }
 
         [Test]
@@ -122,6 +143,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CONCAT('a', 'b', 'c')");
             AssertSql(c, DbFamily.Oracle, "'a' || 'b' || 'c'");
             AssertSql(c, DbFamily.MySql, "CONCAT('a', 'b', 'c')");
+            AssertSql(c, DbFamily.Sqlite, "'a' || 'b' || 'c'");
         }
 
         [Test]
@@ -132,6 +154,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CONCAT_WS('___', 'a', 'b', 'c')");
             AssertSql(c, DbFamily.Oracle, "'a' || '___' || 'b' || '___' || 'c'");
             AssertSql(c, DbFamily.MySql, "CONCAT_WS('___', 'a', 'b', 'c')");
+            AssertSql(c, DbFamily.Sqlite, "'a' || '___' || 'b' || '___' || 'c'");
         }
 
         [Test]
@@ -142,6 +165,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "DATEFROMPARTS(2020, 12, 31)");
             AssertSql(c, DbFamily.Oracle, "TO_DATE((2020) || (12) || (31), 'yyyyMMdd')");
             AssertSql(c, DbFamily.MySql, "DATE(CONCAT_WS('-', 2020, 12, 31)))");
+            AssertSql(c, DbFamily.Sqlite, "DATE(SUBSTR('0000' || 2020, -4, 4) || '-' || SUBSTR('00' || 12, -2, 2) || '-' || SUBSTR('00' || 31, -2, 2))");
         }
 
         [Test]
@@ -152,6 +176,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "DAY({d '2000-12-31'})");
             AssertSql(c, DbFamily.Oracle, "EXTRACT(day FROM DATE '2000-12-31')");
             AssertSql(c, DbFamily.MySql, "DAY(DATE('2000-12-31'))");
+            AssertSql(c, DbFamily.Sqlite, "CAST(STRFTIME('%d', DATE('2000-12-31')) AS INT)");
         }
 
         [Test]
@@ -162,6 +187,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "DATEDIFF(d, {d '2000-12-31'}, {d '2001-12-31'})");
             AssertSql(c, DbFamily.Oracle, "(DATE '2001-12-31' - DATE '2000-12-31')");
             AssertSql(c, DbFamily.MySql, "DATEDIFF(DATE('2001-12-31'), DATE('2000-12-31'))");
+            AssertSql(c, DbFamily.Sqlite, "CAST(JULIANDAY(DATE('2001-12-31') AS INT)) - CAST(JULIANDAY(DATE('2000-12-31') AS INT))");
         }
 
         [Test]
@@ -172,6 +198,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "EXP(1.23)");
             AssertSql(c, DbFamily.Oracle, "EXP(1.23)");
             AssertSql(c, DbFamily.MySql, "EXP(1.23)");
+            AssertSql(c, DbFamily.Sqlite, "EXCEPTION: EXP function not available on Sqlite");
         }
 
         [Test]
@@ -182,6 +209,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "FLOOR(1.23)");
             AssertSql(c, DbFamily.Oracle, "FLOOR(1.23)");
             AssertSql(c, DbFamily.MySql, "FLOOR(1.23)");
+            AssertSql(c, DbFamily.Sqlite, "(CAST(1.23 AS INT) - (1.23 < CAST(1.23 AS INT)))");
 
         }
 
@@ -193,6 +221,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CONVERT(date, GETDATE())");
             AssertSql(c, DbFamily.Oracle, "CURRENT_DATE");
             AssertSql(c, DbFamily.MySql, "DATE(CURRENT_DATE())");
+            AssertSql(c, DbFamily.Sqlite, "DATE()");
         }
 
         [Test]
@@ -203,6 +232,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "GETDATE()");
             AssertSql(c, DbFamily.Oracle, "CURRENT_TIMESTAMP");
             AssertSql(c, DbFamily.MySql, "TIMESTAMP(CURRENT_TIMESTAMP())");
+            AssertSql(c, DbFamily.Sqlite, "DATETIME()");
         }
 
         [Test]
@@ -213,6 +243,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "ISNULL([x].[y], 0)");
             AssertSql(c, DbFamily.Oracle, "NVL(\"x\".\"y\", 0)");
             AssertSql(c, DbFamily.MySql, "ISNULL(`x`.`y`, 0)");
+            AssertSql(c, DbFamily.Sqlite, "IFNULL([x].[y], 0)");
         }
 
         [Test]
@@ -223,6 +254,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "LEFT('abcde', 2)");
             AssertSql(c, DbFamily.Oracle, "SUBSTR('abcde', 1, 2)");
             AssertSql(c, DbFamily.MySql, "LEFT('abcde', 2)");
+            AssertSql(c, DbFamily.Sqlite, "SUBSTR('abcde', 1, 2)");
         }
 
         [Test]
@@ -233,6 +265,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "LEN('abc')");
             AssertSql(c, DbFamily.Oracle, "LENGTH(RTRIM('abc'))");
             AssertSql(c, DbFamily.MySql, "LENGTH('abc')");
+            AssertSql(c, DbFamily.Sqlite, "LENGTH('abc')");
         }
 
         [Test]
@@ -243,6 +276,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "LOG(1000)");
             AssertSql(c, DbFamily.Oracle, "LOG(1000)");
             AssertSql(c, DbFamily.MySql, "LOG(1000)");
+            AssertSql(c, DbFamily.Sqlite, "EXCEPTION: LOG function not available on Sqlite");
         }
 
         [Test]
@@ -253,6 +287,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "LOG(1000, 10)");
             AssertSql(c, DbFamily.Oracle, "LOG(10, 1000)");
             AssertSql(c, DbFamily.MySql, "LOG(10, 1000)");
+            AssertSql(c, DbFamily.Sqlite, "EXCEPTION: LOG function not available on Sqlite");
         }
 
         [Test]
@@ -263,6 +298,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "LOWER('abc')");
             AssertSql(c, DbFamily.Oracle, "LOWER('abc')");
             AssertSql(c, DbFamily.MySql, "LOWER('abc')");
+            AssertSql(c, DbFamily.Sqlite, "LOWER('abc')");
         }
 
         [Test]
@@ -273,6 +309,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "LTRIM('abc')");
             AssertSql(c, DbFamily.Oracle, "LTRIM('abc')");
             AssertSql(c, DbFamily.MySql, "LTRIM('abc')");
+            AssertSql(c, DbFamily.Sqlite, "LTRIM('abc')");
         }
 
         [Test]
@@ -283,6 +320,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "MONTH({d '2000-12-31'})");
             AssertSql(c, DbFamily.Oracle, "EXTRACT(month FROM DATE '2000-12-31')");
             AssertSql(c, DbFamily.MySql, "MONTH(DATE('2000-12-31'))");
+            AssertSql(c, DbFamily.Sqlite, "CAST(STRFTIME('%m', DATE('2000-12-31')) AS INT)");
         }
 
         [Test]
@@ -293,6 +331,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "DATEDIFF(m, {d '2000-12-30'}, {d '2001-12-31'})");
             AssertSql(c, DbFamily.Oracle, "FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-30'))");
             AssertSql(c, DbFamily.MySql, "TIMESTAMPDIFF(MONTH, DATE('2000-12-30'), DATE('2001-12-31'))");
+            AssertSql(c, DbFamily.Sqlite, "EXCEPTION: MONTHSBETWEEN function not available on Sqlite");
         }
 
         [Test]
@@ -303,6 +342,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "NULLIF('abc', 'N/A')");
             AssertSql(c, DbFamily.Oracle, "NULLIF('abc', 'N/A')");
             AssertSql(c, DbFamily.MySql, "NULLIF('abc', 'N/A')");
+            AssertSql(c, DbFamily.Sqlite, "NULLIF('abc', 'N/A')");
         }
 
         [Test]
@@ -313,6 +353,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "POWER(10, 2)");
             AssertSql(c, DbFamily.Oracle, "POW(10, 2)");
             AssertSql(c, DbFamily.MySql, "POW(10, 2)");
+            AssertSql(c, DbFamily.Sqlite, "EXCEPTION: POWER function not available on Sqlite");
         }
 
         [Test]
@@ -323,6 +364,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "REPLACE('abCde', 'C', 'c')");
             AssertSql(c, DbFamily.Oracle, "REPLACE('abCde', 'C', 'c')");
             AssertSql(c, DbFamily.MySql, "REPLACE('abCde', 'C', 'c')");
+            AssertSql(c, DbFamily.Sqlite, "REPLACE('abCde', 'C', 'c')");
         }
 
         [Test]
@@ -333,6 +375,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "REPLICATE('abc', 5)");
             AssertSql(c, DbFamily.Oracle, "RPAD('', LENGTH(RTRIM('abc')) * 5, 'abc')");
             AssertSql(c, DbFamily.MySql, "REPEAT('abc', 5)");
+            AssertSql(c, DbFamily.Sqlite, "REPLACE(PRINTF('%.' || (5) || 'c', '/'),'/', 'abc')");
         }
 
         [Test]
@@ -343,6 +386,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "REVERSE('abc')");
             AssertSql(c, DbFamily.Oracle, "REVERSE('abc')");
             AssertSql(c, DbFamily.MySql, "REVERSE('abc')");
+            AssertSql(c, DbFamily.Sqlite, "EXCEPTION: REVERSE function not available on Sqlite");
         }
 
         [Test]
@@ -353,6 +397,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "RIGHT('abcde', 2)");
             AssertSql(c, DbFamily.Oracle, "SUBSTR('abcde', -2, 2)");
             AssertSql(c, DbFamily.MySql, "RIGHT('abcde', 2)");
+            AssertSql(c, DbFamily.Sqlite, "SUBSTR('abcde', -2, 2)");
         }
 
         [Test]
@@ -363,6 +408,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "RIGHT('abcde', 2*3)");
             AssertSql(c, DbFamily.Oracle, "SUBSTR('abcde', 0 - (2*3), 2*3)");
             AssertSql(c, DbFamily.MySql, "RIGHT('abcde', 2*3)");
+            AssertSql(c, DbFamily.Sqlite, "SUBSTR('abcde', 0 - (2*3), 2*3)");
         }
 
         [Test]
@@ -373,6 +419,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "ROUND(12.34, -1)");
             AssertSql(c, DbFamily.Oracle, "ROUND(12.34, -1)");
             AssertSql(c, DbFamily.MySql, "ROUND(12.34, -1)");
+            AssertSql(c, DbFamily.Sqlite, "ROUND(12.34, -1)");
         }
 
         [Test]
@@ -383,6 +430,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "RTRIM('abc')");
             AssertSql(c, DbFamily.Oracle, "RTRIM('abc')");
             AssertSql(c, DbFamily.MySql, "RTRIM('abc')");
+            AssertSql(c, DbFamily.Sqlite, "RTRIM('abc')");
         }
 
         [Test]
@@ -393,6 +441,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "SIGN(-1.23)");
             AssertSql(c, DbFamily.Oracle, "SIGN(-1.23)");
             AssertSql(c, DbFamily.MySql, "SIGN(-1.23)");
+            AssertSql(c, DbFamily.Sqlite, "SIGN(-1.23)");
         }
 
         [Test]
@@ -403,6 +452,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "SPACE(5)");
             AssertSql(c, DbFamily.Oracle, "RPAD('', 5, ' ')");
             AssertSql(c, DbFamily.MySql, "SPACE(5)");
+            AssertSql(c, DbFamily.Sqlite, "REPLACE(PRINTF('%.' || (5) || 'c', '/'),'/', ' ')");
         }
 
         [Test]
@@ -413,6 +463,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "SUBSTRING('.bcd..', 2, 3)");
             AssertSql(c, DbFamily.Oracle, "SUBSTR('.bcd..', 2, 3)");
             AssertSql(c, DbFamily.MySql, "SUBSTR('.bcd..', 2, 3)");
+            AssertSql(c, DbFamily.Sqlite, "SUBSTR('.bcd..', 2, 3)");
         }
 
         [Test]
@@ -423,6 +474,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "STR(123)");
             AssertSql(c, DbFamily.Oracle, "TO_CHAR(123)");
             AssertSql(c, DbFamily.MySql, "CONVERT(123, NCHAR)");
+            AssertSql(c, DbFamily.Sqlite, "CAST(123 AS NVARCHAR)");
         }
 
         [Test]
@@ -433,6 +485,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CONVERT(datetime, '2020-12-31 23:59.59.123')");
             AssertSql(c, DbFamily.Oracle, "TO_DATE('2020-12-31 23:59.59.123')");
             AssertSql(c, DbFamily.MySql, "CONVERT('2020-12-31 23:59.59.123', DATETIME)");
+            AssertSql(c, DbFamily.Sqlite, "DATETIME('2020-12-31 23:59.59.123')");
         }
 
         [Test]
@@ -443,6 +496,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CONVERT(real, '123')");
             AssertSql(c, DbFamily.Oracle, "TO_NUMBER('123')");
             AssertSql(c, DbFamily.MySql, "CONVERT('123', DECIMAL)");
+            AssertSql(c, DbFamily.Sqlite, "CAST('123' AS REAL)");
         }
 
         [Test]
@@ -453,6 +507,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "TRIM('abc')");
             AssertSql(c, DbFamily.Oracle, "TRIM('abc')");
             AssertSql(c, DbFamily.MySql, "TRIM('abc')");
+            AssertSql(c, DbFamily.Sqlite, "TRIM('abc')");
         }
 
         [Test]
@@ -463,6 +518,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "CONVERT(date, {ts '2000-12-31 23:59:59.123'})");
             AssertSql(c, DbFamily.Oracle, "TRUNC(TIMESTAMP '2000-12-31 23:59:59.123')");
             AssertSql(c, DbFamily.MySql, "DATE(TIMESTAMP('2000-12-31  23:59:59.123'))");
+            AssertSql(c, DbFamily.Sqlite, "DATE(DATETIME('2000-12-31 23:59:59'))");
         }
 
         [Test]
@@ -473,6 +529,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "UPPER('abc')");
             AssertSql(c, DbFamily.Oracle, "UPPER('abc')");
             AssertSql(c, DbFamily.MySql, "UPPER('abc')");
+            AssertSql(c, DbFamily.Sqlite, "UPPER('abc')");
         }
 
         [Test]
@@ -483,6 +540,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "YEAR({d '2000-12-31'})");
             AssertSql(c, DbFamily.Oracle, "EXTRACT(year FROM DATE '2000-12-31')");
             AssertSql(c, DbFamily.MySql, "YEAR(DATE('2000-12-31'))");
+            AssertSql(c, DbFamily.Sqlite, "CAST(STRFTIME('%Y', DATE('2000-12-31')) AS INT)");
         }
 
         [Test]
@@ -493,6 +551,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, DbFamily.SqlServer, "DATEDIFF(y, {d '2000-12-31'}, {d '2001-12-31'})");
             AssertSql(c, DbFamily.Oracle, "FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31') / 12)");
             AssertSql(c, DbFamily.MySql, "TIMESTAMPDIFF(YEAR, DATE('2000-12-31'), DATE('2001-12-31'))");
+            AssertSql(c, DbFamily.Sqlite, "EXCEPTION: YEARSBETWEEN function not available on Sqlite");
         }
     }
 }
