@@ -53,7 +53,8 @@ string commonSqliteSql = new CommonSqliteWriter().GenerateSql(root);
 
 | SQL Feature | SQL Server | Oracle | MySql | Sqlite | Notes
 | -- | -- | -- | -- | -- | --|
-| SELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| 
+| Simple SELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| SELECT .. FROM .. WHERE .. GROUP BY .. HAVING .. ORDER BY
+ SET operations | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| UNION, UNION ALL, INTERSECT, EXCEPT
 | SUBSELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:|
 | CTE | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:| non recursive only
 | ARITHMETIC (+-*/%) | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| + is interpreted as plus. If you need to concatenate string use CONCAT(...). Oracle - % is converted to MOD(x, y)
@@ -62,3 +63,7 @@ string commonSqliteSql = new CommonSqliteWriter().GenerateSql(root);
 | JOINS: FULL | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | | | 
 | FUNCTIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Limited set of known functions - see below
 | AGGREGATIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | SUM, MIN, MAX, AVG, COUNT, COUNT DISTINCT only
+| GROUP BY | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Simple columns only, no GROUPING SETS
+| FETCH, OFFSET | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | 
+| CAST column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | CAST as following types only: nvarchar, varchar, int, real, timestamp
+| CONVERT column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | TRY_CONVERT not supported
