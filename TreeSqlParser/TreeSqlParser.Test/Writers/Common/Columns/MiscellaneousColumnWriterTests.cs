@@ -1,13 +1,12 @@
 ﻿using NUnit.Framework;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TreeSqlParser.Model;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
-using TreeSqlParser.Writers.Common;
+using TreeSqlParser.Writers.Common.MySql;
+using TreeSqlParser.Writers.Common.Oracle;
+using TreeSqlParser.Writers.Common.Sqlite;
+using TreeSqlParser.Writers.Common.SqlServer;
 
 namespace TreeSqlParser.Writers.Test.Common.Columns
 {

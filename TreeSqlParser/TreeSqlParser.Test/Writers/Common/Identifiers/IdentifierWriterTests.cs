@@ -1,9 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using TreeSqlParser.Model;
-using TreeSqlParser.Writers.Common.Identifiers;
+using TreeSqlParser.Writers.Common;
 
 namespace TreeSqlParser.Writers.Test.Common.Identifiers
 {

@@ -4,11 +4,6 @@ using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Conditions;
 using TreeSqlParser.Model.Relations;
 using TreeSqlParser.Model.Selects;
-using TreeSqlParser.Writers.Common.Columns;
-using TreeSqlParser.Writers.Common.Conditions;
-using TreeSqlParser.Writers.Common.Identifiers;
-using TreeSqlParser.Writers.Common.Relations;
-using TreeSqlParser.Writers.Common.Selects;
 
 namespace TreeSqlParser.Writers.Common
 {
