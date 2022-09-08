@@ -1,6 +1,6 @@
 # tree-sql-parser
 C# library for parsing SQL select statements into an Abstract Syntax Tree (AST).
-The AST can be analysed, transformed and translated into various SQL dialects (SQL Server and Oracle currently supported).
+The AST can be analysed, transformed and translated into various SQL dialects (SQL Server, Oraclem MySql and Sqlite currently supported).
 
 Available on Nuget, [tree-sql-parser](https://www.nuget.org/packages/Tree-Sql-Parser//).
 
@@ -38,6 +38,7 @@ Translate AST to SQL
 // FullSqlServerWriter has full support for SQL Server syntax
 string fullSqlServerSql = new FullSqlServerWriter().GenerateSql(root);
 
+Translate AST to SQL
 // CommonSqlWriters have more limited support, which can be translated to a variety of dialects
 // Currently SQL Server and Oracle are provided. More to follow.
 string commonSqlServerSql = new CommonSqlServerSqlWriter().GenerateSql(root);
