@@ -1,6 +1,6 @@
 # tree-sql-parser
 C# library for parsing SQL select statements into an Abstract Syntax Tree (AST).
-The AST can be analysed, transformed and translated into various SQL dialects (SQL Server, Oraclem MySql and Sqlite currently supported).
+The AST can be analysed, transformed and translated into various SQL dialects (SQL Server, Oracle, MySql and Sqlite currently supported).
 
 Available on Nuget, [tree-sql-parser](https://www.nuget.org/packages/Tree-Sql-Parser//).
 
