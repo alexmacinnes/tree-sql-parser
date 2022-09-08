@@ -1,29 +1,17 @@
 ﻿using NUnit.Framework;
-using System.Collections.Generic;
 using TreeSqlParser.Model.Columns;
-using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
-using TreeSqlParser.Writers.Common.MySql;
-using TreeSqlParser.Writers.Common.Oracle;
-using TreeSqlParser.Writers.Common.Sqlite;
-using TreeSqlParser.Writers.Common.SqlServer;
+using TreeSqlParser.Test.Writers.Common;
+
 
 namespace TreeSqlParser.Writers.Test.Common.Columns
 {
     public class LiteralWriterTests
     {
-        private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
-        {
-            { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() },
-            { DbFamily.Sqlite, new CommonSqliteSqlWriter() },
-        };
-
         private Column ParseColumn(string sql) =>
-            ((SelectStatement)SelectParser.ParseSelectStatement("select " + sql).Child).Selects[0].Columns[0];
+            SelectParser.ParseColumn(sql);
 
-        private string Sql(Column c, DbFamily db) => writers[db].GenerateSql(c);
+        private string Sql(Column c, SqlWriterType db) => CommonMother.Sql(c, db);
 
         [TestCase("1")]
         [TestCase("-3")]
@@ -35,7 +23,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var column = ParseColumn(sql);
 
-            foreach (var x in writers.Values)
+            foreach (var x in CommonMother.AllCommonWriters)
             {
                 string generatedSql = x.GenerateSql(column);
                 Assert.AreEqual(sql, generatedSql);
@@ -47,10 +35,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("{d '2020-12-31'}");
 
-            Assert.AreEqual("{d '2020-12-31'}", Sql(c, DbFamily.SqlServer));
-            Assert.AreEqual("DATE '2020-12-31'", Sql(c, DbFamily.Oracle));
-            Assert.AreEqual("DATE('2020-12-31')", Sql(c, DbFamily.MySql));
-            Assert.AreEqual("DATE('2020-12-31')", Sql(c, DbFamily.Sqlite));
+            Assert.AreEqual("{d '2020-12-31'}", Sql(c, SqlWriterType.SqlServer));
+            Assert.AreEqual("DATE '2020-12-31'", Sql(c, SqlWriterType.Oracle));
+            Assert.AreEqual("DATE('2020-12-31')", Sql(c, SqlWriterType.MySql));
+            Assert.AreEqual("DATE('2020-12-31')", Sql(c, SqlWriterType.Sqlite));
         }
 
         [Test]
@@ -58,10 +46,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("{ts '2020-12-31 23:58:59'}");
 
-            Assert.AreEqual("{ts '2020-12-31 23:58:59'}", Sql(c, DbFamily.SqlServer));
-            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59'", Sql(c, DbFamily.Oracle));
-            Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59')", Sql(c, DbFamily.MySql));
-            Assert.AreEqual("DATETIME('2020-12-31 23:58:59')", Sql(c, DbFamily.Sqlite));
+            Assert.AreEqual("{ts '2020-12-31 23:58:59'}", Sql(c, SqlWriterType.SqlServer));
+            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59'", Sql(c, SqlWriterType.Oracle));
+            Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59')", Sql(c, SqlWriterType.MySql));
+            Assert.AreEqual("DATETIME('2020-12-31 23:58:59')", Sql(c, SqlWriterType.Sqlite));
         }
 
         [Test]
@@ -69,10 +57,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("{ts '2020-12-31 23:58:59.1234567'}");
 
-            Assert.AreEqual("{ts '2020-12-31 23:58:59.1234567'}", Sql(c, DbFamily.SqlServer));
-            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59.1234567'", Sql(c, DbFamily.Oracle));
-            Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59.1234567')", Sql(c, DbFamily.MySql));
-            Assert.AreEqual("DATETIME('2020-12-31 23:58:59')", Sql(c, DbFamily.Sqlite));
+            Assert.AreEqual("{ts '2020-12-31 23:58:59.1234567'}", Sql(c, SqlWriterType.SqlServer));
+            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59.1234567'", Sql(c, SqlWriterType.Oracle));
+            Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59.1234567')", Sql(c, SqlWriterType.MySql));
+            Assert.AreEqual("DATETIME('2020-12-31 23:58:59')", Sql(c, SqlWriterType.Sqlite));
         }
     }
 }

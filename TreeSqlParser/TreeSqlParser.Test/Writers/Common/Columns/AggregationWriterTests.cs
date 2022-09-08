@@ -4,30 +4,19 @@ using System.Collections.Generic;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
-using TreeSqlParser.Writers.Common.MySql;
-using TreeSqlParser.Writers.Common.Oracle;
-using TreeSqlParser.Writers.Common.Sqlite;
-using TreeSqlParser.Writers.Common.SqlServer;
+using TreeSqlParser.Test.Writers.Common;
 
 namespace TreeSqlParser.Writers.Test.Common.Columns
 {
     public class AggregationWriterTests
     {
-        private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
-        {
-            { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() },
-            { DbFamily.Sqlite, new CommonSqliteSqlWriter() },
-        };
-
         private Column ParseColumn(string sql) =>
-            ((SelectStatement)SelectParser.ParseSelectStatement("select " + sql).Child).Selects[0].Columns[0];
+            SelectParser.ParseColumn(sql);
 
         private void AssertSql(string inputSql)
         {
             var column = ParseColumn(inputSql);
-            foreach (var x in writers.Values)
+            foreach (var x in CommonMother.AllCommonWriters)
             {
                 string outputSql = x.GenerateSql(column);
                 Assert.AreEqual(inputSql, outputSql);
@@ -37,7 +26,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         private void AssertThrows(string inputSql)
         {
             var column = ParseColumn(inputSql);
-            foreach (var x in writers.Values)
+            foreach (var x in CommonMother.AllCommonWriters)
             {
                 Assert.Throws<InvalidOperationException>(
                     () => x.GenerateSql(column),

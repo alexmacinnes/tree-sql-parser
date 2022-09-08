@@ -1,29 +1,17 @@
 ﻿using NUnit.Framework;
-using System.Collections.Generic;
 using TreeSqlParser.Model.Conditions;
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
-using TreeSqlParser.Writers.Common.MySql;
-using TreeSqlParser.Writers.Common.Oracle;
-using TreeSqlParser.Writers.Common.Sqlite;
-using TreeSqlParser.Writers.Common.SqlServer;
+using TreeSqlParser.Test.Writers.Common;
 
 namespace TreeSqlParser.Writers.Test.Common.Conditions
 {
     public class ConditionWriterTests
     {
-        private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
-        {
-            { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() },
-            { DbFamily.Sqlite, new CommonSqliteSqlWriter() },
-        };
-
-        private string Sql(Condition c, DbFamily db) => writers[db].GenerateSql(c);
+        private string Sql(Condition c, SqlWriterType db) => CommonMother.Sql(c, db);
 
         private Condition ParseCondition(string sql) =>
-            ((SelectStatement)SelectParser.ParseSelectStatement("select 1 where " + sql).Child).Selects[0].WhereCondition;
+            SelectParser.ParseCondition(sql);
 
         [TestCase("1 = 2")]
         [TestCase("1 < 2")]
@@ -43,7 +31,7 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
         {
             var condition = ParseCondition(sql);
 
-            foreach (var x in writers.Values)
+            foreach (var x in CommonMother.AllCommonWriters)
             {
                 string generatedSql = x.GenerateSql(condition);
                 Assert.AreEqual(sql, generatedSql);
@@ -55,10 +43,10 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
         {
             var condition = ParseCondition("1 IN (SELECT 2)");
 
-            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, DbFamily.SqlServer));
-            Assert.AreEqual("1 IN (SELECT 2 FROM dual)", Sql(condition, DbFamily.Oracle));
-            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, DbFamily.MySql));
-            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, DbFamily.Sqlite));
+            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.SqlServer));
+            Assert.AreEqual("1 IN (SELECT 2 FROM dual)", Sql(condition, SqlWriterType.Oracle));
+            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.MySql));
+            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.Sqlite));
         }
 
         [Test]
@@ -66,10 +54,10 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
         {
             var condition = ParseCondition("EXISTS (SELECT 1)");
 
-            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, DbFamily.SqlServer));
-            Assert.AreEqual("EXISTS (SELECT 1 FROM dual)", Sql(condition, DbFamily.Oracle));
-            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, DbFamily.MySql));
-            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, DbFamily.Sqlite));
+            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.SqlServer));
+            Assert.AreEqual("EXISTS (SELECT 1 FROM dual)", Sql(condition, SqlWriterType.Oracle));
+            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.MySql));
+            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.Sqlite));
         }
     }
 }

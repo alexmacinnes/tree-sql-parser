@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
+using TreeSqlParser.Test.Writers.Common;
 using TreeSqlParser.Writers.Common.MySql;
 using TreeSqlParser.Writers.Common.Oracle;
 using TreeSqlParser.Writers.Common.Sqlite;
@@ -11,15 +12,7 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
 {
     public class SelectWriterSelectStatementTests
     {
-        private readonly IReadOnlyDictionary<DbFamily, ISqlWriter> writers = new Dictionary<DbFamily, ISqlWriter>
-        {
-            { DbFamily.SqlServer, new CommonSqlServerSqlWriter() },
-            { DbFamily.Oracle, new CommonOracleSqlWriter() },
-            { DbFamily.MySql, new CommonMySqlSqlWriter() },
-            { DbFamily.Sqlite, new CommonSqliteSqlWriter() }
-        };
-
-        private string Sql(SelectStatement s, DbFamily db) => writers[db].GenerateSql(s);
+        private string Sql(SelectStatement s, SqlWriterType db) => CommonMother.Sql(s, db);
 
         private SelectStatement ParseSelectStatement(string sql) =>
             (SelectStatement)SelectParser.ParseSelectStatement(sql).Child;
@@ -59,10 +52,10 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
                 "[cte2] AS (SELECT 2 UNION ALL SELECT 3) " +
                 "SELECT 4";
 
-            Assert.AreEqual(expectedSqlServer, Sql(s, DbFamily.SqlServer));
-            Assert.AreEqual(expectedOracle, Sql(s, DbFamily.Oracle));
-            Assert.AreEqual(expectedMySql, Sql(s, DbFamily.MySql));
-            Assert.AreEqual(expectedSqlite, Sql(s, DbFamily.Sqlite));
+            Assert.AreEqual(expectedSqlServer, Sql(s, SqlWriterType.SqlServer));
+            Assert.AreEqual(expectedOracle, Sql(s, SqlWriterType.Oracle));
+            Assert.AreEqual(expectedMySql, Sql(s, SqlWriterType.MySql));
+            Assert.AreEqual(expectedSqlite, Sql(s, SqlWriterType.Sqlite));
         }
 
         [Test]
@@ -72,10 +65,10 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
 
             var s = ParseSelectStatement(sql);
 
-            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, DbFamily.SqlServer));
-            Assert.AreEqual("SELECT 1 FROM dual ORDER BY 2, 3 DESC", Sql(s, DbFamily.Oracle));
-            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, DbFamily.MySql));
-            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, DbFamily.Sqlite));
+            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.SqlServer));
+            Assert.AreEqual("SELECT 1 FROM dual ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Oracle));
+            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.MySql));
+            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Sqlite));
         }
     }
 }
