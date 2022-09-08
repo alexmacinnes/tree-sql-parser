@@ -33,14 +33,18 @@ var toUpperColumn = SelectParser.ParseColumn("UPPER(surname)");
 // remove nameColumn from the AST and replace it with toUpperColumn
 nameColumn.ReplaceSelf(toUpperColumn);
 ```
-Translate AST to SQL
+### Generate SQL
+FullSqlServerWriter has full support for converting any AST back into SQL.
 ```cs
-// FullSqlServerWriter has full support for SQL Server syntax
 string fullSqlServerSql = new FullSqlServerWriter().GenerateSql(root);
+```
 
-Translate AST to SQL
-// CommonSqlWriters have more limited support, which can be translated to a variety of dialects
-// Currently SQL Server and Oracle are provided. More to follow.
+### Generate SQL with CommonSqlWriters
+CommonSqlWriters have more limited support, which can be translated to a variety of dialects.
+Currently SQL Server, Oracle, MySql and Sqloite are provided. More to follow.
+```cs
 string commonSqlServerSql = new CommonSqlServerSqlWriter().GenerateSql(root);
 string commonOracleSql = new CommonOracleSqlWriter().GenerateSql(root);
+string commonMySqlSql = new CommonMySqlSqlWriter().GenerateSql(root);
+string commonSqliteSql = new CommonSqliteWriter().GenerateSql(root);
 ```
