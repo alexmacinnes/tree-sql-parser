@@ -1,6 +1,6 @@
 # tree-sql-parser
 C# library for parsing SQL select statements into an Abstract Syntax Tree (AST).
-The AST can be analysed, transformed and translated into various SQL dialects (SQL Server and Oracle currently supported).
+The AST can be analysed, transformed and translated into various SQL dialects (SQL Server, Oracle, MySql and Sqlite currently supported).
 
 Available on Nuget, [tree-sql-parser](https://www.nuget.org/packages/Tree-Sql-Parser//).
 
@@ -33,13 +33,88 @@ var toUpperColumn = SelectParser.ParseColumn("UPPER(surname)");
 // remove nameColumn from the AST and replace it with toUpperColumn
 nameColumn.ReplaceSelf(toUpperColumn);
 ```
-Translate AST to SQL
+### Generate SQL
+FullSqlServerWriter has full support for converting any AST back into SQL.
 ```cs
-// FullSqlServerWriter has full support for SQL Server syntax
 string fullSqlServerSql = new FullSqlServerWriter().GenerateSql(root);
+```
 
-// CommonSqlWriters have more limited support, which can be translated to a variety of dialects
-// Currently SQL Server and Oracle are provided. More to follow.
+### Generate SQL with CommonSqlWriters
+CommonSqlWriters have more limited support, which can be translated to a variety of dialects.
+Currently SQL Server, Oracle, MySql and Sqlite are provided. More to follow.
+```cs
 string commonSqlServerSql = new CommonSqlServerSqlWriter().GenerateSql(root);
 string commonOracleSql = new CommonOracleSqlWriter().GenerateSql(root);
+string commonMySqlSql = new CommonMySqlSqlWriter().GenerateSql(root);
+string commonSqliteSql = new CommonSqliteWriter().GenerateSql(root);
 ```
+
+### CommonSqlWriters support
+
+| SQL Feature | SQL Server | Oracle | MySql | Sqlite | Notes
+| -- | -- | -- | -- | -- | --|
+| Simple SELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| SELECT .. FROM .. WHERE .. GROUP BY .. HAVING .. ORDER BY
+ SET operations | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| UNION, UNION ALL, INTERSECT, EXCEPT
+| SUBSELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:|
+| CTE | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:| non recursive only
+| ARITHMETIC (+-*/%) | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| + is interpreted as plus. If you need to concatenate string use CONCAT(...). Oracle - % is converted to MOD(x, y)
+| JOINS: INNER, LEFT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| 
+| JOINS: RIGHT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark:| Sqlite - rewrites as LEFT JOIN
+| JOINS: FULL | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | | | 
+| FUNCTIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Limited set of known functions - see below
+| AGGREGATIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | SUM, MIN, MAX, AVG, COUNT, COUNT DISTINCT only
+| GROUP BY | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Simple columns only, no GROUPING SETS
+| FETCH, OFFSET | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | 
+| CAST column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | CAST as following types only: nvarchar, varchar, int, real, timestamp
+| CONVERT column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | TRY_CONVERT not supported
+
+Function support is limited to the following list of known SQL Server functions. These get translated into native function calls on other SQL dialects where possible, or into complex statements where not.
+
+| Function | SQL Server | Oracle | MySql | Sqlite |
+| -- | -- | -- | -- | -- |
+Abs(num) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+AddDays(date, days) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+AddMonths(date, months) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+AddYears(date, years) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Ceiling(num) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+CharIndex(fullText, search) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+CharIndex(fullText, search, startIndex) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Choose(selector, items... ) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Coalesce(columns...) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Concat(columns...) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Concat_WS(seperator, columns...) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+DateFromParts(year, month, day) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Day(date) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+DaysBetween(date1, date2) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Exp(num) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
+Floor(num) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+GetDate() | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+GetTimestamp() | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+IsNull(column) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Left(text) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Len(text) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Log(num) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
+Log(num, base) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
+Lower(text) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+LTrim(text) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Month(date) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+MonthsBetween(date1, date2)| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
+NullIf(column) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Power(num, pwr) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
+Replace(text)| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Replicate(text, n) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Reverse(text) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
+Right(text, n) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Round(num) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+RTrim(text) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Sign(num)| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Space(n) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Substring(text, start, count)| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+ToChar(column) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+ToTimestamp(column)| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+ToNumber(column) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Trim(text) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+TruncateDate(date) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Upper(text) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Year(date) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+YearsBetween(date1, date2) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
