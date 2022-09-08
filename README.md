@@ -60,3 +60,5 @@ string commonSqliteSql = new CommonSqliteWriter().GenerateSql(root);
 | JOINS: INNER, LEFT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| 
 | JOINS: RIGHT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark:| Sqlite - rewrites as LEFT JOIN
 | JOINS: FULL | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | | | 
+| FUNCTIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Limited set of known functions - see below
+| AGGREGATIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | SUM, MIN, MAX, AVG, COUNT, COUNT DISTINCT only
