@@ -24,7 +24,7 @@ namespace TreeSqlParser.Writers
 
         /// <summary>A limited implementation allowing the most common SQL features
         /// to be translated to other SQL dialects</summary>
-        public static ISqlWriter CommonSqlServerWriter(SqlWriterType sqlWriterType) =>
+        public static ISqlWriter CommonSqlWriter(SqlWriterType sqlWriterType) =>
             commonWriters.TryGetValue(sqlWriterType, out Func<ISqlWriter> func)
             ? func()
             : throw new NotSupportedException("SqlWriterType not recognised: " + sqlWriterType);

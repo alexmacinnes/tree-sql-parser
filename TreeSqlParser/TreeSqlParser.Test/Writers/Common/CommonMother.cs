@@ -8,17 +8,17 @@ namespace TreeSqlParser.Test.Writers.Common
     {
         public static ISqlWriter[] AllCommonWriters => new[]
         {
-            SqlWriterFactory.CommonSqlServerWriter(SqlWriterType.SqlServer),
-            SqlWriterFactory.CommonSqlServerWriter(SqlWriterType.Oracle),
-            SqlWriterFactory.CommonSqlServerWriter(SqlWriterType.MySql),
-            SqlWriterFactory.CommonSqlServerWriter(SqlWriterType.Sqlite)
+            SqlWriterFactory.CommonSqlWriter(SqlWriterType.SqlServer),
+            SqlWriterFactory.CommonSqlWriter(SqlWriterType.Oracle),
+            SqlWriterFactory.CommonSqlWriter(SqlWriterType.MySql),
+            SqlWriterFactory.CommonSqlWriter(SqlWriterType.Sqlite)
         };
 
         public static string Sql(SqlElement element, SqlWriterType writer)
         {
             try
             {
-                return SqlWriterFactory.CommonSqlServerWriter(writer).GenerateSql(element);
+                return SqlWriterFactory.CommonSqlWriter(writer).GenerateSql(element);
             }
             catch (Exception e)
             {
