@@ -25,6 +25,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "MOD(1, 2)");
             AssertSql(c, SqlWriterType.MySql, "1%2");
             AssertSql(c, SqlWriterType.Sqlite, "1%2");
+            AssertSql(c, SqlWriterType.Postgres, "1%2");
         }
 
         [Test]
@@ -36,6 +37,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "1+MOD(2, 3)");
             AssertSql(c, SqlWriterType.MySql, "1+2%3");
             AssertSql(c, SqlWriterType.Sqlite, "1+2%3");
+            AssertSql(c, SqlWriterType.Postgres, "1+2%3");
         }
 
         [Test]
@@ -47,6 +49,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "MOD(MOD(MOD(1, 2), 3), 4)");
             AssertSql(c, SqlWriterType.MySql, "1%2%3%4");
             AssertSql(c, SqlWriterType.Sqlite, "1%2%3%4");
+            AssertSql(c, SqlWriterType.Postgres, "1%2%3%4");
         }
 
         [Test]
@@ -58,6 +61,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "MOD(1*2, 3)*4");
             AssertSql(c, SqlWriterType.MySql, "1*2%3*4");
             AssertSql(c, SqlWriterType.Sqlite, "1*2%3*4");
+            AssertSql(c, SqlWriterType.Postgres, "1*2%3*4");
         }
 
         [Test]
@@ -69,6 +73,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "MOD(MOD(1*2, 3)*4, 5)");
             AssertSql(c, SqlWriterType.MySql, "1*2%3*4%5");
             AssertSql(c, SqlWriterType.Sqlite, "1*2%3*4%5");
+            AssertSql(c, SqlWriterType.Postgres, "1*2%3*4%5");
         }
 
         [Test]
@@ -80,6 +85,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "MOD(1*2, 3)+MOD(4, 5)");
             AssertSql(c, SqlWriterType.MySql, "1*2%3+4%5");
             AssertSql(c, SqlWriterType.Sqlite, "1*2%3+4%5");
+            AssertSql(c, SqlWriterType.Postgres, "1*2%3+4%5");
         }
 
         [Test]
@@ -91,6 +97,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "MOD(1*2, 3)*4+5*6");
             AssertSql(c, SqlWriterType.MySql, "1*2%3*4+5*6");
             AssertSql(c, SqlWriterType.Sqlite, "1*2%3*4+5*6");
+            AssertSql(c, SqlWriterType.Postgres, "1*2%3*4+5*6");
         }
 
 
@@ -103,6 +110,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "1+MOD(2, 3)-4");
             AssertSql(c, SqlWriterType.MySql, "1+2%3-4");
             AssertSql(c, SqlWriterType.Sqlite, "1+2%3-4");
+            AssertSql(c, SqlWriterType.Postgres, "1+2%3-4");
         }
 
         [Test]
@@ -114,6 +122,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "1+MOD(MOD(2, 3), 4)-5");
             AssertSql(c, SqlWriterType.MySql, "1+2%3%4-5");
             AssertSql(c, SqlWriterType.Sqlite, "1+2%3%4-5");
+            AssertSql(c, SqlWriterType.Postgres, "1+2%3%4-5");
         }
     }
 }

@@ -18,8 +18,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
         private string Sql(Column c, SqlWriterType db) => CommonMother.Sql(c, db);
 
-        private void AssertSql(Column c, SqlWriterType db, string expected) =>
-            Assert.AreEqual(expected, Sql(c, db));
+        private void AssertSql(Column c, SqlWriterType db, string expected)
+        {
+            string actual = Sql(c, db);
+            Assert.AreEqual(expected, actual);
+        }
 
         [Test]
         public void Abs()
@@ -30,6 +33,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "ABS(-1.23)");
             AssertSql(c, SqlWriterType.MySql, "ABS(-1.23)");
             AssertSql(c, SqlWriterType.Sqlite, "ABS(-1.23)");
+            AssertSql(c, SqlWriterType.Postgres, "ABS(-1.23)");
         }
 
         [Test]
@@ -41,6 +45,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "(DATE '2000-12-31' + 365)");
             AssertSql(c, SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (365) DAY)");
             AssertSql(c, SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(365)||' DAYS')");
+            AssertSql(c, SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1d' * 365)");
         }
 
         [Test]
@@ -52,6 +57,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "ADD_MONTHS(DATE '2000-12-31', 3)");
             AssertSql(c, SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) MONTH)");
             AssertSql(c, SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(3)||' MONTHS')");
+            AssertSql(c, SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1 month' * 3)");
         }
 
         [Test]
@@ -63,6 +69,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "ADD_MONTHS(DATE '2000-12-31', 12 * (3)");
             AssertSql(c, SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) YEAR)");
             AssertSql(c, SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(3)||' YEARS')");
+            AssertSql(c, SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1y' * 3)");
         }
 
         [Test]
@@ -74,6 +81,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "CEIL(1.23)");
             AssertSql(c, SqlWriterType.MySql, "CEIL(1.23)");
             AssertSql(c, SqlWriterType.Sqlite, "(CAST(1.23 AS INT) + (1.23 > CAST(1.23 AS INT)))");
+            AssertSql(c, SqlWriterType.Postgres, "CEILING(1.23)");
         }
 
         [Test]
@@ -85,17 +93,19 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "INSTR('d', 'abcde')");
             AssertSql(c, SqlWriterType.MySql, "INSTR('d', 'abcde')");
             AssertSql(c, SqlWriterType.Sqlite, "INSTR('d', 'abcde')");
+            AssertSql(c, SqlWriterType.Postgres, "STRPOS('d', 'abcde')");
         }
 
         [Test]
         public void CharIndexWithStartIndex()
         {
-            var c = ParseColumn("CHARINDEX('abcde', 'd', 2)");
+            var c = ParseColumn("CHARINDEX('d', 'abcde', 2)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CHARINDEX('abcde', 'd', 2)");
-            AssertSql(c, SqlWriterType.Oracle, "INSTR('d', 'abcde', 2)");
-            AssertSql(c, SqlWriterType.MySql, "IFNULL((NULLIF(INSTR(SUBSTR('d', 2, 'abcde'), 0)) + 2 - 1, 0)");
-            AssertSql(c, SqlWriterType.Sqlite, "IFNULL((NULLIF(INSTR(SUBSTR('d', 2, 'abcde'), 0)) + 2 - 1), 0)");
+            AssertSql(c, SqlWriterType.SqlServer, "CHARINDEX('d', 'abcde', 2)");
+            AssertSql(c, SqlWriterType.Oracle, "INSTR('abcde', 'd', 2)");
+            AssertSql(c, SqlWriterType.MySql, "IFNULL((NULLIF(INSTR(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)");
+            AssertSql(c, SqlWriterType.Sqlite, "IFNULL((NULLIF(INSTR(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)");
+            AssertSql(c, SqlWriterType.Postgres, "COALESCE((NULLIF(STRPOS(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)");
         }
 
         [Test]
@@ -107,6 +117,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "CASE WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END");
             AssertSql(c, SqlWriterType.MySql, "ELT(2, 'one', 'two', 'three')");
             AssertSql(c, SqlWriterType.Sqlite, "CASE  WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END");
+            AssertSql(c, SqlWriterType.Postgres, "CASE  WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END");
         }
 
         [Test]
@@ -118,6 +129,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "COALESCE(1, 2, 3)");
             AssertSql(c, SqlWriterType.MySql, "COALESCE(1, 2, 3)");
             AssertSql(c, SqlWriterType.Sqlite, "COALESCE(1, 2, 3)");
+            AssertSql(c, SqlWriterType.Postgres, "COALESCE(1, 2, 3)");
         }
 
         [Test]
@@ -129,6 +141,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "'a' || 'b' || 'c'");
             AssertSql(c, SqlWriterType.MySql, "CONCAT('a', 'b', 'c')");
             AssertSql(c, SqlWriterType.Sqlite, "'a' || 'b' || 'c'");
+            AssertSql(c, SqlWriterType.Postgres, "'a' || 'b' || 'c'");
         }
 
         [Test]
@@ -140,6 +153,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "'a' || '___' || 'b' || '___' || 'c'");
             AssertSql(c, SqlWriterType.MySql, "CONCAT_WS('___', 'a', 'b', 'c')");
             AssertSql(c, SqlWriterType.Sqlite, "'a' || '___' || 'b' || '___' || 'c'");
+            AssertSql(c, SqlWriterType.Postgres, "'a' || '___' || 'b' || '___' || 'c'");
         }
 
         [Test]
@@ -151,6 +165,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "TO_DATE((2020) || (12) || (31), 'yyyyMMdd')");
             AssertSql(c, SqlWriterType.MySql, "DATE(CONCAT_WS('-', 2020, 12, 31)))");
             AssertSql(c, SqlWriterType.Sqlite, "DATE(SUBSTR('0000' || 2020, -4, 4) || '-' || SUBSTR('00' || 12, -2, 2) || '-' || SUBSTR('00' || 31, -2, 2))");
+            AssertSql(c, SqlWriterType.Postgres, "MAKE_DATE(2020, 12, 31)");
         }
 
         [Test]
@@ -162,6 +177,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "EXTRACT(day FROM DATE '2000-12-31')");
             AssertSql(c, SqlWriterType.MySql, "DAY(DATE('2000-12-31'))");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(STRFTIME('%d', DATE('2000-12-31')) AS INT)");
+            AssertSql(c, SqlWriterType.Postgres, "EXTRACT(DAY FROM DATE '2000-12-31')");
         }
 
         [Test]
@@ -173,6 +189,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "(DATE '2001-12-31' - DATE '2000-12-31')");
             AssertSql(c, SqlWriterType.MySql, "DATEDIFF(DATE('2001-12-31'), DATE('2000-12-31'))");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(JULIANDAY(DATE('2001-12-31') AS INT)) - CAST(JULIANDAY(DATE('2000-12-31') AS INT))");
+            AssertSql(c, SqlWriterType.Postgres, "((DATE '2001-12-31')::date - (DATE '2000-12-31')::date)");
         }
 
         [Test]
@@ -184,6 +201,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "EXP(1.23)");
             AssertSql(c, SqlWriterType.MySql, "EXP(1.23)");
             AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: EXP function not available on Sqlite");
+            AssertSql(c, SqlWriterType.Postgres, "EXP(1.23)");
         }
 
         [Test]
@@ -195,6 +213,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "FLOOR(1.23)");
             AssertSql(c, SqlWriterType.MySql, "FLOOR(1.23)");
             AssertSql(c, SqlWriterType.Sqlite, "(CAST(1.23 AS INT) - (1.23 < CAST(1.23 AS INT)))");
+            AssertSql(c, SqlWriterType.Postgres, "FLOOR(1.23)");
 
         }
 
@@ -207,6 +226,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "CURRENT_DATE");
             AssertSql(c, SqlWriterType.MySql, "DATE(CURRENT_DATE())");
             AssertSql(c, SqlWriterType.Sqlite, "DATE()");
+            AssertSql(c, SqlWriterType.Postgres, "CURRENT_DATE");
         }
 
         [Test]
@@ -218,6 +238,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "CURRENT_TIMESTAMP");
             AssertSql(c, SqlWriterType.MySql, "TIMESTAMP(CURRENT_TIMESTAMP())");
             AssertSql(c, SqlWriterType.Sqlite, "DATETIME()");
+            AssertSql(c, SqlWriterType.Postgres, "CURRENT_TIMESTAMP");
         }
 
         [Test]
@@ -229,6 +250,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "NVL(\"x\".\"y\", 0)");
             AssertSql(c, SqlWriterType.MySql, "ISNULL(`x`.`y`, 0)");
             AssertSql(c, SqlWriterType.Sqlite, "IFNULL([x].[y], 0)");
+            AssertSql(c, SqlWriterType.Postgres, "COALESCE(\"x\".\"y\", 0)");
         }
 
         [Test]
@@ -240,6 +262,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "SUBSTR('abcde', 1, 2)");
             AssertSql(c, SqlWriterType.MySql, "LEFT('abcde', 2)");
             AssertSql(c, SqlWriterType.Sqlite, "SUBSTR('abcde', 1, 2)");
+            AssertSql(c, SqlWriterType.Postgres, "LEFT('abcde', 2)");
         }
 
         [Test]
@@ -251,6 +274,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "LENGTH(RTRIM('abc'))");
             AssertSql(c, SqlWriterType.MySql, "LENGTH('abc')");
             AssertSql(c, SqlWriterType.Sqlite, "LENGTH('abc')");
+            AssertSql(c, SqlWriterType.Postgres, "LENGTH('abc')");
         }
 
         [Test]
@@ -262,6 +286,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "LOG(1000)");
             AssertSql(c, SqlWriterType.MySql, "LOG(1000)");
             AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: LOG function not available on Sqlite");
+            AssertSql(c, SqlWriterType.Postgres, "LOG(1000)");
         }
 
         [Test]
@@ -273,6 +298,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "LOG(10, 1000)");
             AssertSql(c, SqlWriterType.MySql, "LOG(10, 1000)");
             AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: LOG function not available on Sqlite");
+            AssertSql(c, SqlWriterType.Postgres, "LOG(1000, 10)");
         }
 
         [Test]
@@ -284,6 +310,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "LOWER('abc')");
             AssertSql(c, SqlWriterType.MySql, "LOWER('abc')");
             AssertSql(c, SqlWriterType.Sqlite, "LOWER('abc')");
+            AssertSql(c, SqlWriterType.Postgres, "LOWER('abc')");
         }
 
         [Test]
@@ -295,6 +322,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "LTRIM('abc')");
             AssertSql(c, SqlWriterType.MySql, "LTRIM('abc')");
             AssertSql(c, SqlWriterType.Sqlite, "LTRIM('abc')");
+            AssertSql(c, SqlWriterType.Postgres, "LTRIM('abc')");
         }
 
         [Test]
@@ -306,6 +334,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "EXTRACT(month FROM DATE '2000-12-31')");
             AssertSql(c, SqlWriterType.MySql, "MONTH(DATE('2000-12-31'))");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(STRFTIME('%m', DATE('2000-12-31')) AS INT)");
+            AssertSql(c, SqlWriterType.Postgres, "EXTRACT(MONTH FROM DATE '2000-12-31')");
         }
 
         [Test]
@@ -317,6 +346,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-30'))");
             AssertSql(c, SqlWriterType.MySql, "TIMESTAMPDIFF(MONTH, DATE('2000-12-30'), DATE('2001-12-31'))");
             AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: MONTHSBETWEEN function not available on Sqlite");
+            AssertSql(c, SqlWriterType.Postgres, "(12*(EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-30'))) + (EXTRACT(MONTH FROM DATE '2001-12-31') - EXTRACT(MONTH FROM DATE '2000-12-30'))");
         }
 
         [Test]
@@ -328,6 +358,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "NULLIF('abc', 'N/A')");
             AssertSql(c, SqlWriterType.MySql, "NULLIF('abc', 'N/A')");
             AssertSql(c, SqlWriterType.Sqlite, "NULLIF('abc', 'N/A')");
+            AssertSql(c, SqlWriterType.Postgres, "NULLIF('abc', 'N/A')");
         }
 
         [Test]
@@ -339,6 +370,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "POW(10, 2)");
             AssertSql(c, SqlWriterType.MySql, "POW(10, 2)");
             AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: POWER function not available on Sqlite");
+            AssertSql(c, SqlWriterType.Postgres, "POWER(10, 2)");
         }
 
         [Test]
@@ -350,6 +382,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "REPLACE('abCde', 'C', 'c')");
             AssertSql(c, SqlWriterType.MySql, "REPLACE('abCde', 'C', 'c')");
             AssertSql(c, SqlWriterType.Sqlite, "REPLACE('abCde', 'C', 'c')");
+            AssertSql(c, SqlWriterType.Postgres, "REPLACE('abCde', 'C', 'c')");
         }
 
         [Test]
@@ -361,6 +394,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "RPAD('', LENGTH(RTRIM('abc')) * 5, 'abc')");
             AssertSql(c, SqlWriterType.MySql, "REPEAT('abc', 5)");
             AssertSql(c, SqlWriterType.Sqlite, "REPLACE(PRINTF('%.' || (5) || 'c', '/'),'/', 'abc')");
+            AssertSql(c, SqlWriterType.Postgres, "REPEAT('abc', 5)");
         }
 
         [Test]
@@ -372,6 +406,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "REVERSE('abc')");
             AssertSql(c, SqlWriterType.MySql, "REVERSE('abc')");
             AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: REVERSE function not available on Sqlite");
+            AssertSql(c, SqlWriterType.Postgres, "REVERSE('abc')");
         }
 
         [Test]
@@ -383,6 +418,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "SUBSTR('abcde', -2, 2)");
             AssertSql(c, SqlWriterType.MySql, "RIGHT('abcde', 2)");
             AssertSql(c, SqlWriterType.Sqlite, "SUBSTR('abcde', -2, 2)");
+            AssertSql(c, SqlWriterType.Postgres, "RIGHT('abcde', 2)");
         }
 
         [Test]
@@ -394,6 +430,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "SUBSTR('abcde', 0 - (2*3), 2*3)");
             AssertSql(c, SqlWriterType.MySql, "RIGHT('abcde', 2*3)");
             AssertSql(c, SqlWriterType.Sqlite, "SUBSTR('abcde', 0 - (2*3), 2*3)");
+            AssertSql(c, SqlWriterType.Postgres, "RIGHT('abcde', 2*3)");
         }
 
         [Test]
@@ -405,6 +442,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "ROUND(12.34, -1)");
             AssertSql(c, SqlWriterType.MySql, "ROUND(12.34, -1)");
             AssertSql(c, SqlWriterType.Sqlite, "ROUND(12.34, -1)");
+            AssertSql(c, SqlWriterType.Postgres, "ROUND(12.34, -1)");
         }
 
         [Test]
@@ -416,6 +454,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "RTRIM('abc')");
             AssertSql(c, SqlWriterType.MySql, "RTRIM('abc')");
             AssertSql(c, SqlWriterType.Sqlite, "RTRIM('abc')");
+            AssertSql(c, SqlWriterType.Postgres, "RTRIM('abc')");
         }
 
         [Test]
@@ -427,6 +466,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "SIGN(-1.23)");
             AssertSql(c, SqlWriterType.MySql, "SIGN(-1.23)");
             AssertSql(c, SqlWriterType.Sqlite, "SIGN(-1.23)");
+            AssertSql(c, SqlWriterType.Postgres, "SIGN(-1.23)");
         }
 
         [Test]
@@ -438,6 +478,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "RPAD('', 5, ' ')");
             AssertSql(c, SqlWriterType.MySql, "SPACE(5)");
             AssertSql(c, SqlWriterType.Sqlite, "REPLACE(PRINTF('%.' || (5) || 'c', '/'),'/', ' ')");
+            AssertSql(c, SqlWriterType.Postgres, "SPACE(5)");
         }
 
         [Test]
@@ -449,6 +490,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "SUBSTR('.bcd..', 2, 3)");
             AssertSql(c, SqlWriterType.MySql, "SUBSTR('.bcd..', 2, 3)");
             AssertSql(c, SqlWriterType.Sqlite, "SUBSTR('.bcd..', 2, 3)");
+            AssertSql(c, SqlWriterType.Postgres, "SUBSTR('.bcd..', 2, 3)");
         }
 
         [Test]
@@ -460,6 +502,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "TO_CHAR(123)");
             AssertSql(c, SqlWriterType.MySql, "CONVERT(123, NCHAR)");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(123 AS NVARCHAR)");
+            AssertSql(c, SqlWriterType.Postgres, "(123)::varchar");
         }
 
         [Test]
@@ -471,6 +514,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "TO_DATE('2020-12-31 23:59.59.123')");
             AssertSql(c, SqlWriterType.MySql, "CONVERT('2020-12-31 23:59.59.123', DATETIME)");
             AssertSql(c, SqlWriterType.Sqlite, "DATETIME('2020-12-31 23:59.59.123')");
+            AssertSql(c, SqlWriterType.Postgres, "('2020-12-31 23:59.59.123')::timestamp");
         }
 
         [Test]
@@ -482,6 +526,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "TO_NUMBER('123')");
             AssertSql(c, SqlWriterType.MySql, "CONVERT('123', DECIMAL)");
             AssertSql(c, SqlWriterType.Sqlite, "CAST('123' AS REAL)");
+            AssertSql(c, SqlWriterType.Postgres, "('123')::decimal");
         }
 
         [Test]
@@ -493,6 +538,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "TRIM('abc')");
             AssertSql(c, SqlWriterType.MySql, "TRIM('abc')");
             AssertSql(c, SqlWriterType.Sqlite, "TRIM('abc')");
+            AssertSql(c, SqlWriterType.Postgres, "TRIM('abc')");
         }
 
         [Test]
@@ -504,6 +550,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "TRUNC(TIMESTAMP '2000-12-31 23:59:59.123')");
             AssertSql(c, SqlWriterType.MySql, "DATE(TIMESTAMP('2000-12-31  23:59:59.123'))");
             AssertSql(c, SqlWriterType.Sqlite, "DATE(DATETIME('2000-12-31 23:59:59'))");
+            AssertSql(c, SqlWriterType.Postgres, "DATE(TIMESTAMP '2000-12-31 23:59:59.123')");
         }
 
         [Test]
@@ -515,6 +562,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "UPPER('abc')");
             AssertSql(c, SqlWriterType.MySql, "UPPER('abc')");
             AssertSql(c, SqlWriterType.Sqlite, "UPPER('abc')");
+            AssertSql(c, SqlWriterType.Postgres, "UPPER('abc')");
         }
 
         [Test]
@@ -526,6 +574,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.Oracle, "EXTRACT(year FROM DATE '2000-12-31')");
             AssertSql(c, SqlWriterType.MySql, "YEAR(DATE('2000-12-31'))");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(STRFTIME('%Y', DATE('2000-12-31')) AS INT)");
+            AssertSql(c, SqlWriterType.Postgres, "EXTRACT(YEAR FROM DATE '2000-12-31')");
         }
 
         [Test]
@@ -533,10 +582,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("YEARSBETWEEN({d '2000-12-31'}, {d '2001-12-31'})");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DATEDIFF(y, {d '2000-12-31'}, {d '2001-12-31'})");
+            AssertSql(c, SqlWriterType.SqlServer, "DATEDIFF(year, {d '2000-12-31'}, {d '2001-12-31'})");
             AssertSql(c, SqlWriterType.Oracle, "FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31') / 12)");
             AssertSql(c, SqlWriterType.MySql, "TIMESTAMPDIFF(YEAR, DATE('2000-12-31'), DATE('2001-12-31'))");
             AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: YEARSBETWEEN function not available on Sqlite");
+            AssertSql(c, SqlWriterType.Postgres, "(EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-31'))");
         }
     }
 }

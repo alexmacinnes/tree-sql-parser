@@ -28,8 +28,8 @@ namespace TreeSqlParser.Writers.Common.MySql
         protected override string CharIndex(Column searchText, Column inputText, Column startIndex = null) =>
             startIndex == null ?
             $"INSTR({ColumnsSql(inputText, searchText)})" :
-            $"IFNULL((NULLIF(INSTR(SUBSTR({ColumnsSql(inputText, startIndex)}, {ColumnSql(searchText)}), 0)) + {ColumnSql(startIndex)} - 1, 0)";
-  
+            $"IFNULL((NULLIF(INSTR(SUBSTR({ColumnsSql(inputText, startIndex)}), {ColumnSql(searchText)}), 0)) + {ColumnSql(startIndex)} - 1, 0)";
+
         protected override string Choose(Column index, List<Column> values) =>
             $"ELT({ColumnSql(index)}, {ColumnsSql(values.ToArray())})";
 

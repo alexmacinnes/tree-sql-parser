@@ -39,6 +39,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("DATE '2020-12-31'", Sql(c, SqlWriterType.Oracle));
             Assert.AreEqual("DATE('2020-12-31')", Sql(c, SqlWriterType.MySql));
             Assert.AreEqual("DATE('2020-12-31')", Sql(c, SqlWriterType.Sqlite));
+            Assert.AreEqual("DATE '2020-12-31'", Sql(c, SqlWriterType.Postgres));
         }
 
         [Test]
@@ -50,6 +51,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59'", Sql(c, SqlWriterType.Oracle));
             Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59')", Sql(c, SqlWriterType.MySql));
             Assert.AreEqual("DATETIME('2020-12-31 23:58:59')", Sql(c, SqlWriterType.Sqlite));
+            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59'", Sql(c, SqlWriterType.Postgres));
         }
 
         [Test]
@@ -61,6 +63,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59.1234567'", Sql(c, SqlWriterType.Oracle));
             Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59.1234567')", Sql(c, SqlWriterType.MySql));
             Assert.AreEqual("DATETIME('2020-12-31 23:58:59')", Sql(c, SqlWriterType.Sqlite));
+            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59.1234567'", Sql(c, SqlWriterType.Postgres));
         }
     }
 }

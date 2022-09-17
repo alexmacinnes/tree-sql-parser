@@ -11,7 +11,8 @@ namespace TreeSqlParser.Test.Writers.Common
             SqlWriterFactory.CommonSqlWriter(SqlWriterType.SqlServer),
             SqlWriterFactory.CommonSqlWriter(SqlWriterType.Oracle),
             SqlWriterFactory.CommonSqlWriter(SqlWriterType.MySql),
-            SqlWriterFactory.CommonSqlWriter(SqlWriterType.Sqlite)
+            SqlWriterFactory.CommonSqlWriter(SqlWriterType.Sqlite),
+            SqlWriterFactory.CommonSqlWriter(SqlWriterType.Postgres)
         };
 
         public static string Sql(SqlElement element, SqlWriterType writer)

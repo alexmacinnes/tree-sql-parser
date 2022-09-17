@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TreeSqlParser.Writers.Common.MySql;
 using TreeSqlParser.Writers.Common.Oracle;
+using TreeSqlParser.Writers.Common.Postgres;
 using TreeSqlParser.Writers.Common.Sqlite;
 using TreeSqlParser.Writers.Common.SqlServer;
 using TreeSqlParser.Writers.Full;
@@ -16,7 +17,8 @@ namespace TreeSqlParser.Writers
                 { SqlWriterType.SqlServer, () => new CommonSqlServerSqlWriter() },
                 { SqlWriterType.Oracle, () => new CommonOracleSqlWriter() },
                 { SqlWriterType.MySql, () => new CommonMySqlSqlWriter() },
-                { SqlWriterType.Sqlite, () => new CommonSqliteSqlWriter() }
+                { SqlWriterType.Sqlite, () => new CommonSqliteSqlWriter() },
+                { SqlWriterType.Postgres, () => new CommonPostgresSqlWriter() },
             };
 
         /// <summary>A full implementation allowing any SqlElement to be converted into SQL Server SQL </summary>

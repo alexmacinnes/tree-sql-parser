@@ -5,6 +5,7 @@
         SqlServer,
         Oracle, 
         MySql,
-        Sqlite
+        Sqlite,
+        Postgres
     }
 }

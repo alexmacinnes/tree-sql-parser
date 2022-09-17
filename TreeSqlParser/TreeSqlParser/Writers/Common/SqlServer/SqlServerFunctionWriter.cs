@@ -144,6 +144,6 @@ namespace TreeSqlParser.Writers.Common.SqlServer
             $"YEAR({ColumnSql(date)})";
 
         protected override string YearsBetween(Column date1, Column date2) =>
-            $"DATEDIFF(y, {ColumnSql(date1)}, {ColumnSql(date2)})";
+            $"DATEDIFF(year, {ColumnSql(date1)}, {ColumnSql(date2)})";
     }
 }
