@@ -11,21 +11,35 @@ Available on Nuget, [tree-sql-parser](https://www.nuget.org/packages/Tree-Sql-Pa
 ### Code Samples
 Parse SQL
 ```cs
+using TreeSqlParser.Model;
+using TreeSqlParser.Parsing;
+
 string sql = "select id, surname from dbo.people";
 SqlRootElement root = SelectParser.ParseSelectStatement(sql);
 ```
 Traverse AST explicitly
 ```cs
+using TreeSqlParser.Model;
+using TreeSqlParser.Model.Columns;
+using TreeSqlParser.Model.Selects;
+
 var statement = (SelectStatement)root.Child;
 List<Column> columns = statement.Selects[0].Columns;
 ```
 Traverse AST with Linq
 ```cs
+using TreeSqlParser.Model;
+using TreeSqlParser.Model.Columns;
+
 var allElements = root.Flatten();
 List<PrimitiveColumn> columns2 = allElements.OfType<PrimitiveColumn>().ToList();
 ```
 Modify AST
 ```cs
+using TreeSqlParser.Model;
+using TreeSqlParser.Model.Columns;
+using TreeSqlParser.Parsing;
+
 // modify statement to: "select id, UPPER(surname) from dbo.people"
 var nameColumn = root.Flatten().OfType<PrimitiveColumn>().Single(x => x.Name.Name == "surname");
 var toUpperColumn = SelectParser.ParseColumn("UPPER(surname)");
@@ -34,19 +48,26 @@ var toUpperColumn = SelectParser.ParseColumn("UPPER(surname)");
 nameColumn.ReplaceSelf(toUpperColumn);
 ```
 ### Generate SQL
+
 FullSqlServerWriter has full support for converting any AST back into SQL.
 ```cs
-string fullSqlServerSql = new FullSqlServerWriter().GenerateSql(root);
+using TreeSqlParser.Model;
+using TreeSqlParser.Writers;
+
+string fullSqlServerSql = SqlWriterFactory.FullSqlServerWriter().GenerateSql(root);
 ```
 
 ### Generate SQL with CommonSqlWriters
 CommonSqlWriters have more limited support, which can be translated to a variety of dialects.
 Currently SQL Server, Oracle, MySql and Sqlite are provided. More to follow.
 ```cs
-string commonSqlServerSql = new CommonSqlServerSqlWriter().GenerateSql(root);
-string commonOracleSql = new CommonOracleSqlWriter().GenerateSql(root);
-string commonMySqlSql = new CommonMySqlSqlWriter().GenerateSql(root);
-string commonSqliteSql = new CommonSqliteWriter().GenerateSql(root);
+using TreeSqlParser.Model;
+using TreeSqlParser.Writers;
+
+string commonSqlServerSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.SqlServer).GenerateSql(root);
+string commonOracleSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Oracle).GenerateSql(root);
+string commonMySqlSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.MySql).GenerateSql(root);
+string commonSqliteSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Sqlite).GenerateSql(root);
 ```
 
 ### CommonSqlWriters support
