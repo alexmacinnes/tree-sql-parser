@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>Tree-Sql-Parser</id>
-		<version>0.4.0</version>
+		<version>0.5.0</version>
 		<title>Tree-Sql-Parser</title>
 		<authors>Alex MacInnes</authors>
 		<owners>Alex MacInnes</owners>
@@ -10,9 +10,9 @@
 		<projectUrl>https://github.com/alexmacinnes/tree-sql-parser</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Library for Parsing, Transforming and Translating SQL queries. See GitHub for details https://github.com/alexmacinnes/tree-sql-parser</description>
-		<releaseNotes>BREAKING CHANGE. Rearranged some internal namespaces. In most cases, this will have no impact on calling applications.</releaseNotes>
+		<releaseNotes>Added Postgres support. Bug fixes for SQL Server, MySql and Sqlite writers</releaseNotes>
 		<copyright>Copyright © 2022</copyright>
-		<tags>sql parser sql-server tsql oracle translate mysql sqlite</tags>
+		<tags>sql parser sql-server tsql oracle translate mysql sqlite postgres.</tags>
 		<dependencies>
 			<dependency id="Newtonsoft.Json" version="13.0.1" />
 			<dependency id="TSQL.Parser" version="2.5.0" />
