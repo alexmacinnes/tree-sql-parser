@@ -7,7 +7,7 @@
             ColumnWriter = new PostgresColumnWriter(this);
             ConditionWriter = new ConditionWriter(this);
             RelationWriter = new RelationWriter(this, supportsFullJoin: true);
-            SelectWriter = new SelectWriter(this);
+            SelectWriter = new PostgresSelectWriter(this);
             IdentifierWriter = new IdentifierWriter('"', '"');
         }
     }
