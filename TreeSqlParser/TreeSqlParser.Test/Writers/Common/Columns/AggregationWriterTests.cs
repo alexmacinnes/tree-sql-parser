@@ -11,7 +11,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
     public class AggregationWriterTests
     {
         private Column ParseColumn(string sql) =>
-            SelectParser.ParseColumn(sql);
+            (Column) SelectParser.ParseColumn(sql).Child;
 
         private void AssertSql(string inputSql)
         {

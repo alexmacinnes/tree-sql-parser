@@ -11,7 +11,7 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
         private string Sql(Condition c, SqlWriterType db) => CommonMother.Sql(c, db);
 
         private Condition ParseCondition(string sql) =>
-            SelectParser.ParseCondition(sql);
+            (Condition) SelectParser.ParseCondition(sql).Child;
 
         [TestCase("1 = 2")]
         [TestCase("1 < 2")]

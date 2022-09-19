@@ -14,7 +14,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
     class FunctionWriterTests
     {
         private Column ParseColumn(string sql) =>
-            SelectParser.ParseColumn(sql);
+            (Column) SelectParser.ParseColumn(sql).Child;
 
         private string Sql(Column c, SqlWriterType db) => CommonMother.Sql(c, db);
 

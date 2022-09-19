@@ -12,7 +12,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         private string Sql(Column c, SqlWriterType db) => CommonMother.Sql(c, db);
 
         private Column ParseColumn(string sql) =>
-            SelectParser.ParseColumn(sql);
+            (Column) SelectParser.ParseColumn(sql).Child;
 
         [TestCase("*")]
         [TestCase("(1)")]

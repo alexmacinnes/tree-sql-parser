@@ -18,7 +18,7 @@ namespace TreeSqlParser.Parsing
         {
             { TSQLKeywords.UNION, SetModifier.Union },
             { TSQLKeywords.INTERSECT, SetModifier.Intersect },
-            { TSQLKeywords.EXCEPT, SetModifier.Except },
+            { TSQLKeywords.EXCEPT, SetModifier.Except }
         };
 
         private static TokenList GetTokenList(string sql)
@@ -38,19 +38,55 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        public static Column ParseColumn(string sql)
+        public static SqlRootElement ParseColumn(string sql)
+        {
+            var c = ParseColumnInternal(sql);
+            var result = new SqlRootElement
+            {
+                Child = c
+            };
+            c.Parent = result;
+
+            return result;
+        }
+
+        internal static Column ParseColumnInternal(string sql)
         {
             var tokenList = GetTokenList(sql);
             return ColumnParser.ParseNextColumn(null, tokenList);
         }
 
-        public static Condition ParseCondition(string sql)
+        public static SqlRootElement ParseCondition(string sql)
+        {
+            var c = ParseConditionInternal(sql);
+            var result = new SqlRootElement
+            {
+                Child = c
+            };
+            c.Parent = result;
+
+            return result;
+        }
+
+        internal static Condition ParseConditionInternal(string sql)
         {
             var tokenList = GetTokenList(sql);
             return ConditionParser.ParseCondition(null, tokenList);
         }
 
-        public static Select ParseSelect(string sql)
+        public static SqlRootElement ParseSelect(string sql)
+        {
+            var s = ParseSelectInternal(sql);
+            var result = new SqlRootElement
+            {
+                Child = s
+            };
+            s.Parent = result;
+
+            return result;
+        }
+
+        internal static Select ParseSelectInternal(string sql)
         { 
             var tokenList = GetTokenList(sql);
             return ParseNextSelect(null, tokenList);

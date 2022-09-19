@@ -9,7 +9,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
     public class LiteralWriterTests
     {
         private Column ParseColumn(string sql) =>
-            SelectParser.ParseColumn(sql);
+            (Column) SelectParser.ParseColumn(sql).Child;
 
         private string Sql(Column c, SqlWriterType db) => CommonMother.Sql(c, db);
 
