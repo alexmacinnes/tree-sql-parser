@@ -48,6 +48,7 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
             Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.MySql));
             Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.Sqlite));
             Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.Postgres));
+            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.Db2));
         }
 
         [Test]
@@ -60,6 +61,7 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
             Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.MySql));
             Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.Sqlite));
             Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.Postgres));
+            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.Db2));
         }
     }
 }

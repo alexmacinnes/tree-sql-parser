@@ -58,11 +58,18 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
                 "\"cte2\" AS (SELECT 2 UNION ALL SELECT 3) " +
                 "SELECT 4";
 
+            string expectedDb2 =
+                "WITH " +
+                "\"cte1\" AS (SELECT 1), " +
+                "\"cte2\" AS (SELECT 2 UNION ALL SELECT 3) " +
+                "SELECT 4";
+
             Assert.AreEqual(expectedSqlServer, Sql(s, SqlWriterType.SqlServer));
             Assert.AreEqual(expectedOracle, Sql(s, SqlWriterType.Oracle));
             Assert.AreEqual(expectedMySql, Sql(s, SqlWriterType.MySql));
             Assert.AreEqual(expectedSqlite, Sql(s, SqlWriterType.Sqlite));
             Assert.AreEqual(expectedPostgres, Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(expectedPostgres, Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -77,6 +84,7 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.MySql));
             Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Sqlite));
             Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Db2));
         }
     }
 }

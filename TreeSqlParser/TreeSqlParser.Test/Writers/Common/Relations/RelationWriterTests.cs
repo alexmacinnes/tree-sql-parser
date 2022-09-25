@@ -23,6 +23,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("`x`", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("[x]", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\"", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\"", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -35,6 +36,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("`x`.`y`", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("[x].[y]", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\".\"y\"", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\".\"y\"", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -47,6 +49,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("(`x`)", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("([x])", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("(\"x\")", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("(\"x\")", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -59,6 +62,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("(SELECT * FROM `x`) AS `foo`", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("(SELECT * FROM [x]) AS [foo]", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("(SELECT * FROM \"x\") AS \"foo\"", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("(SELECT * FROM \"x\") AS \"foo\"", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -71,6 +75,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("`x` INNER JOIN `y` ON 1 = 2", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -83,6 +88,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("`x` LEFT JOIN `y` ON 1 = 2", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("[x] LEFT JOIN [y] ON 1 = 2", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\" LEFT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\" LEFT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -95,6 +101,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("`x` RIGHT JOIN `y` ON 1 = 2", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("[y] LEFT JOIN [x] ON 1 = 2", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\" RIGHT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\" RIGHT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -107,6 +114,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("EXCEPTION: Full Join not supported", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("EXCEPTION: Full Join not supported", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\" FULL JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\" FULL JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -119,6 +127,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("`x` CROSS JOIN `y`", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("[x] CROSS JOIN [y]", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\" CROSS JOIN \"y\"", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\" CROSS JOIN \"y\"", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -131,6 +140,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]
@@ -143,6 +153,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             Assert.AreEqual("`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.MySql));
             Assert.AreEqual("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.Sqlite));
             Assert.AreEqual("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.Postgres));
+            Assert.AreEqual("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.Db2));
         }
 
         [Test]

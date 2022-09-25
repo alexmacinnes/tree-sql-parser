@@ -22,6 +22,7 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual("SELECT 1, 2 AS `foo`", Sql(s, SqlWriterType.MySql));
             Assert.AreEqual("SELECT 1, 2 AS [foo]", Sql(s, SqlWriterType.Sqlite));
             Assert.AreEqual("SELECT 1, 2 AS \"foo\"", Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual("SELECT 1, 2 AS \"foo\"", Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -44,6 +45,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 FROM \"x\", \"y\" LEFT JOIN \"z\" ON 2 = 3",
                 Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT 1 FROM \"x\", \"y\" LEFT JOIN \"z\" ON 2 = 3",
+                Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -66,6 +70,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 WHERE 2 = 3",
                 Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT 1 WHERE 2 = 3",
+                Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -88,6 +95,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 GROUP BY 2, 3",
                 Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT 1 GROUP BY 2, 3",
+                Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -110,6 +120,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 HAVING COUNT(*) > 1",
                 Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT 1 HAVING COUNT(*) > 1",
+                Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -132,6 +145,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT 1 FROM \"foo\" WHERE 2 = 3 GROUP BY 4 HAVING SUM(5) > 6",
                 Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT 1 FROM \"foo\" WHERE 2 = 3 GROUP BY 4 HAVING SUM(5) > 6",
+                Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -154,6 +170,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT * FROM (SELECT 1)",
                 Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT * FROM (SELECT 1)",
+                Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -176,6 +195,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT \"x\" ORDER BY 1 LIMIT 500",
                 Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT \"x\" ORDER BY 1 FETCH NEXT 500 ROWS ONLY",
+                Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -198,6 +220,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                 "SELECT \"x\" ORDER BY 1 OFFSET 500",
                 Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT \"x\" ORDER BY 1 OFFSET 500 ROWS",
+                Sql(s, SqlWriterType.Db2));
         }
 
         [Test]
@@ -220,6 +245,9 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
             Assert.AreEqual(
                "SELECT \"x\" ORDER BY 1 LIMIT 500 OFFSET 1500",
                Sql(s, SqlWriterType.Postgres));
+            Assert.AreEqual(
+                "SELECT \"x\" ORDER BY 1 OFFSET 1500 ROWS FETCH NEXT 500 ROWS ONLY",
+                Sql(s, SqlWriterType.Db2));
         }
     }
 }
