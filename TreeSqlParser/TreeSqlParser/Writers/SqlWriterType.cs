@@ -6,6 +6,8 @@
         Oracle, 
         MySql,
         Sqlite,
-        Postgres
+        Postgres,
+        Db2,
+        MariaDb
     }
 }

@@ -38,6 +38,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("IIF(1 = 2, 3, 4)", Sql(c, SqlWriterType.Oracle));
             Assert.AreEqual("IF(1 = 2, 3, 4)", Sql(c, SqlWriterType.MySql));
             Assert.AreEqual("CASE WHEN 1 = 2 THEN 3 ELSE 4 END", Sql(c, SqlWriterType.Sqlite));
+            Assert.AreEqual("IF(1 = 2, 3, 4)", Sql(c, SqlWriterType.Db2));
         }
 
         [Test]
@@ -49,6 +50,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("(SELECT 1 FROM dual)", Sql(c, SqlWriterType.Oracle));
             Assert.AreEqual("(SELECT 1)", Sql(c, SqlWriterType.MySql));
             Assert.AreEqual("(SELECT 1)", Sql(c, SqlWriterType.Sqlite));
+            Assert.AreEqual("(SELECT 1)", Sql(c, SqlWriterType.Db2));
         }
 
         [Test]
@@ -60,6 +62,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("1 AS \"foo\"", Sql(c, SqlWriterType.Oracle));
             Assert.AreEqual("1 AS `foo`", Sql(c, SqlWriterType.MySql));
             Assert.AreEqual("1 AS [foo]", Sql(c, SqlWriterType.Sqlite));
+            Assert.AreEqual("1 AS \"foo\"", Sql(c, SqlWriterType.Db2));
         }
 
         [Test]
@@ -71,6 +74,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("\"x\".\"y\"", Sql(c, SqlWriterType.Oracle));
             Assert.AreEqual("`x`.`y`", Sql(c, SqlWriterType.MySql));
             Assert.AreEqual("[x].[y]", Sql(c, SqlWriterType.Sqlite));
+            Assert.AreEqual("\"x\".\"y\"", Sql(c, SqlWriterType.Db2));
         }
 
         [Test]
@@ -82,6 +86,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             Assert.AreEqual("\"x\"", Sql(c, SqlWriterType.Oracle));
             Assert.AreEqual("`x`", Sql(c, SqlWriterType.MySql));
             Assert.AreEqual("[x]", Sql(c, SqlWriterType.Sqlite));
+            Assert.AreEqual("\"x\"", Sql(c, SqlWriterType.Db2));
         }
     }
 }

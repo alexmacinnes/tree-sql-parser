@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TreeSqlParser.Writers.Common.Db2;
 using TreeSqlParser.Writers.Common.MySql;
 using TreeSqlParser.Writers.Common.Oracle;
 using TreeSqlParser.Writers.Common.Postgres;
@@ -19,6 +20,8 @@ namespace TreeSqlParser.Writers
                 { SqlWriterType.MySql, () => new CommonMySqlSqlWriter() },
                 { SqlWriterType.Sqlite, () => new CommonSqliteSqlWriter() },
                 { SqlWriterType.Postgres, () => new CommonPostgresSqlWriter() },
+                { SqlWriterType.Db2, () => new CommonDb2SqlWriter() },
+                { SqlWriterType.MariaDb, () => new CommonMySqlSqlWriter() }               // MariaDb syntax is MySql
             };
 
         /// <summary>A full implementation allowing any SqlElement to be converted into SQL Server SQL </summary>

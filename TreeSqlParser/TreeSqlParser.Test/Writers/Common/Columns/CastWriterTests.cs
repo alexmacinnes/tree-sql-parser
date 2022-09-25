@@ -29,6 +29,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.MySql, "CAST(NULL AS nchar)");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(NULL AS nvarchar)");
             AssertSql(c, SqlWriterType.Postgres, "(NULL)::varchar");
+            AssertSql(c, SqlWriterType.Db2, "CAST(NULL AS nvarchar)");
         }
 
         [Test]
@@ -41,6 +42,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.MySql, "CAST(NULL AS char)");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(NULL AS varchar)");
             AssertSql(c, SqlWriterType.Postgres, "(NULL)::varchar");
+            AssertSql(c, SqlWriterType.Db2, "CAST(NULL AS varchar)");
         }
 
         [Test]
@@ -53,6 +55,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.MySql, "CAST(NULL AS signed)");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(NULL AS int)");
             AssertSql(c, SqlWriterType.Postgres, "(NULL)::integer");
+            AssertSql(c, SqlWriterType.Db2, "CAST(NULL AS int)");
         }
 
         [Test]
@@ -65,6 +68,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.MySql, "CAST(NULL AS decimal)");
             AssertSql(c, SqlWriterType.Sqlite, "CAST(NULL AS real)");
             AssertSql(c, SqlWriterType.Postgres, "(NULL)::decimal");
+            AssertSql(c, SqlWriterType.Db2, "CAST(NULL AS double)");
         }
 
         [Test]
@@ -77,6 +81,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             AssertSql(c, SqlWriterType.MySql, "CAST(NULL AS datetime)");
             AssertSql(c, SqlWriterType.Sqlite, "DATETIME(NULL)");
             AssertSql(c, SqlWriterType.Postgres, "(NULL)::timestamp");
+            AssertSql(c, SqlWriterType.Db2, "CAST(NULL AS timestamp)");
         }
     }
 }
