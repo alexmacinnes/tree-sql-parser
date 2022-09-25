@@ -1,6 +1,6 @@
 # tree-sql-parser
 C# library for parsing SQL select statements into an Abstract Syntax Tree (AST).
-The AST can be analysed, transformed and translated into various SQL dialects (SQL Server, Oracle, MySql, Sqlite and Postgres currently supported).
+The AST can be analysed, transformed and translated into various SQL dialects (SQL Server, Oracle, MySql (MariaDb), Sqlite, Postgres amd DB2 currently supported).
 
 Available on Nuget, [tree-sql-parser](https://www.nuget.org/packages/Tree-Sql-Parser//).
 
@@ -68,7 +68,9 @@ string commonSqlServerSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.SqlSe
 string commonOracleSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Oracle).GenerateSql(root);
 string commonMySqlSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.MySql).GenerateSql(root);
 string commonSqliteSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Sqlite).GenerateSql(root);
-string commonPostgresSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Postgres).GenerateSql(root)
+string commonPostgresSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Postgres).GenerateSql(root);
+string commonMariaDbSql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.MariaDb).GenerateSql(root);
+string commonDb2ql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Db2).GenerateSql(root);
 ```
 
 ### CommonSqlWriters support
