@@ -59,7 +59,7 @@ string fullSqlServerSql = SqlWriterFactory.FullSqlServerWriter().GenerateSql(roo
 
 ### Generate SQL with CommonSqlWriters
 CommonSqlWriters have more limited support, which can be translated to a variety of dialects.
-Currently SQL Server, Oracle, MySql and Sqlite are provided. More to follow.
+More dialects to follow.
 ```cs
 using TreeSqlParser.Model;
 using TreeSqlParser.Writers;
@@ -75,22 +75,22 @@ string commonDb2ql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Db2).Generat
 
 ### CommonSqlWriters support
 
-| SQL Feature | SQL Server | Oracle | MySql | Sqlite&nbsp; | Postgres | Notes
-| -- | -- | -- | -- | -- | -- | -- |
-| Simple SELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | SELECT .. FROM .. WHERE .. GROUP BY .. HAVING .. ORDER BY
- SET operations | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | UNION, UNION ALL, INTERSECT, EXCEPT
-| SUBSELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: |
-| CTE | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:| :heavy_check_mark: | non recursive only
-| ARITHMETIC (+-*/%) | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | + is interpreted as plus. If you need to concatenate string use CONCAT(...). Oracle - % is converted to MOD(x, y)
-| JOINS: INNER, LEFT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | 
-| JOINS: RIGHT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | Sqlite - rewrites as LEFT JOIN
-| JOINS: FULL | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | | | :heavy_check_mark::heavy_check_mark: | 
-| FUNCTIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Limited set of known functions - see below
-| AGGREGATIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | SUM, MIN, MAX, AVG, COUNT, COUNT DISTINCT only
-| GROUP BY | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Simple columns only, no GROUPING SETS
-| FETCH, OFFSET | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | 
-| CAST column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | CAST as following types only: nvarchar, varchar, int, real, timestamp
-| CONVERT column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | TRY_CONVERT not supported
+| SQL Feature | SQL Server | Oracle | MySql (MariaDB) | Sqlite&nbsp; | Postgres | DB2&nbsp;&nbsp;&nbsp;&nbsp; | Notes
+| -- | -- | -- | -- | -- | -- | -- | -- |
+| Simple SELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | SELECT .. FROM .. WHERE .. GROUP BY .. HAVING .. ORDER BY
+ SET operations | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | UNION, UNION ALL, INTERSECT, EXCEPT
+| SUBSELECT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: |
+| CTE | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:| :heavy_check_mark: | :heavy_check_mark: | non recursive only
+| ARITHMETIC (+-*/%) | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | + is interpreted as plus. If you need to concatenate string use CONCAT(...). Oracle - % is converted to MOD(x, y)
+| JOINS: INNER, LEFT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | 
+| JOINS: RIGHT | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark:| :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | Sqlite - rewrites as LEFT JOIN
+| JOINS: FULL | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | | | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | 
+| FUNCTIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Limited set of known functions - see below
+| AGGREGATIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | SUM, MIN, MAX, AVG, COUNT, COUNT DISTINCT only
+| GROUP BY | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Simple columns only, no GROUPING SETS
+| FETCH, OFFSET | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | 
+| CAST column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | CAST as following types only: nvarchar, varchar, int, real, timestamp
+| CONVERT column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | TRY_CONVERT not supported
 
 Function support is limited to the following list of known SQL Server functions. These get translated into native function calls on other SQL dialects where possible, or into complex statements where not.
 
