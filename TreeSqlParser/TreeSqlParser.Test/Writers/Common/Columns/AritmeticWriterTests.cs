@@ -2,6 +2,7 @@
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
+using swt = TreeSqlParser.Writers.SqlWriterType;
 
 namespace TreeSqlParser.Writers.Test.Common.Columns
 {
@@ -17,7 +18,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1%2")
-                .WithSql("MOD(1, 2)", SqlWriterType.Oracle);
+                .WithSql("MOD(1, 2)", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -29,7 +30,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1+2%3")
-                .WithSql("1+MOD(2, 3)", SqlWriterType.Oracle);
+                .WithSql("1+MOD(2, 3)", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -41,7 +42,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1%2%3%4")
-                .WithSql("MOD(MOD(MOD(1, 2), 3), 4)", SqlWriterType.Oracle);
+                .WithSql("MOD(MOD(MOD(1, 2), 3), 4)", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -53,7 +54,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1*2%3*4")
-                .WithSql("MOD(1*2, 3)*4", SqlWriterType.Oracle);
+                .WithSql("MOD(1*2, 3)*4", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -65,7 +66,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1*2%3*4%5")
-                .WithSql("MOD(MOD(1*2, 3)*4, 5)", SqlWriterType.Oracle);
+                .WithSql("MOD(MOD(1*2, 3)*4, 5)", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -77,7 +78,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1*2%3+4%5")
-                .WithSql("MOD(1*2, 3)+MOD(4, 5)", SqlWriterType.Oracle);
+                .WithSql("MOD(1*2, 3)+MOD(4, 5)", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -89,7 +90,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1*2%3*4+5*6")
-                .WithSql("MOD(1*2, 3)*4+5*6", SqlWriterType.Oracle);
+                .WithSql("MOD(1*2, 3)*4+5*6", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -102,7 +103,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1+2%3-4")
-                .WithSql("1+MOD(2, 3)-4", SqlWriterType.Oracle);
+                .WithSql("1+MOD(2, 3)-4", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -114,7 +115,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1+2%3%4-5")
-                .WithSql("1+MOD(MOD(2, 3), 4)-5", SqlWriterType.Oracle);
+                .WithSql("1+MOD(MOD(2, 3), 4)-5", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }

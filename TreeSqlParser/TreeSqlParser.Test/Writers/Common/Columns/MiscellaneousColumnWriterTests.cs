@@ -2,6 +2,7 @@
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
+using swt = TreeSqlParser.Writers.SqlWriterType;
 
 namespace TreeSqlParser.Writers.Test.Common.Columns
 {
@@ -32,13 +33,9 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var c = ParseColumn("IIF(1 = 2, 3, 4)");
 
             var expected = new ExpectedSqlResult()
-                .WithSql("IIF(1 = 2, 3, 4)", SqlWriterType.SqlServer)
-                .WithSql("IIF(1 = 2, 3, 4)", SqlWriterType.Oracle)
-                .WithSql("IF(1 = 2, 3, 4)", SqlWriterType.MySql)
-                .WithSql("IF(1 = 2, 3, 4)", SqlWriterType.MariaDb)
-                .WithSql("CASE WHEN 1 = 2 THEN 3 ELSE 4 END", SqlWriterType.Sqlite)
-                .WithSql("IIF(1 = 2, 3, 4)", SqlWriterType.Postgres)
-                .WithSql("IF(1 = 2, 3, 4)", SqlWriterType.Db2);
+                .WithSql("IIF(1 = 2, 3, 4)", swt.SqlServer, swt.Oracle, swt.Postgres)
+                .WithSql("IF(1 = 2, 3, 4)", swt.MySql, swt.MariaDb, swt.Db2)
+                .WithSql("CASE WHEN 1 = 2 THEN 3 ELSE 4 END", swt.Sqlite);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -50,7 +47,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("(SELECT 1)")
-                .WithSql("(SELECT 1 FROM dual)", SqlWriterType.Oracle);
+                .WithSql("(SELECT 1 FROM dual)", swt.Oracle);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -62,10 +59,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1 AS \"foo\"")
-                .WithSql("1 AS [foo]", SqlWriterType.SqlServer)
-                .WithSql("1 AS `foo`", SqlWriterType.MySql)
-                .WithSql("1 AS `foo`", SqlWriterType.MariaDb)
-                .WithSql("1 AS [foo]", SqlWriterType.Sqlite);
+                .WithSql("1 AS [foo]", swt.SqlServer, swt.Sqlite)
+                .WithSql("1 AS `foo`", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -77,10 +72,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\".\"y\"")
-                .WithSql("[x].[y]", SqlWriterType.SqlServer)
-                .WithSql("`x`.`y`", SqlWriterType.MySql)
-                .WithSql("`x`.`y`", SqlWriterType.MariaDb)
-                .WithSql("[x].[y]", SqlWriterType.Sqlite);
+                .WithSql("[x].[y]", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x`.`y`", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -92,10 +85,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\"")
-                .WithSql("[x]", SqlWriterType.SqlServer)
-                .WithSql("`x`", SqlWriterType.MySql)
-                .WithSql("`x`", SqlWriterType.MariaDb)
-                .WithSql("[x]", SqlWriterType.Sqlite);
+                .WithSql("[x]", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x`", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(c, expected);
         }

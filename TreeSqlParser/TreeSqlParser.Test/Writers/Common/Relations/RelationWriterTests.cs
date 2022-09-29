@@ -3,6 +3,7 @@ using TreeSqlParser.Model.Relations;
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
+using swt = TreeSqlParser.Writers.SqlWriterType;
 
 namespace TreeSqlParser.Writers.Test.Common.Relations
 {
@@ -18,10 +19,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\"")
-                .WithSql("[x]", SqlWriterType.SqlServer)
-                .WithSql("`x`", SqlWriterType.MySql)
-                .WithSql("`x`", SqlWriterType.MariaDb)
-                .WithSql("[x]", SqlWriterType.Sqlite);
+                .WithSql("[x]", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x`", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -33,10 +32,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\".\"y\"")
-                .WithSql("[x].[y]", SqlWriterType.SqlServer)
-                .WithSql("`x`.`y`", SqlWriterType.MySql)
-                .WithSql("`x`.`y`", SqlWriterType.MariaDb)
-                .WithSql("[x].[y]", SqlWriterType.Sqlite);
+                .WithSql("[x].[y]", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x`.`y`", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -48,10 +45,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("(\"x\")")
-                .WithSql("([x])", SqlWriterType.SqlServer)
-                .WithSql("(`x`)", SqlWriterType.MySql)
-                .WithSql("(`x`)", SqlWriterType.MariaDb)
-                .WithSql("([x])", SqlWriterType.Sqlite);
+                .WithSql("([x])", swt.SqlServer, swt.Sqlite)
+                .WithSql("(`x`)", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -63,10 +58,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("(SELECT * FROM \"x\") AS \"foo\"")
-                .WithSql("(SELECT * FROM [x]) AS [foo]", SqlWriterType.SqlServer)
-                .WithSql("(SELECT * FROM `x`) AS `foo`", SqlWriterType.MySql)
-                .WithSql("(SELECT * FROM `x`) AS `foo`", SqlWriterType.MariaDb)
-                .WithSql("(SELECT * FROM [x]) AS [foo]", SqlWriterType.Sqlite);
+                .WithSql("(SELECT * FROM [x]) AS [foo]", swt.SqlServer, swt.Sqlite)
+                .WithSql("(SELECT * FROM `x`) AS `foo`", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -78,10 +71,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\" INNER JOIN \"y\" ON 1 = 2")
-                .WithSql("[x] INNER JOIN [y] ON 1 = 2", SqlWriterType.SqlServer)
-                .WithSql("`x` INNER JOIN `y` ON 1 = 2", SqlWriterType.MySql)
-                .WithSql("`x` INNER JOIN `y` ON 1 = 2", SqlWriterType.MariaDb)
-                .WithSql("[x] INNER JOIN [y] ON 1 = 2", SqlWriterType.Sqlite);
+                .WithSql("[x] INNER JOIN [y] ON 1 = 2", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x` INNER JOIN `y` ON 1 = 2", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -93,10 +84,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\" LEFT JOIN \"y\" ON 1 = 2")
-                .WithSql("[x] LEFT JOIN [y] ON 1 = 2", SqlWriterType.SqlServer)
-                .WithSql("`x` LEFT JOIN `y` ON 1 = 2", SqlWriterType.MySql)
-                .WithSql("`x` LEFT JOIN `y` ON 1 = 2", SqlWriterType.MariaDb)
-                .WithSql("[x] LEFT JOIN [y] ON 1 = 2", SqlWriterType.Sqlite);
+                .WithSql("[x] LEFT JOIN [y] ON 1 = 2", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x` LEFT JOIN `y` ON 1 = 2", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -108,10 +97,9 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\" RIGHT JOIN \"y\" ON 1 = 2")
-                .WithSql("[x] RIGHT JOIN [y] ON 1 = 2", SqlWriterType.SqlServer)
-                .WithSql("`x` RIGHT JOIN `y` ON 1 = 2", SqlWriterType.MySql)
-                .WithSql("`x` RIGHT JOIN `y` ON 1 = 2", SqlWriterType.MariaDb)
-                .WithSql("[y] LEFT JOIN [x] ON 1 = 2", SqlWriterType.Sqlite);
+                .WithSql("[x] RIGHT JOIN [y] ON 1 = 2", swt.SqlServer)
+                .WithSql("`x` RIGHT JOIN `y` ON 1 = 2", swt.MySql, swt.MariaDb)
+                .WithSql("[y] LEFT JOIN [x] ON 1 = 2", swt.Sqlite);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -123,10 +111,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\" FULL JOIN \"y\" ON 1 = 2")
-                .WithSql("[x] FULL JOIN [y] ON 1 = 2", SqlWriterType.SqlServer)
-                .WithSql("EXCEPTION: Full Join not supported", SqlWriterType.MySql)
-                .WithSql("EXCEPTION: Full Join not supported", SqlWriterType.MariaDb)
-                .WithSql("EXCEPTION: Full Join not supported", SqlWriterType.Sqlite);
+                .WithSql("[x] FULL JOIN [y] ON 1 = 2", swt.SqlServer)
+                .WithSql("EXCEPTION: Full Join not supported", swt.MySql, swt.MariaDb, swt.Sqlite);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -138,10 +124,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\" CROSS JOIN \"y\"")
-                .WithSql("[x] CROSS JOIN [y]", SqlWriterType.SqlServer)
-                .WithSql("`x` CROSS JOIN `y`", SqlWriterType.MySql)
-                .WithSql("`x` CROSS JOIN `y`", SqlWriterType.MariaDb)
-                .WithSql("[x] CROSS JOIN [y]", SqlWriterType.Sqlite);
+                .WithSql("[x] CROSS JOIN [y]", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x` CROSS JOIN `y`", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -153,10 +137,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4")
-                .WithSql("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", SqlWriterType.SqlServer)
-                .WithSql("`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4", SqlWriterType.MySql)
-                .WithSql("`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4", SqlWriterType.MariaDb)
-                .WithSql("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", SqlWriterType.Sqlite);
+                .WithSql("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -168,10 +150,8 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4")
-                .WithSql("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", SqlWriterType.SqlServer)
-                .WithSql("`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4", SqlWriterType.MySql)
-                .WithSql("`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4", SqlWriterType.MariaDb)
-                .WithSql("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", SqlWriterType.Sqlite);
+                .WithSql("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", swt.SqlServer, swt.Sqlite)
+                .WithSql("`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4", swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -182,7 +162,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             var relation = ParseRelation("x RIGHT JOIN y ON 1 = 2 RIGHT JOIN z ON 3 = 4");
 
             var expected = new ExpectedSqlResult(skipUnlistedConversions: true)
-                .WithSql("[z] LEFT JOIN ([y] LEFT JOIN [x] ON 1 = 2) ON 3 = 4", SqlWriterType.Sqlite);
+                .WithSql("[z] LEFT JOIN ([y] LEFT JOIN [x] ON 1 = 2) ON 3 = 4", swt.Sqlite);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -193,7 +173,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             var relation = ParseRelation("a RIGHT JOIN b ON 1 = 2 LEFT JOIN c ON 3 = 4 RIGHT JOIN d ON 5 = 6");
 
             var expected = new ExpectedSqlResult(skipUnlistedConversions: true)
-                .WithSql("[d] LEFT JOIN ([b] LEFT JOIN [a] ON 1 = 2 LEFT JOIN [c] ON 3 = 4) ON 5 = 6", SqlWriterType.Sqlite);
+                .WithSql("[d] LEFT JOIN ([b] LEFT JOIN [a] ON 1 = 2 LEFT JOIN [c] ON 3 = 4) ON 5 = 6", swt.Sqlite);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -204,7 +184,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             var relation = ParseRelation("a LEFT JOIN b ON 1 = 2 RIGHT JOIN c ON 3 = 4 LEFT JOIN d ON 5 = 6");
 
             var expected = new ExpectedSqlResult(skipUnlistedConversions: true)
-                .WithSql("[c] LEFT JOIN ([a] LEFT JOIN [b] ON 1 = 2) ON 3 = 4 LEFT JOIN [d] ON 5 = 6", SqlWriterType.Sqlite);
+                .WithSql("[c] LEFT JOIN ([a] LEFT JOIN [b] ON 1 = 2) ON 3 = 4 LEFT JOIN [d] ON 5 = 6", swt.Sqlite);
 
             CommonMother.AssertSql(relation, expected);
         }
@@ -215,7 +195,7 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
             var relation = ParseRelation("a LEFT JOIN b RIGHT JOIN c ON 3 = 4 ON 1 = 2");
 
             var expected = new ExpectedSqlResult(skipUnlistedConversions: true)
-                .WithSql("[a] LEFT JOIN [c] LEFT JOIN [b] ON 3 = 4 ON 1 = 2", SqlWriterType.Sqlite);
+                .WithSql("[a] LEFT JOIN [c] LEFT JOIN [b] ON 3 = 4 ON 1 = 2", swt.Sqlite);
 
             CommonMother.AssertSql(relation, expected);
         }

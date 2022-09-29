@@ -2,6 +2,7 @@
 using TreeSqlParser.Model.Conditions;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
+using swt = TreeSqlParser.Writers.SqlWriterType;
 
 namespace TreeSqlParser.Writers.Test.Common.Conditions
 {
@@ -41,7 +42,7 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("1 IN (SELECT 2)")
-                .WithSql("1 IN (SELECT 2 FROM dual)", SqlWriterType.Oracle);
+                .WithSql("1 IN (SELECT 2 FROM dual)", swt.Oracle);
 
             CommonMother.AssertSql(condition, expected);
         }
@@ -53,7 +54,7 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("EXISTS (SELECT 1)")
-                .WithSql("EXISTS (SELECT 1 FROM dual)", SqlWriterType.Oracle);
+                .WithSql("EXISTS (SELECT 1 FROM dual)", swt.Oracle);
 
             CommonMother.AssertSql(condition, expected);
         }

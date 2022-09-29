@@ -2,6 +2,7 @@
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
+using swt = TreeSqlParser.Writers.SqlWriterType;
 
 namespace TreeSqlParser.Writers.Test.Common.Columns
 {

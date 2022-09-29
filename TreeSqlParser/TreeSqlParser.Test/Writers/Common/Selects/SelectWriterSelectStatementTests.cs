@@ -2,6 +2,7 @@
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
+using swt = TreeSqlParser.Writers.SqlWriterType;
 
 namespace TreeSqlParser.Writers.Test.Common.Selects
 {
@@ -23,7 +24,7 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
 
             var s = ParseSelectStatement(sql);
 
-            string expectedSqlServer =
+            string expectedSqlServerSqlite =
                 "WITH " +
                 "[cte1] AS (SELECT 1), " +
                 "[cte2] AS (SELECT 2 UNION ALL SELECT 3) " +
@@ -41,32 +42,18 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
                 "`cte2` AS (SELECT 2 UNION ALL SELECT 3) " +
                 "SELECT 4";
 
-            string expectedSqlite =
-                "WITH " +
-                "[cte1] AS (SELECT 1), " +
-                "[cte2] AS (SELECT 2 UNION ALL SELECT 3) " +
-                "SELECT 4";
-
-            string expectedPostgres =
+            string expectedPostgresDb2 =
                 "WITH " +
                 "\"cte1\" AS (SELECT 1), " +
                 "\"cte2\" AS (SELECT 2 UNION ALL SELECT 3) " +
                 "SELECT 4";
 
-            string expectedDb2 =
-                "WITH " +
-                "\"cte1\" AS (SELECT 1), " +
-                "\"cte2\" AS (SELECT 2 UNION ALL SELECT 3) " +
-                "SELECT 4";
 
             var expected = new ExpectedSqlResult()
-                .WithSql(expectedSqlServer, SqlWriterType.SqlServer)
-                .WithSql(expectedOracle, SqlWriterType.Oracle)
-                .WithSql(expectedMySqlMariaDb, SqlWriterType.MySql)
-                .WithSql(expectedMySqlMariaDb, SqlWriterType.MariaDb)
-                .WithSql(expectedSqlite, SqlWriterType.Sqlite)
-                .WithSql(expectedPostgres, SqlWriterType.Postgres)
-                .WithSql(expectedDb2, SqlWriterType.Db2);
+                .WithSql(expectedSqlServerSqlite, swt.SqlServer, swt.Sqlite)
+                .WithSql(expectedOracle, swt.Oracle)
+                .WithSql(expectedMySqlMariaDb, swt.MySql, swt.MariaDb)
+                .WithSql(expectedPostgresDb2, swt.Postgres, swt.Db2);
 
             CommonMother.AssertSql(s, expected);
         }
@@ -80,7 +67,7 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("SELECT 1 ORDER BY 2, 3 DESC")
-                .WithSql("SELECT 1 FROM dual ORDER BY 2, 3 DESC", SqlWriterType.Oracle);
+                .WithSql("SELECT 1 FROM dual ORDER BY 2, 3 DESC", swt.Oracle);
 
             CommonMother.AssertSql(s, expected);
         }
