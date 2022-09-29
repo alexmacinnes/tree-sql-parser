@@ -1,8 +1,5 @@
 ﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using TreeSqlParser.Model.Columns;
-using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
 

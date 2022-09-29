@@ -16,13 +16,13 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var c = ParseColumn("CAST(NULL AS nvarchar)");
 
             var expected = new ExpectedSqlResult()
-                .WithSql(SqlWriterType.SqlServer, "CAST(NULL AS nvarchar)")
-                .WithSql(SqlWriterType.Oracle, "CAST(NULL AS nvarchar2(255))")
-                .WithSql(SqlWriterType.MySql, "CAST(NULL AS nchar)")
-                .WithSql(SqlWriterType.MariaDb, "CAST(NULL AS nchar)")
-                .WithSql(SqlWriterType.Sqlite, "CAST(NULL AS nvarchar)")
-                .WithSql(SqlWriterType.Postgres, "(NULL)::varchar")
-                .WithSql(SqlWriterType.Db2, "CAST(NULL AS nvarchar)");
+                .WithSql("CAST(NULL AS nvarchar)", SqlWriterType.SqlServer)
+                .WithSql("CAST(NULL AS nvarchar2(255))", SqlWriterType.Oracle)
+                .WithSql("CAST(NULL AS nchar)", SqlWriterType.MySql)
+                .WithSql("CAST(NULL AS nchar)", SqlWriterType.MariaDb)
+                .WithSql("CAST(NULL AS nvarchar)", SqlWriterType.Sqlite)
+                .WithSql("(NULL)::varchar", SqlWriterType.Postgres)
+                .WithSql("CAST(NULL AS nvarchar)", SqlWriterType.Db2);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -33,13 +33,13 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var c = ParseColumn("CAST(NULL AS varchar)");
 
             var expected = new ExpectedSqlResult()
-                .WithSql(SqlWriterType.SqlServer, "CAST(NULL AS varchar)")
-                .WithSql(SqlWriterType.Oracle, "CAST(NULL AS varchar2(255))")
-                .WithSql(SqlWriterType.MySql, "CAST(NULL AS char)")
-                .WithSql(SqlWriterType.MariaDb, "CAST(NULL AS char)")
-                .WithSql(SqlWriterType.Sqlite, "CAST(NULL AS varchar)")
-                .WithSql(SqlWriterType.Postgres, "(NULL)::varchar")
-                .WithSql(SqlWriterType.Db2, "CAST(NULL AS varchar)");
+                .WithSql("CAST(NULL AS varchar)", SqlWriterType.SqlServer)
+                .WithSql("CAST(NULL AS varchar2(255))", SqlWriterType.Oracle)
+                .WithSql("CAST(NULL AS char)", SqlWriterType.MySql)
+                .WithSql("CAST(NULL AS char)", SqlWriterType.MariaDb)
+                .WithSql("CAST(NULL AS varchar)", SqlWriterType.Sqlite)
+                .WithSql("(NULL)::varchar", SqlWriterType.Postgres)
+                .WithSql("CAST(NULL AS varchar)", SqlWriterType.Db2);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -51,9 +51,9 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("CAST(NULL AS int)")
-                .WithSql(SqlWriterType.MySql, "CAST(NULL AS signed)")
-                .WithSql(SqlWriterType.MariaDb, "CAST(NULL AS signed)")
-                .WithSql(SqlWriterType.Postgres, "(NULL)::integer");
+                .WithSql("CAST(NULL AS signed)", SqlWriterType.MySql)
+                .WithSql("CAST(NULL AS signed)", SqlWriterType.MariaDb)
+                .WithSql("(NULL)::integer", SqlWriterType.Postgres);
 
 
             CommonMother.AssertSql(c, expected);
@@ -65,13 +65,13 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var c = ParseColumn("CAST(NULL AS real)");
 
             var expected = new ExpectedSqlResult()
-                .WithSql(SqlWriterType.SqlServer, "CAST(NULL AS real)")
-                .WithSql(SqlWriterType.Oracle, "CAST(NULL AS number)")
-                .WithSql(SqlWriterType.MySql, "CAST(NULL AS decimal)")
-                .WithSql(SqlWriterType.MariaDb, "CAST(NULL AS decimal)")
-                .WithSql(SqlWriterType.Sqlite, "CAST(NULL AS real)")
-                .WithSql(SqlWriterType.Postgres, "(NULL)::decimal")
-                .WithSql(SqlWriterType.Db2, "CAST(NULL AS double)");
+                .WithSql("CAST(NULL AS real)", SqlWriterType.SqlServer)
+                .WithSql("CAST(NULL AS number)", SqlWriterType.Oracle)
+                .WithSql("CAST(NULL AS decimal)", SqlWriterType.MySql)
+                .WithSql("CAST(NULL AS decimal)", SqlWriterType.MariaDb)
+                .WithSql("CAST(NULL AS real)", SqlWriterType.Sqlite)
+                .WithSql("(NULL)::decimal", SqlWriterType.Postgres)
+                .WithSql("CAST(NULL AS double)", SqlWriterType.Db2);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -83,12 +83,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("CAST(NULL AS timestamp)")
-                .WithSql(SqlWriterType.Oracle, "CAST(NULL AS datetime)")
-                .WithSql(SqlWriterType.MySql, "CAST(NULL AS datetime)")
-                .WithSql(SqlWriterType.MariaDb, "CAST(NULL AS datetime)")
-                .WithSql(SqlWriterType.Sqlite, "DATETIME(NULL)")
-                .WithSql(SqlWriterType.Postgres, "(NULL)::timestamp")
-                .WithSql(SqlWriterType.Db2, "CAST(NULL AS timestamp)");
+                .WithSql("CAST(NULL AS datetime)", SqlWriterType.Oracle)
+                .WithSql("CAST(NULL AS datetime)", SqlWriterType.MySql)
+                .WithSql("CAST(NULL AS datetime)", SqlWriterType.MariaDb)
+                .WithSql("DATETIME(NULL)", SqlWriterType.Sqlite)
+                .WithSql("(NULL)::timestamp", SqlWriterType.Postgres)
+                .WithSql("CAST(NULL AS timestamp)", SqlWriterType.Db2);
 
             CommonMother.AssertSql(c, expected);
         }

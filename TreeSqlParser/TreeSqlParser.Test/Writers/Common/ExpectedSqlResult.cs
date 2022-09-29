@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using TreeSqlParser.Writers;
 
 namespace TreeSqlParser.Test.Writers.Common
@@ -23,12 +22,15 @@ namespace TreeSqlParser.Test.Writers.Common
             return this;
         }
 
-        public ExpectedSqlResult WithSql(SqlWriterType sqlType, string sql)
+        public ExpectedSqlResult WithSql(string sql, params SqlWriterType[] sqlTypes)
         {
-            if (ExpectedSqlByType.ContainsKey(sqlType))
-                throw new InvalidOperationException();
+            foreach (var x in sqlTypes)
+            {
+                if (ExpectedSqlByType.ContainsKey(x))
+                    throw new InvalidOperationException();
 
-            ExpectedSqlByType[sqlType] = sql;
+                ExpectedSqlByType[x] = sql;
+            }
             return this;
         }
 

@@ -1,12 +1,7 @@
 ﻿using NUnit.Framework;
-using System.Collections.Generic;
 using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
-using TreeSqlParser.Writers.Common.MySql;
-using TreeSqlParser.Writers.Common.Oracle;
-using TreeSqlParser.Writers.Common.Sqlite;
-using TreeSqlParser.Writers.Common.SqlServer;
 
 namespace TreeSqlParser.Writers.Test.Common.Selects
 {
@@ -65,13 +60,13 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
                 "SELECT 4";
 
             var expected = new ExpectedSqlResult()
-                .WithSql(SqlWriterType.SqlServer, expectedSqlServer)
-                .WithSql(SqlWriterType.Oracle, expectedOracle)
-                .WithSql(SqlWriterType.MySql, expectedMySqlMariaDb)
-                .WithSql(SqlWriterType.MariaDb, expectedMySqlMariaDb)
-                .WithSql(SqlWriterType.Sqlite, expectedSqlite)
-                .WithSql(SqlWriterType.Postgres, expectedPostgres)
-                .WithSql(SqlWriterType.Db2, expectedDb2);
+                .WithSql(expectedSqlServer, SqlWriterType.SqlServer)
+                .WithSql(expectedOracle, SqlWriterType.Oracle)
+                .WithSql(expectedMySqlMariaDb, SqlWriterType.MySql)
+                .WithSql(expectedMySqlMariaDb, SqlWriterType.MariaDb)
+                .WithSql(expectedSqlite, SqlWriterType.Sqlite)
+                .WithSql(expectedPostgres, SqlWriterType.Postgres)
+                .WithSql(expectedDb2, SqlWriterType.Db2);
 
             CommonMother.AssertSql(s, expected);
         }
@@ -85,7 +80,7 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
 
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("SELECT 1 ORDER BY 2, 3 DESC")
-                .WithSql(SqlWriterType.Oracle, "SELECT 1 FROM dual ORDER BY 2, 3 DESC");
+                .WithSql("SELECT 1 FROM dual ORDER BY 2, 3 DESC", SqlWriterType.Oracle);
 
             CommonMother.AssertSql(s, expected);
         }
