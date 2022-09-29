@@ -1,13 +1,7 @@
 ﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
-using TreeSqlParser.Writers.Common.MySql;
-using TreeSqlParser.Writers.Common.Oracle;
-using TreeSqlParser.Writers.Common.Sqlite;
-using TreeSqlParser.Writers.Common.SqlServer;
 
 namespace TreeSqlParser.Writers.Test.Common.Columns
 {
@@ -16,25 +10,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         private Column ParseColumn(string sql) =>
             (Column) SelectParser.ParseColumn(sql).Child;
 
-        private string Sql(Column c, SqlWriterType db) => CommonMother.Sql(c, db);
-
-        private void AssertSql(Column c, SqlWriterType db, string expected)
-        {
-            string actual = Sql(c, db);
-            Assert.AreEqual(expected, actual);
-        }
 
         [Test]
         public void Abs()
         {
             var c = ParseColumn("ABS(-1.23)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "ABS(-1.23)");
-            AssertSql(c, SqlWriterType.Oracle, "ABS(-1.23)");
-            AssertSql(c, SqlWriterType.MySql, "ABS(-1.23)");
-            AssertSql(c, SqlWriterType.Sqlite, "ABS(-1.23)");
-            AssertSql(c, SqlWriterType.Postgres, "ABS(-1.23)");
-            AssertSql(c, SqlWriterType.Db2, "ABS(-1.23)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("ABS(-1.23)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -42,12 +27,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("ADDDAYS({d '2000-12-31'}, 365)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DATEADD(d, 365, {d '2000-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "(DATE '2000-12-31' + 365)");
-            AssertSql(c, SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (365) DAY)");
-            AssertSql(c, SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(365)||' DAYS')");
-            AssertSql(c, SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1d' * 365)");
-            AssertSql(c, SqlWriterType.Db2, "ADD_DAYS(DATE '2000-12-31', 365)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "DATEADD(d, 365, {d '2000-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "(DATE '2000-12-31' + 365)")
+                .WithSql(SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (365) DAY)")
+                .WithSql(SqlWriterType.MariaDb, "ADDDATE(DATE('2000-12-31'), INTERVAL (365) DAY)")
+                .WithSql(SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(365)||' DAYS')")
+                .WithSql(SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1d' * 365)")
+                .WithSql(SqlWriterType.Db2, "ADD_DAYS(DATE '2000-12-31', 365)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -55,12 +44,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("ADDMONTHS({d '2000-12-31'}, 3)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DATEADD(m, 3, {d '2000-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "ADD_MONTHS(DATE '2000-12-31', 3)");
-            AssertSql(c, SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) MONTH)");
-            AssertSql(c, SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(3)||' MONTHS')");
-            AssertSql(c, SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1 month' * 3)");
-            AssertSql(c, SqlWriterType.Db2, "ADD_MONTHS(DATE '2000-12-31', 3)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "DATEADD(m, 3, {d '2000-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "ADD_MONTHS(DATE '2000-12-31', 3)")
+                .WithSql(SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) MONTH)")
+                .WithSql(SqlWriterType.MariaDb, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) MONTH)")
+                .WithSql(SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(3)||' MONTHS')")
+                .WithSql(SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1 month' * 3)")
+                .WithSql(SqlWriterType.Db2, "ADD_MONTHS(DATE '2000-12-31', 3)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -68,12 +61,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("ADDYEARS({d '2000-12-31'}, 3)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DATEADD(y, 3, {d '2000-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "ADD_MONTHS(DATE '2000-12-31', 12 * (3)");
-            AssertSql(c, SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) YEAR)");
-            AssertSql(c, SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(3)||' YEARS')");
-            AssertSql(c, SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1y' * 3)");
-            AssertSql(c, SqlWriterType.Db2, "ADD_YEARS(DATE '2000-12-31', 3)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "DATEADD(y, 3, {d '2000-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "ADD_MONTHS(DATE '2000-12-31', 12 * (3)")
+                .WithSql(SqlWriterType.MySql, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) YEAR)")
+                .WithSql(SqlWriterType.MariaDb, "ADDDATE(DATE('2000-12-31'), INTERVAL (3) YEAR)")
+                .WithSql(SqlWriterType.Sqlite, "DATETIME(DATE('2000-12-31'), ''||(3)||' YEARS')")
+                .WithSql(SqlWriterType.Postgres, "DATE '2000-12-31' + (INTERVAL '1y' * 3)")
+                .WithSql(SqlWriterType.Db2, "ADD_YEARS(DATE '2000-12-31', 3)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -81,12 +78,13 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("CEILING(1.23)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CEILING(1.23)");
-            AssertSql(c, SqlWriterType.Oracle, "CEIL(1.23)");
-            AssertSql(c, SqlWriterType.MySql, "CEIL(1.23)");
-            AssertSql(c, SqlWriterType.Sqlite, "(CAST(1.23 AS INT) + (1.23 > CAST(1.23 AS INT)))");
-            AssertSql(c, SqlWriterType.Postgres, "CEILING(1.23)");
-            AssertSql(c, SqlWriterType.Db2, "CEIL(1.23)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("CEIL(1.23)")
+                .WithSql(SqlWriterType.SqlServer, "CEILING(1.23)")
+                .WithSql(SqlWriterType.Sqlite, "(CAST(1.23 AS INT) + (1.23 > CAST(1.23 AS INT)))")
+                .WithSql(SqlWriterType.Postgres, "CEILING(1.23)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -94,12 +92,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("CHARINDEX('d', 'abcde')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CHARINDEX('d', 'abcde')");
-            AssertSql(c, SqlWriterType.Oracle, "INSTR('abcde', 'd')");
-            AssertSql(c, SqlWriterType.MySql, "INSTR('abcde', 'd')");
-            AssertSql(c, SqlWriterType.Sqlite, "INSTR('abcde', 'd')");
-            AssertSql(c, SqlWriterType.Postgres, "STRPOS('abcde', 'd')");
-            AssertSql(c, SqlWriterType.Db2, "INSTR('abcde', 'd')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("INSTR('abcde', 'd')")
+                .WithSql(SqlWriterType.SqlServer, "CHARINDEX('d', 'abcde')")
+                .WithSql(SqlWriterType.Postgres, "STRPOS('abcde', 'd')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -107,12 +105,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("CHARINDEX('d', 'abcde', 2)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CHARINDEX('d', 'abcde', 2)");
-            AssertSql(c, SqlWriterType.Oracle, "INSTR('abcde', 'd', 2)");
-            AssertSql(c, SqlWriterType.MySql, "IFNULL((NULLIF(INSTR(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)");
-            AssertSql(c, SqlWriterType.Sqlite, "IFNULL((NULLIF(INSTR(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)");
-            AssertSql(c, SqlWriterType.Postgres, "COALESCE((NULLIF(STRPOS(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)");
-            AssertSql(c, SqlWriterType.Db2, "INSTR('abcde', 'd', 2)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "CHARINDEX('d', 'abcde', 2)")
+                .WithSql(SqlWriterType.Oracle, "INSTR('abcde', 'd', 2)")
+                .WithSql(SqlWriterType.MySql, "IFNULL((NULLIF(INSTR(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)")
+                .WithSql(SqlWriterType.MariaDb, "IFNULL((NULLIF(INSTR(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)")
+                .WithSql(SqlWriterType.Sqlite, "IFNULL((NULLIF(INSTR(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)")
+                .WithSql(SqlWriterType.Postgres, "COALESCE((NULLIF(STRPOS(SUBSTR('abcde', 2), 'd'), 0)) + 2 - 1, 0)")
+                .WithSql(SqlWriterType.Db2, "INSTR('abcde', 'd', 2)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -120,12 +122,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("CHOOSE(2, 'one', 'two', 'three')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CHOOSE(2, 'one', 'two', 'three')");
-            AssertSql(c, SqlWriterType.Oracle, "DECODE(2, 1, 'one', 2, 'two', 3, 'three')");
-            AssertSql(c, SqlWriterType.MySql, "ELT(2, 'one', 'two', 'three')");
-            AssertSql(c, SqlWriterType.Sqlite, "CASE  WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END");
-            AssertSql(c, SqlWriterType.Postgres, "CASE  WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END");
-            AssertSql(c, SqlWriterType.Db2, "DECODE(2, 1, 'one', 2, 'two', 3, 'three')");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "CHOOSE(2, 'one', 'two', 'three')")
+                .WithSql(SqlWriterType.Oracle, "DECODE(2, 1, 'one', 2, 'two', 3, 'three')")
+                .WithSql(SqlWriterType.MySql, "ELT(2, 'one', 'two', 'three')")
+                .WithSql(SqlWriterType.MariaDb, "ELT(2, 'one', 'two', 'three')")
+                .WithSql(SqlWriterType.Sqlite, "CASE  WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END")
+                .WithSql(SqlWriterType.Postgres, "CASE  WHEN 2 = 1 THEN 'one' WHEN 2 = 2 THEN 'two' WHEN 2 = 3 THEN 'three' END")
+                .WithSql(SqlWriterType.Db2, "DECODE(2, 1, 'one', 2, 'two', 3, 'three')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -133,12 +139,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("COALESCE(1, 2, 3)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "COALESCE(1, 2, 3)");
-            AssertSql(c, SqlWriterType.Oracle, "COALESCE(1, 2, 3)");
-            AssertSql(c, SqlWriterType.MySql, "COALESCE(1, 2, 3)");
-            AssertSql(c, SqlWriterType.Sqlite, "COALESCE(1, 2, 3)");
-            AssertSql(c, SqlWriterType.Postgres, "COALESCE(1, 2, 3)");
-            AssertSql(c, SqlWriterType.Db2, "COALESCE(1, 2, 3)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("COALESCE(1, 2, 3)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -146,12 +150,13 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("CONCAT('a','b','c')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CONCAT('a', 'b', 'c')");
-            AssertSql(c, SqlWriterType.Oracle, "'a' || 'b' || 'c'");
-            AssertSql(c, SqlWriterType.MySql, "CONCAT('a', 'b', 'c')");
-            AssertSql(c, SqlWriterType.Sqlite, "'a' || 'b' || 'c'");
-            AssertSql(c, SqlWriterType.Postgres, "'a' || 'b' || 'c'");
-            AssertSql(c, SqlWriterType.Db2, "'a' || 'b' || 'c'");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("'a' || 'b' || 'c'")
+                .WithSql(SqlWriterType.SqlServer, "CONCAT('a', 'b', 'c')")
+                .WithSql(SqlWriterType.MySql, "CONCAT('a', 'b', 'c')")
+                .WithSql(SqlWriterType.MariaDb, "CONCAT('a', 'b', 'c')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -159,12 +164,13 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("CONCAT_WS('___', 'a','b','c')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CONCAT_WS('___', 'a', 'b', 'c')");
-            AssertSql(c, SqlWriterType.Oracle, "'a' || '___' || 'b' || '___' || 'c'");
-            AssertSql(c, SqlWriterType.MySql, "CONCAT_WS('___', 'a', 'b', 'c')");
-            AssertSql(c, SqlWriterType.Sqlite, "'a' || '___' || 'b' || '___' || 'c'");
-            AssertSql(c, SqlWriterType.Postgres, "'a' || '___' || 'b' || '___' || 'c'");
-            AssertSql(c, SqlWriterType.Db2, "'a' || '___' || 'b' || '___' || 'c'");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("'a' || '___' || 'b' || '___' || 'c'")
+                .WithSql(SqlWriterType.SqlServer, "CONCAT_WS('___', 'a', 'b', 'c')")
+                .WithSql(SqlWriterType.MySql, "CONCAT_WS('___', 'a', 'b', 'c')")
+                .WithSql(SqlWriterType.MariaDb, "CONCAT_WS('___', 'a', 'b', 'c')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -172,12 +178,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("DATEFROMPARTS(2020, 12, 31)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DATEFROMPARTS(2020, 12, 31)");
-            AssertSql(c, SqlWriterType.Oracle, "TO_DATE((2020) || (12) || (31), 'yyyyMMdd')");
-            AssertSql(c, SqlWriterType.MySql, "DATE(CONCAT_WS('-', 2020, 12, 31)))");
-            AssertSql(c, SqlWriterType.Sqlite, "DATE(SUBSTR('0000' || 2020, -4, 4) || '-' || SUBSTR('00' || 12, -2, 2) || '-' || SUBSTR('00' || 31, -2, 2))");
-            AssertSql(c, SqlWriterType.Postgres, "MAKE_DATE(2020, 12, 31)");
-            AssertSql(c, SqlWriterType.Db2, "DATE(2020 || '-' || 12  || '-' || 31 )");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "DATEFROMPARTS(2020, 12, 31)")
+                .WithSql(SqlWriterType.Oracle, "TO_DATE((2020) || (12) || (31), 'yyyyMMdd')")
+                .WithSql(SqlWriterType.MySql, "DATE(CONCAT_WS('-', 2020, 12, 31)))")
+                .WithSql(SqlWriterType.MariaDb, "DATE(CONCAT_WS('-', 2020, 12, 31)))")
+                .WithSql(SqlWriterType.Sqlite, "DATE(SUBSTR('0000' || 2020, -4, 4) || '-' || SUBSTR('00' || 12, -2, 2) || '-' || SUBSTR('00' || 31, -2, 2))")
+                .WithSql(SqlWriterType.Postgres, "MAKE_DATE(2020, 12, 31)")
+                .WithSql(SqlWriterType.Db2, "DATE(2020 || '-' || 12  || '-' || 31 )");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -185,12 +195,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("DAY({d '2000-12-31'})");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DAY({d '2000-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "EXTRACT(day FROM DATE '2000-12-31')");
-            AssertSql(c, SqlWriterType.MySql, "DAY(DATE('2000-12-31'))");
-            AssertSql(c, SqlWriterType.Sqlite, "CAST(STRFTIME('%d', DATE('2000-12-31')) AS INT)");
-            AssertSql(c, SqlWriterType.Postgres, "EXTRACT(DAY FROM DATE '2000-12-31')");
-            AssertSql(c, SqlWriterType.Db2, "DAYOFMONTH(DATE '2000-12-31')");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "DAY({d '2000-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "EXTRACT(day FROM DATE '2000-12-31')")
+                .WithSql(SqlWriterType.MySql, "DAY(DATE('2000-12-31'))")
+                .WithSql(SqlWriterType.MariaDb, "DAY(DATE('2000-12-31'))")
+                .WithSql(SqlWriterType.Sqlite, "CAST(STRFTIME('%d', DATE('2000-12-31')) AS INT)")
+                .WithSql(SqlWriterType.Postgres, "EXTRACT(DAY FROM DATE '2000-12-31')")
+                .WithSql(SqlWriterType.Db2, "DAYOFMONTH(DATE '2000-12-31')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -198,12 +212,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("DAYSBETWEEN({d '2000-12-31'}, {d '2001-12-31'})");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DATEDIFF(d, {d '2000-12-31'}, {d '2001-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "(DATE '2001-12-31' - DATE '2000-12-31')");
-            AssertSql(c, SqlWriterType.MySql, "DATEDIFF(DATE('2001-12-31'), DATE('2000-12-31'))");
-            AssertSql(c, SqlWriterType.Sqlite, "CAST(JULIANDAY(DATE('2001-12-31') AS INT)) - CAST(JULIANDAY(DATE('2000-12-31') AS INT))");
-            AssertSql(c, SqlWriterType.Postgres, "((DATE '2001-12-31')::date - (DATE '2000-12-31')::date)");
-            AssertSql(c, SqlWriterType.Db2, "DAYS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31')");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "DATEDIFF(d, {d '2000-12-31'}, {d '2001-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "(DATE '2001-12-31' - DATE '2000-12-31')")
+                .WithSql(SqlWriterType.MySql, "DATEDIFF(DATE('2001-12-31'), DATE('2000-12-31'))")
+                .WithSql(SqlWriterType.MariaDb, "DATEDIFF(DATE('2001-12-31'), DATE('2000-12-31'))")
+                .WithSql(SqlWriterType.Sqlite, "CAST(JULIANDAY(DATE('2001-12-31') AS INT)) - CAST(JULIANDAY(DATE('2000-12-31') AS INT))")
+                .WithSql(SqlWriterType.Postgres, "((DATE '2001-12-31')::date - (DATE '2000-12-31')::date)")
+                .WithSql(SqlWriterType.Db2, "DAYS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -211,12 +229,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("EXP(1.23)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "EXP(1.23)");
-            AssertSql(c, SqlWriterType.Oracle, "EXP(1.23)");
-            AssertSql(c, SqlWriterType.MySql, "EXP(1.23)");
-            AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: EXP function not available on Sqlite");
-            AssertSql(c, SqlWriterType.Postgres, "EXP(1.23)");
-            AssertSql(c, SqlWriterType.Db2, "EXP(1.23)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("EXP(1.23)")
+                .WithSql(SqlWriterType.Sqlite, "EXCEPTION: EXP function not available on Sqlite");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -224,13 +241,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("FLOOR(1.23)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "FLOOR(1.23)");
-            AssertSql(c, SqlWriterType.Oracle, "FLOOR(1.23)");
-            AssertSql(c, SqlWriterType.MySql, "FLOOR(1.23)");
-            AssertSql(c, SqlWriterType.Sqlite, "(CAST(1.23 AS INT) - (1.23 < CAST(1.23 AS INT)))");
-            AssertSql(c, SqlWriterType.Postgres, "FLOOR(1.23)");
-            AssertSql(c, SqlWriterType.Db2, "FLOOR(1.23)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("FLOOR(1.23)")
+                .WithSql(SqlWriterType.Sqlite, "(CAST(1.23 AS INT) - (1.23 < CAST(1.23 AS INT)))");
 
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -238,12 +253,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("GETDATE()");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CONVERT(date, GETDATE())");
-            AssertSql(c, SqlWriterType.Oracle, "CURRENT_DATE");
-            AssertSql(c, SqlWriterType.MySql, "DATE(CURRENT_DATE())");
-            AssertSql(c, SqlWriterType.Sqlite, "DATE()");
-            AssertSql(c, SqlWriterType.Postgres, "CURRENT_DATE");
-            AssertSql(c, SqlWriterType.Db2, "(CURRENT DATE)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "CONVERT(date, GETDATE())")
+                .WithSql(SqlWriterType.Oracle, "CURRENT_DATE")
+                .WithSql(SqlWriterType.MySql, "DATE(CURRENT_DATE())")
+                .WithSql(SqlWriterType.MariaDb, "DATE(CURRENT_DATE())")
+                .WithSql(SqlWriterType.Sqlite, "DATE()")
+                .WithSql(SqlWriterType.Postgres, "CURRENT_DATE")
+                .WithSql(SqlWriterType.Db2, "(CURRENT DATE)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -251,12 +270,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("GETTIMESTAMP()");
 
-            AssertSql(c, SqlWriterType.SqlServer, "GETDATE()");
-            AssertSql(c, SqlWriterType.Oracle, "CURRENT_TIMESTAMP");
-            AssertSql(c, SqlWriterType.MySql, "TIMESTAMP(CURRENT_TIMESTAMP())");
-            AssertSql(c, SqlWriterType.Sqlite, "DATETIME()");
-            AssertSql(c, SqlWriterType.Postgres, "CURRENT_TIMESTAMP");
-            AssertSql(c, SqlWriterType.Db2, "(CURRENT TIMESTAMP)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "GETDATE()")
+                .WithSql(SqlWriterType.Oracle, "CURRENT_TIMESTAMP")
+                .WithSql(SqlWriterType.MySql, "TIMESTAMP(CURRENT_TIMESTAMP())")
+                .WithSql(SqlWriterType.MariaDb, "TIMESTAMP(CURRENT_TIMESTAMP())")
+                .WithSql(SqlWriterType.Sqlite, "DATETIME()")
+                .WithSql(SqlWriterType.Postgres, "CURRENT_TIMESTAMP")
+                .WithSql(SqlWriterType.Db2, "(CURRENT TIMESTAMP)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -264,12 +287,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("ISNULL(x.y, 0)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "ISNULL([x].[y], 0)");
-            AssertSql(c, SqlWriterType.Oracle, "NVL(\"x\".\"y\", 0)");
-            AssertSql(c, SqlWriterType.MySql, "ISNULL(`x`.`y`, 0)");
-            AssertSql(c, SqlWriterType.Sqlite, "IFNULL([x].[y], 0)");
-            AssertSql(c, SqlWriterType.Postgres, "COALESCE(\"x\".\"y\", 0)");
-            AssertSql(c, SqlWriterType.Db2, "NVL(\"x\".\"y\", 0)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "ISNULL([x].[y], 0)")
+                .WithSql(SqlWriterType.Oracle, "NVL(\"x\".\"y\", 0)")
+                .WithSql(SqlWriterType.MySql, "ISNULL(`x`.`y`, 0)")
+                .WithSql(SqlWriterType.MariaDb, "ISNULL(`x`.`y`, 0)")
+                .WithSql(SqlWriterType.Sqlite, "IFNULL([x].[y], 0)")
+                .WithSql(SqlWriterType.Postgres, "COALESCE(\"x\".\"y\", 0)")
+                .WithSql(SqlWriterType.Db2, "NVL(\"x\".\"y\", 0)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -277,12 +304,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("LEFT('abcde', 2)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "LEFT('abcde', 2)");
-            AssertSql(c, SqlWriterType.Oracle, "SUBSTR('abcde', 1, 2)");
-            AssertSql(c, SqlWriterType.MySql, "LEFT('abcde', 2)");
-            AssertSql(c, SqlWriterType.Sqlite, "SUBSTR('abcde', 1, 2)");
-            AssertSql(c, SqlWriterType.Postgres, "LEFT('abcde', 2)");
-            AssertSql(c, SqlWriterType.Db2, "LEFT('abcde', 2)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("LEFT('abcde', 2)")
+                .WithSql(SqlWriterType.Oracle, "SUBSTR('abcde', 1, 2)")
+                .WithSql(SqlWriterType.Sqlite, "SUBSTR('abcde', 1, 2)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -290,12 +317,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("LEN('abc')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "LEN('abc')");
-            AssertSql(c, SqlWriterType.Oracle, "LENGTH(RTRIM('abc'))");
-            AssertSql(c, SqlWriterType.MySql, "LENGTH('abc')");
-            AssertSql(c, SqlWriterType.Sqlite, "LENGTH('abc')");
-            AssertSql(c, SqlWriterType.Postgres, "LENGTH('abc')");
-            AssertSql(c, SqlWriterType.Db2, "LENGTH('abc')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("LENGTH('abc')")
+                .WithSql(SqlWriterType.SqlServer, "LEN('abc')")
+                .WithSql(SqlWriterType.Oracle, "LENGTH(RTRIM('abc'))");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -303,12 +330,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("LOG(1000)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "LOG(1000)");
-            AssertSql(c, SqlWriterType.Oracle, "LOG(1000)");
-            AssertSql(c, SqlWriterType.MySql, "LOG(1000)");
-            AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: LOG function not available on Sqlite");
-            AssertSql(c, SqlWriterType.Postgres, "LOG(1000)");
-            AssertSql(c, SqlWriterType.Db2, "LN(1000)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("LOG(1000)")
+                .WithSql(SqlWriterType.Sqlite, "EXCEPTION: LOG function not available on Sqlite")
+                .WithSql(SqlWriterType.Db2, "LN(1000)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -316,12 +343,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("LOG(1000, 10)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "LOG(1000, 10)");
-            AssertSql(c, SqlWriterType.Oracle, "LOG(10, 1000)");
-            AssertSql(c, SqlWriterType.MySql, "LOG(10, 1000)");
-            AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: LOG function not available on Sqlite");
-            AssertSql(c, SqlWriterType.Postgres, "LOG(1000, 10)");
-            AssertSql(c, SqlWriterType.Db2, "LOG10(1000)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "LOG(1000, 10)")
+                .WithSql(SqlWriterType.Oracle, "LOG(10, 1000)")
+                .WithSql(SqlWriterType.MySql, "LOG(10, 1000)")
+                .WithSql(SqlWriterType.MariaDb, "LOG(10, 1000)")
+                .WithSql(SqlWriterType.Sqlite, "EXCEPTION: LOG function not available on Sqlite")
+                .WithSql(SqlWriterType.Postgres, "LOG(1000, 10)")
+                .WithSql(SqlWriterType.Db2, "LOG10(1000)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -329,12 +360,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("LOWER('abc')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "LOWER('abc')");
-            AssertSql(c, SqlWriterType.Oracle, "LOWER('abc')");
-            AssertSql(c, SqlWriterType.MySql, "LOWER('abc')");
-            AssertSql(c, SqlWriterType.Sqlite, "LOWER('abc')");
-            AssertSql(c, SqlWriterType.Postgres, "LOWER('abc')");
-            AssertSql(c, SqlWriterType.Db2, "LOWER('abc')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("LOWER('abc')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -342,12 +371,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("LTRIM('abc')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "LTRIM('abc')");
-            AssertSql(c, SqlWriterType.Oracle, "LTRIM('abc')");
-            AssertSql(c, SqlWriterType.MySql, "LTRIM('abc')");
-            AssertSql(c, SqlWriterType.Sqlite, "LTRIM('abc')");
-            AssertSql(c, SqlWriterType.Postgres, "LTRIM('abc')");
-            AssertSql(c, SqlWriterType.Db2, "LTRIM('abc')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("LTRIM('abc')"); 
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -355,12 +382,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("MONTH({d '2000-12-31'})");
 
-            AssertSql(c, SqlWriterType.SqlServer, "MONTH({d '2000-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "EXTRACT(month FROM DATE '2000-12-31')");
-            AssertSql(c, SqlWriterType.MySql, "MONTH(DATE('2000-12-31'))");
-            AssertSql(c, SqlWriterType.Sqlite, "CAST(STRFTIME('%m', DATE('2000-12-31')) AS INT)");
-            AssertSql(c, SqlWriterType.Postgres, "EXTRACT(MONTH FROM DATE '2000-12-31')");
-            AssertSql(c, SqlWriterType.Db2, "MONTH(DATE '2000-12-31')");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "MONTH({d '2000-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "EXTRACT(month FROM DATE '2000-12-31')")
+                .WithSql(SqlWriterType.MySql, "MONTH(DATE('2000-12-31'))")
+                .WithSql(SqlWriterType.MariaDb, "MONTH(DATE('2000-12-31'))")
+                .WithSql(SqlWriterType.Sqlite, "CAST(STRFTIME('%m', DATE('2000-12-31')) AS INT)")
+                .WithSql(SqlWriterType.Postgres, "EXTRACT(MONTH FROM DATE '2000-12-31')")
+                .WithSql(SqlWriterType.Db2, "MONTH(DATE '2000-12-31')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -368,12 +399,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("MONTHSBETWEEN({d '2000-12-30'}, {d '2001-12-31'})");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DATEDIFF(m, {d '2000-12-30'}, {d '2001-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-30'))");
-            AssertSql(c, SqlWriterType.MySql, "TIMESTAMPDIFF(MONTH, DATE('2000-12-30'), DATE('2001-12-31'))");
-            AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: MONTHSBETWEEN function not available on Sqlite");
-            AssertSql(c, SqlWriterType.Postgres, "(12*(EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-30'))) + (EXTRACT(MONTH FROM DATE '2001-12-31') - EXTRACT(MONTH FROM DATE '2000-12-30'))");
-            AssertSql(c, SqlWriterType.Db2, "(12*((YEAR(DATE '2001-12-31') - YEAR(DATE '2000-12-30')))) + (MONTH(DATE '2001-12-31') - MONTH(DATE '2000-12-30'))");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "DATEDIFF(m, {d '2000-12-30'}, {d '2001-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-30'))")
+                .WithSql(SqlWriterType.MySql, "TIMESTAMPDIFF(MONTH, DATE('2000-12-30'), DATE('2001-12-31'))")
+                .WithSql(SqlWriterType.MariaDb, "TIMESTAMPDIFF(MONTH, DATE('2000-12-30'), DATE('2001-12-31'))")
+                .WithSql(SqlWriterType.Sqlite, "EXCEPTION: MONTHSBETWEEN function not available on Sqlite")
+                .WithSql(SqlWriterType.Postgres, "(12*(EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-30'))) + (EXTRACT(MONTH FROM DATE '2001-12-31') - EXTRACT(MONTH FROM DATE '2000-12-30'))")
+                .WithSql(SqlWriterType.Db2, "(12*((YEAR(DATE '2001-12-31') - YEAR(DATE '2000-12-30')))) + (MONTH(DATE '2001-12-31') - MONTH(DATE '2000-12-30'))");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -381,12 +416,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("NULLIF('abc', 'N/A')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "NULLIF('abc', 'N/A')");
-            AssertSql(c, SqlWriterType.Oracle, "NULLIF('abc', 'N/A')");
-            AssertSql(c, SqlWriterType.MySql, "NULLIF('abc', 'N/A')");
-            AssertSql(c, SqlWriterType.Sqlite, "NULLIF('abc', 'N/A')");
-            AssertSql(c, SqlWriterType.Postgres, "NULLIF('abc', 'N/A')");
-            AssertSql(c, SqlWriterType.Db2, "NULLIF('abc', 'N/A')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("NULLIF('abc', 'N/A')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -394,12 +427,14 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("POWER(10, 2)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "POWER(10, 2)");
-            AssertSql(c, SqlWriterType.Oracle, "POW(10, 2)");
-            AssertSql(c, SqlWriterType.MySql, "POW(10, 2)");
-            AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: POWER function not available on Sqlite");
-            AssertSql(c, SqlWriterType.Postgres, "POWER(10, 2)");
-            AssertSql(c, SqlWriterType.Db2, "POWER(10, 2)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("POWER(10, 2)")
+                .WithSql(SqlWriterType.Oracle, "POW(10, 2)")
+                .WithSql(SqlWriterType.MySql, "POW(10, 2)")
+                .WithSql(SqlWriterType.MariaDb, "POW(10, 2)")
+                .WithSql(SqlWriterType.Sqlite, "EXCEPTION: POWER function not available on Sqlite");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -407,12 +442,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("REPLACE('abCde', 'C', 'c')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "REPLACE('abCde', 'C', 'c')");
-            AssertSql(c, SqlWriterType.Oracle, "REPLACE('abCde', 'C', 'c')");
-            AssertSql(c, SqlWriterType.MySql, "REPLACE('abCde', 'C', 'c')");
-            AssertSql(c, SqlWriterType.Sqlite, "REPLACE('abCde', 'C', 'c')");
-            AssertSql(c, SqlWriterType.Postgres, "REPLACE('abCde', 'C', 'c')");
-            AssertSql(c, SqlWriterType.Db2, "REPLACE('abCde', 'C', 'c')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("REPLACE('abCde', 'C', 'c')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -420,12 +453,13 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("REPLICATE('abc', 5)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "REPLICATE('abc', 5)");
-            AssertSql(c, SqlWriterType.Oracle, "RPAD('', LENGTH(RTRIM('abc')) * 5, 'abc')");
-            AssertSql(c, SqlWriterType.MySql, "REPEAT('abc', 5)");
-            AssertSql(c, SqlWriterType.Sqlite, "REPLACE(PRINTF('%.' || (5) || 'c', '/'),'/', 'abc')");
-            AssertSql(c, SqlWriterType.Postgres, "REPEAT('abc', 5)");
-            AssertSql(c, SqlWriterType.Db2, "REPEAT('abc', 5)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("REPEAT('abc', 5)")
+                .WithSql(SqlWriterType.SqlServer, "REPLICATE('abc', 5)")
+                .WithSql(SqlWriterType.Oracle, "RPAD('', LENGTH(RTRIM('abc')) * 5, 'abc')")
+                .WithSql(SqlWriterType.Sqlite, "REPLACE(PRINTF('%.' || (5) || 'c', '/'),'/', 'abc')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -433,12 +467,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("REVERSE('abc')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "REVERSE('abc')");
-            AssertSql(c, SqlWriterType.Oracle, "REVERSE('abc')");
-            AssertSql(c, SqlWriterType.MySql, "REVERSE('abc')");
-            AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: REVERSE function not available on Sqlite");
-            AssertSql(c, SqlWriterType.Postgres, "REVERSE('abc')");
-            AssertSql(c, SqlWriterType.Db2, "REVERSE('abc')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("REVERSE('abc')")
+                .WithSql(SqlWriterType.Sqlite, "EXCEPTION: REVERSE function not available on Sqlite");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -446,12 +479,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("RIGHT('abcde', 2)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "RIGHT('abcde', 2)");
-            AssertSql(c, SqlWriterType.Oracle, "SUBSTR('abcde', -2, 2)");
-            AssertSql(c, SqlWriterType.MySql, "RIGHT('abcde', 2)");
-            AssertSql(c, SqlWriterType.Sqlite, "SUBSTR('abcde', -2, 2)");
-            AssertSql(c, SqlWriterType.Postgres, "RIGHT('abcde', 2)");
-            AssertSql(c, SqlWriterType.Db2, "RIGHT('abcde', 2)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("RIGHT('abcde', 2)")
+                .WithSql(SqlWriterType.Oracle, "SUBSTR('abcde', -2, 2)")
+                .WithSql(SqlWriterType.Sqlite, "SUBSTR('abcde', -2, 2)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -459,12 +492,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("RIGHT('abcde', 2*3)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "RIGHT('abcde', 2*3)");
-            AssertSql(c, SqlWriterType.Oracle, "SUBSTR('abcde', 0 - (2*3), 2*3)");
-            AssertSql(c, SqlWriterType.MySql, "RIGHT('abcde', 2*3)");
-            AssertSql(c, SqlWriterType.Sqlite, "SUBSTR('abcde', 0 - (2*3), 2*3)");
-            AssertSql(c, SqlWriterType.Postgres, "RIGHT('abcde', 2*3)");
-            AssertSql(c, SqlWriterType.Db2, "RIGHT('abcde', 2*3)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("RIGHT('abcde', 2*3)")
+                .WithSql(SqlWriterType.Oracle, "SUBSTR('abcde', 0 - (2*3), 2*3)")
+                .WithSql(SqlWriterType.Sqlite, "SUBSTR('abcde', 0 - (2*3), 2*3)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -472,12 +505,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("ROUND(12.34, -1)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "ROUND(12.34, -1)");
-            AssertSql(c, SqlWriterType.Oracle, "ROUND(12.34, -1)");
-            AssertSql(c, SqlWriterType.MySql, "ROUND(12.34, -1)");
-            AssertSql(c, SqlWriterType.Sqlite, "ROUND(12.34, -1)");
-            AssertSql(c, SqlWriterType.Postgres, "ROUND(12.34, -1)");
-            AssertSql(c, SqlWriterType.Db2, "ROUND(12.34, -1)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("ROUND(12.34, -1)"); 
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -485,12 +516,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("RTRIM('abc')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "RTRIM('abc')");
-            AssertSql(c, SqlWriterType.Oracle, "RTRIM('abc')");
-            AssertSql(c, SqlWriterType.MySql, "RTRIM('abc')");
-            AssertSql(c, SqlWriterType.Sqlite, "RTRIM('abc')");
-            AssertSql(c, SqlWriterType.Postgres, "RTRIM('abc')");
-            AssertSql(c, SqlWriterType.Db2, "RTRIM('abc')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("RTRIM('abc')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -498,12 +527,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("SIGN(-1.23)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "SIGN(-1.23)");
-            AssertSql(c, SqlWriterType.Oracle, "SIGN(-1.23)");
-            AssertSql(c, SqlWriterType.MySql, "SIGN(-1.23)");
-            AssertSql(c, SqlWriterType.Sqlite, "SIGN(-1.23)");
-            AssertSql(c, SqlWriterType.Postgres, "SIGN(-1.23)");
-            AssertSql(c, SqlWriterType.Db2, "SIGN(-1.23)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("SIGN(-1.23)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -511,12 +538,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("SPACE(5)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "SPACE(5)");
-            AssertSql(c, SqlWriterType.Oracle, "RPAD('', 5, ' ')");
-            AssertSql(c, SqlWriterType.MySql, "SPACE(5)");
-            AssertSql(c, SqlWriterType.Sqlite, "REPLACE(PRINTF('%.' || (5) || 'c', '/'),'/', ' ')");
-            AssertSql(c, SqlWriterType.Postgres, "SPACE(5)");
-            AssertSql(c, SqlWriterType.Db2, "SPACE(5)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("SPACE(5)")
+                .WithSql(SqlWriterType.Oracle, "RPAD('', 5, ' ')")
+                .WithSql(SqlWriterType.Sqlite, "REPLACE(PRINTF('%.' || (5) || 'c', '/'),'/', ' ')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -524,12 +551,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("SUBSTRING('.bcd..', 2, 3)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "SUBSTRING('.bcd..', 2, 3)");
-            AssertSql(c, SqlWriterType.Oracle, "SUBSTR('.bcd..', 2, 3)");
-            AssertSql(c, SqlWriterType.MySql, "SUBSTR('.bcd..', 2, 3)");
-            AssertSql(c, SqlWriterType.Sqlite, "SUBSTR('.bcd..', 2, 3)");
-            AssertSql(c, SqlWriterType.Postgres, "SUBSTR('.bcd..', 2, 3)");
-            AssertSql(c, SqlWriterType.Db2, "SUBSTR('.bcd..', 2, 3)");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("SUBSTR('.bcd..', 2, 3)")
+                .WithSql(SqlWriterType.SqlServer, "SUBSTRING('.bcd..', 2, 3)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -537,12 +563,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("TOCHAR(123)");
 
-            AssertSql(c, SqlWriterType.SqlServer, "STR(123)");
-            AssertSql(c, SqlWriterType.Oracle, "TO_CHAR(123)");
-            AssertSql(c, SqlWriterType.MySql, "CONVERT(123, NCHAR)");
-            AssertSql(c, SqlWriterType.Sqlite, "CAST(123 AS NVARCHAR)");
-            AssertSql(c, SqlWriterType.Postgres, "(123)::varchar");
-            AssertSql(c, SqlWriterType.Db2, "NVARCHAR(123)");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "STR(123)")
+                .WithSql(SqlWriterType.Oracle, "TO_CHAR(123)")
+                .WithSql(SqlWriterType.MySql, "CONVERT(123, NCHAR)")
+                .WithSql(SqlWriterType.MariaDb, "CONVERT(123, NCHAR)")
+                .WithSql(SqlWriterType.Sqlite, "CAST(123 AS NVARCHAR)")
+                .WithSql(SqlWriterType.Postgres, "(123)::varchar")
+                .WithSql(SqlWriterType.Db2, "NVARCHAR(123)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -550,12 +580,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("TOTIMESTAMP('2020-12-31 23:59.59.123')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CONVERT(datetime, '2020-12-31 23:59.59.123')");
-            AssertSql(c, SqlWriterType.Oracle, "TO_DATE('2020-12-31 23:59.59.123')");
-            AssertSql(c, SqlWriterType.MySql, "CONVERT('2020-12-31 23:59.59.123', DATETIME)");
-            AssertSql(c, SqlWriterType.Sqlite, "DATETIME('2020-12-31 23:59.59.123')");
-            AssertSql(c, SqlWriterType.Postgres, "('2020-12-31 23:59.59.123')::timestamp");
-            AssertSql(c, SqlWriterType.Db2, "TIMESTAMP('2020-12-31 23:59.59.123')");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "CONVERT(datetime, '2020-12-31 23:59.59.123')")
+                .WithSql(SqlWriterType.Oracle, "TO_DATE('2020-12-31 23:59.59.123')")
+                .WithSql(SqlWriterType.MySql, "CONVERT('2020-12-31 23:59.59.123', DATETIME)")
+                .WithSql(SqlWriterType.MariaDb, "CONVERT('2020-12-31 23:59.59.123', DATETIME)")
+                .WithSql(SqlWriterType.Sqlite, "DATETIME('2020-12-31 23:59.59.123')")
+                .WithSql(SqlWriterType.Postgres, "('2020-12-31 23:59.59.123')::timestamp")
+                .WithSql(SqlWriterType.Db2, "TIMESTAMP('2020-12-31 23:59.59.123')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -563,12 +597,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("TONUMBER('123')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CONVERT(real, '123')");
-            AssertSql(c, SqlWriterType.Oracle, "TO_NUMBER('123')");
-            AssertSql(c, SqlWriterType.MySql, "CONVERT('123', DECIMAL)");
-            AssertSql(c, SqlWriterType.Sqlite, "CAST('123' AS REAL)");
-            AssertSql(c, SqlWriterType.Postgres, "('123')::decimal");
-            AssertSql(c, SqlWriterType.Db2, "DOUBLE('123')");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "CONVERT(real, '123')")
+                .WithSql(SqlWriterType.Oracle, "TO_NUMBER('123')")
+                .WithSql(SqlWriterType.MySql, "CONVERT('123', DECIMAL)")
+                .WithSql(SqlWriterType.MariaDb, "CONVERT('123', DECIMAL)")
+                .WithSql(SqlWriterType.Sqlite, "CAST('123' AS REAL)")
+                .WithSql(SqlWriterType.Postgres, "('123')::decimal")
+                .WithSql(SqlWriterType.Db2, "DOUBLE('123')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -576,12 +614,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("TRIM('abc')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "TRIM('abc')");
-            AssertSql(c, SqlWriterType.Oracle, "TRIM('abc')");
-            AssertSql(c, SqlWriterType.MySql, "TRIM('abc')");
-            AssertSql(c, SqlWriterType.Sqlite, "TRIM('abc')");
-            AssertSql(c, SqlWriterType.Postgres, "TRIM('abc')");
-            AssertSql(c, SqlWriterType.Db2, "TRIM('abc')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("TRIM('abc')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -589,12 +625,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("TRUNCATEDATE({ts '2000-12-31 23:59:59.123'})");
 
-            AssertSql(c, SqlWriterType.SqlServer, "CONVERT(date, {ts '2000-12-31 23:59:59.123'})");
-            AssertSql(c, SqlWriterType.Oracle, "TRUNC(TIMESTAMP '2000-12-31 23:59:59.123')");
-            AssertSql(c, SqlWriterType.MySql, "DATE(TIMESTAMP('2000-12-31  23:59:59.123'))");
-            AssertSql(c, SqlWriterType.Sqlite, "DATE(DATETIME('2000-12-31 23:59:59'))");
-            AssertSql(c, SqlWriterType.Postgres, "DATE(TIMESTAMP '2000-12-31 23:59:59.123')");
-            AssertSql(c, SqlWriterType.Db2, "DATE(TIMESTAMP '2000-12-31 23:59:59.123')");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "CONVERT(date, {ts '2000-12-31 23:59:59.123'})")
+                .WithSql(SqlWriterType.Oracle, "TRUNC(TIMESTAMP '2000-12-31 23:59:59.123')")
+                .WithSql(SqlWriterType.MySql, "DATE(TIMESTAMP('2000-12-31  23:59:59.123'))")
+                .WithSql(SqlWriterType.MariaDb, "DATE(TIMESTAMP('2000-12-31  23:59:59.123'))")
+                .WithSql(SqlWriterType.Sqlite, "DATE(DATETIME('2000-12-31 23:59:59'))")
+                .WithSql(SqlWriterType.Postgres, "DATE(TIMESTAMP '2000-12-31 23:59:59.123')")
+                .WithSql(SqlWriterType.Db2, "DATE(TIMESTAMP '2000-12-31 23:59:59.123')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -602,12 +642,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("UPPER('abc')");
 
-            AssertSql(c, SqlWriterType.SqlServer, "UPPER('abc')");
-            AssertSql(c, SqlWriterType.Oracle, "UPPER('abc')");
-            AssertSql(c, SqlWriterType.MySql, "UPPER('abc')");
-            AssertSql(c, SqlWriterType.Sqlite, "UPPER('abc')");
-            AssertSql(c, SqlWriterType.Postgres, "UPPER('abc')");
-            AssertSql(c, SqlWriterType.Db2, "UPPER('abc')");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("UPPER('abc')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -615,12 +653,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("YEAR({d '2000-12-31'})");
 
-            AssertSql(c, SqlWriterType.SqlServer, "YEAR({d '2000-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "EXTRACT(year FROM DATE '2000-12-31')");
-            AssertSql(c, SqlWriterType.MySql, "YEAR(DATE('2000-12-31'))");
-            AssertSql(c, SqlWriterType.Sqlite, "CAST(STRFTIME('%Y', DATE('2000-12-31')) AS INT)");
-            AssertSql(c, SqlWriterType.Postgres, "EXTRACT(YEAR FROM DATE '2000-12-31')");
-            AssertSql(c, SqlWriterType.Db2, "YEAR(DATE '2000-12-31')");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "YEAR({d '2000-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "EXTRACT(year FROM DATE '2000-12-31')")
+                .WithSql(SqlWriterType.MySql, "YEAR(DATE('2000-12-31'))")
+                .WithSql(SqlWriterType.MariaDb, "YEAR(DATE('2000-12-31'))")
+                .WithSql(SqlWriterType.Sqlite, "CAST(STRFTIME('%Y', DATE('2000-12-31')) AS INT)")
+                .WithSql(SqlWriterType.Postgres, "EXTRACT(YEAR FROM DATE '2000-12-31')")
+                .WithSql(SqlWriterType.Db2, "YEAR(DATE '2000-12-31')");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -628,12 +670,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("YEARSBETWEEN({d '2000-12-31'}, {d '2001-12-31'})");
 
-            AssertSql(c, SqlWriterType.SqlServer, "DATEDIFF(year, {d '2000-12-31'}, {d '2001-12-31'})");
-            AssertSql(c, SqlWriterType.Oracle, "FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31') / 12)");
-            AssertSql(c, SqlWriterType.MySql, "TIMESTAMPDIFF(YEAR, DATE('2000-12-31'), DATE('2001-12-31'))");
-            AssertSql(c, SqlWriterType.Sqlite, "EXCEPTION: YEARSBETWEEN function not available on Sqlite");
-            AssertSql(c, SqlWriterType.Postgres, "(EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-31'))");
-            AssertSql(c, SqlWriterType.Db2, "(YEAR(DATE '2001-12-31') - YEAR(DATE '2000-12-31'))");
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "DATEDIFF(year, {d '2000-12-31'}, {d '2001-12-31'})")
+                .WithSql(SqlWriterType.Oracle, "FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31') / 12)")
+                .WithSql(SqlWriterType.MySql, "TIMESTAMPDIFF(YEAR, DATE('2000-12-31'), DATE('2001-12-31'))")
+                .WithSql(SqlWriterType.MariaDb, "TIMESTAMPDIFF(YEAR, DATE('2000-12-31'), DATE('2001-12-31'))")
+                .WithSql(SqlWriterType.Sqlite, "EXCEPTION: YEARSBETWEEN function not available on Sqlite")
+                .WithSql(SqlWriterType.Postgres, "(EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-31'))")
+                .WithSql(SqlWriterType.Db2, "(YEAR(DATE '2001-12-31') - YEAR(DATE '2000-12-31'))");
+
+            CommonMother.AssertSql(c, expected);
         }
     }
 }

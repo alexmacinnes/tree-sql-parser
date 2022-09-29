@@ -7,9 +7,7 @@ using TreeSqlParser.Test.Writers.Common;
 namespace TreeSqlParser.Writers.Test.Common.Relations
 {
     public class RelationWriterTests
-    {
-        private string Sql(Relation r, SqlWriterType db) => CommonMother.Sql(r, db);
-
+    { 
         private Relation ParseRelation(string sql) =>
             ((SelectStatement)SelectParser.ParseSelectStatement("select * from " + sql).Child).Selects[0].From[0];
 
@@ -18,12 +16,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x");
 
-            Assert.AreEqual("[x]", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\"", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("`x`", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("[x]", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\"", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\"", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\"")
+                .WithSql(SqlWriterType.SqlServer, "[x]")
+                .WithSql(SqlWriterType.MySql, "`x`")
+                .WithSql(SqlWriterType.MariaDb, "`x`")
+                .WithSql(SqlWriterType.Sqlite, "[x]");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -31,12 +31,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x.y");
 
-            Assert.AreEqual("[x].[y]", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\".\"y\"", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("`x`.`y`", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("[x].[y]", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\".\"y\"", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\".\"y\"", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\".\"y\"")
+                .WithSql(SqlWriterType.SqlServer, "[x].[y]")
+                .WithSql(SqlWriterType.MySql, "`x`.`y`")
+                .WithSql(SqlWriterType.MariaDb, "`x`.`y`")
+                .WithSql(SqlWriterType.Sqlite, "[x].[y]");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -44,12 +46,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("(x)");
 
-            Assert.AreEqual("([x])", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("(\"x\")", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("(`x`)", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("([x])", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("(\"x\")", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("(\"x\")", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("(\"x\")")
+                .WithSql(SqlWriterType.SqlServer, "([x])")
+                .WithSql(SqlWriterType.MySql, "(`x`)")
+                .WithSql(SqlWriterType.MariaDb, "(`x`)")
+                .WithSql(SqlWriterType.Sqlite, "([x])");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -57,12 +61,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("(select * from x) AS foo");
 
-            Assert.AreEqual("(SELECT * FROM [x]) AS [foo]", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("(SELECT * FROM \"x\") AS \"foo\"", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("(SELECT * FROM `x`) AS `foo`", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("(SELECT * FROM [x]) AS [foo]", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("(SELECT * FROM \"x\") AS \"foo\"", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("(SELECT * FROM \"x\") AS \"foo\"", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("(SELECT * FROM \"x\") AS \"foo\"")
+                .WithSql(SqlWriterType.SqlServer, "(SELECT * FROM [x]) AS [foo]")
+                .WithSql(SqlWriterType.MySql, "(SELECT * FROM `x`) AS `foo`")
+                .WithSql(SqlWriterType.MariaDb, "(SELECT * FROM `x`) AS `foo`")
+                .WithSql(SqlWriterType.Sqlite, "(SELECT * FROM [x]) AS [foo]");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -70,12 +76,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x INNER JOIN y ON 1=2");
 
-            Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("`x` INNER JOIN `y` ON 1 = 2", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\" INNER JOIN \"y\" ON 1 = 2")
+                .WithSql(SqlWriterType.SqlServer, "[x] INNER JOIN [y] ON 1 = 2")
+                .WithSql(SqlWriterType.MySql, "`x` INNER JOIN `y` ON 1 = 2")
+                .WithSql(SqlWriterType.MariaDb, "`x` INNER JOIN `y` ON 1 = 2")
+                .WithSql(SqlWriterType.Sqlite, "[x] INNER JOIN [y] ON 1 = 2");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -83,12 +91,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x LEFT JOIN y ON 1=2");
 
-            Assert.AreEqual("[x] LEFT JOIN [y] ON 1 = 2", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\" LEFT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("`x` LEFT JOIN `y` ON 1 = 2", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("[x] LEFT JOIN [y] ON 1 = 2", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\" LEFT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\" LEFT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\" LEFT JOIN \"y\" ON 1 = 2")
+                .WithSql(SqlWriterType.SqlServer, "[x] LEFT JOIN [y] ON 1 = 2")
+                .WithSql(SqlWriterType.MySql, "`x` LEFT JOIN `y` ON 1 = 2")
+                .WithSql(SqlWriterType.MariaDb, "`x` LEFT JOIN `y` ON 1 = 2")
+                .WithSql(SqlWriterType.Sqlite, "[x] LEFT JOIN [y] ON 1 = 2");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -96,12 +106,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x RIGHT JOIN y ON 1=2");
 
-            Assert.AreEqual("[x] RIGHT JOIN [y] ON 1 = 2", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\" RIGHT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("`x` RIGHT JOIN `y` ON 1 = 2", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("[y] LEFT JOIN [x] ON 1 = 2", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\" RIGHT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\" RIGHT JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\" RIGHT JOIN \"y\" ON 1 = 2")
+                .WithSql(SqlWriterType.SqlServer, "[x] RIGHT JOIN [y] ON 1 = 2")
+                .WithSql(SqlWriterType.MySql, "`x` RIGHT JOIN `y` ON 1 = 2")
+                .WithSql(SqlWriterType.MariaDb, "`x` RIGHT JOIN `y` ON 1 = 2")
+                .WithSql(SqlWriterType.Sqlite, "[y] LEFT JOIN [x] ON 1 = 2");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -109,12 +121,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x FULL JOIN y ON 1=2");
 
-            Assert.AreEqual("[x] FULL JOIN [y] ON 1 = 2", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\" FULL JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("EXCEPTION: Full Join not supported", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("EXCEPTION: Full Join not supported", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\" FULL JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\" FULL JOIN \"y\" ON 1 = 2", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\" FULL JOIN \"y\" ON 1 = 2")
+                .WithSql(SqlWriterType.SqlServer, "[x] FULL JOIN [y] ON 1 = 2")
+                .WithSql(SqlWriterType.MySql, "EXCEPTION: Full Join not supported")
+                .WithSql(SqlWriterType.MariaDb, "EXCEPTION: Full Join not supported")
+                .WithSql(SqlWriterType.Sqlite, "EXCEPTION: Full Join not supported");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -122,12 +136,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x CROSS JOIN y");
 
-            Assert.AreEqual("[x] CROSS JOIN [y]", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\" CROSS JOIN \"y\"", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("`x` CROSS JOIN `y`", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("[x] CROSS JOIN [y]", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\" CROSS JOIN \"y\"", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\" CROSS JOIN \"y\"", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\" CROSS JOIN \"y\"")
+                .WithSql(SqlWriterType.SqlServer, "[x] CROSS JOIN [y]")
+                .WithSql(SqlWriterType.MySql, "`x` CROSS JOIN `y`")
+                .WithSql(SqlWriterType.MariaDb, "`x` CROSS JOIN `y`")
+                .WithSql(SqlWriterType.Sqlite, "[x] CROSS JOIN [y]");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -135,12 +151,14 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x INNER JOIN y ON 1 = 2 LEFT JOIN z ON 3 = 4");
 
-            Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\" INNER JOIN \"y\" ON 1 = 2 LEFT JOIN \"z\" ON 3 = 4")
+                .WithSql(SqlWriterType.SqlServer, "[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4")
+                .WithSql(SqlWriterType.MySql, "`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4")
+                .WithSql(SqlWriterType.MariaDb, "`x` INNER JOIN `y` ON 1 = 2 LEFT JOIN `z` ON 3 = 4")
+                .WithSql(SqlWriterType.Sqlite, "[x] INNER JOIN [y] ON 1 = 2 LEFT JOIN [z] ON 3 = 4");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
@@ -148,52 +166,58 @@ namespace TreeSqlParser.Writers.Test.Common.Relations
         {
             var relation = ParseRelation("x LEFT JOIN y INNER JOIN z ON 1 = 2 ON 3 = 4");
 
-            Assert.AreEqual("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.SqlServer));
-            Assert.AreEqual("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.Oracle));
-            Assert.AreEqual("`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.MySql));
-            Assert.AreEqual("[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.Sqlite));
-            Assert.AreEqual("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.Postgres));
-            Assert.AreEqual("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4", Sql(relation, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"x\" LEFT JOIN \"y\" INNER JOIN \"z\" ON 1 = 2 ON 3 = 4")
+                .WithSql(SqlWriterType.SqlServer, "[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4")
+                .WithSql(SqlWriterType.MySql, "`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4")
+                .WithSql(SqlWriterType.MariaDb, "`x` LEFT JOIN `y` INNER JOIN `z` ON 1 = 2 ON 3 = 4")
+                .WithSql(SqlWriterType.Sqlite, "[x] LEFT JOIN [y] INNER JOIN [z] ON 1 = 2 ON 3 = 4");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
         public void RewriteChainedRightJoins()
         {
             var relation = ParseRelation("x RIGHT JOIN y ON 1 = 2 RIGHT JOIN z ON 3 = 4");
-            string result = Sql(relation, SqlWriterType.Sqlite);
-            string expected = "[z] LEFT JOIN ([y] LEFT JOIN [x] ON 1 = 2) ON 3 = 4";
 
-            Assert.AreEqual(expected, result);
+            var expected = new ExpectedSqlResult(skipUnlistedConversions: true)
+                .WithSql(SqlWriterType.Sqlite, "[z] LEFT JOIN ([y] LEFT JOIN [x] ON 1 = 2) ON 3 = 4");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
         public void RewriteSeparatedRightJoins()
         {
             var relation = ParseRelation("a RIGHT JOIN b ON 1 = 2 LEFT JOIN c ON 3 = 4 RIGHT JOIN d ON 5 = 6");
-            string result = Sql(relation, SqlWriterType.Sqlite);
-            string expected = "[d] LEFT JOIN ([b] LEFT JOIN [a] ON 1 = 2 LEFT JOIN [c] ON 3 = 4) ON 5 = 6";
 
-            Assert.AreEqual(expected, result);
+            var expected = new ExpectedSqlResult(skipUnlistedConversions: true)
+                .WithSql(SqlWriterType.Sqlite, "[d] LEFT JOIN ([b] LEFT JOIN [a] ON 1 = 2 LEFT JOIN [c] ON 3 = 4) ON 5 = 6");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
         public void RewriteRightJoinWithFollowingJoins()
         {
             var relation = ParseRelation("a LEFT JOIN b ON 1 = 2 RIGHT JOIN c ON 3 = 4 LEFT JOIN d ON 5 = 6");
-            string result = Sql(relation, SqlWriterType.Sqlite);
-            string expected = "[c] LEFT JOIN ([a] LEFT JOIN [b] ON 1 = 2) ON 3 = 4 LEFT JOIN [d] ON 5 = 6";
 
-            Assert.AreEqual(expected, result);
+            var expected = new ExpectedSqlResult(skipUnlistedConversions: true)
+                .WithSql(SqlWriterType.Sqlite, "[c] LEFT JOIN ([a] LEFT JOIN [b] ON 1 = 2) ON 3 = 4 LEFT JOIN [d] ON 5 = 6");
+
+            CommonMother.AssertSql(relation, expected);
         }
 
         [Test]
         public void RewriteNestedRightJoins()
         {
             var relation = ParseRelation("a LEFT JOIN b RIGHT JOIN c ON 3 = 4 ON 1 = 2");
-            string result = Sql(relation, SqlWriterType.Sqlite);
-            string expected = "[a] LEFT JOIN [c] LEFT JOIN [b] ON 3 = 4 ON 1 = 2";
 
-            Assert.AreEqual(expected, result);
+            var expected = new ExpectedSqlResult(skipUnlistedConversions: true)
+                .WithSql(SqlWriterType.Sqlite, "[a] LEFT JOIN [c] LEFT JOIN [b] ON 3 = 4 ON 1 = 2");
+
+            CommonMother.AssertSql(relation, expected);
         }
     }
 }

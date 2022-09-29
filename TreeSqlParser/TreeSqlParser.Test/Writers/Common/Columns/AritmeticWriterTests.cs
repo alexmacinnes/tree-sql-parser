@@ -9,24 +9,18 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
     public class AritmeticWriterTests
     {
         private Column ParseColumn(string sql) =>
-            ((SelectStatement)SelectParser.ParseSelectStatement("select " + sql).Child).Selects[0].Columns[0];
-
-        private string Sql(Column c, SqlWriterType db) => CommonMother.Sql(c, db);
-
-        private void AssertSql(Column c, SqlWriterType db, string expected) =>
-            Assert.AreEqual(expected, Sql(c, db));
+            (Column) SelectParser.ParseColumn(sql).Child;
 
         [Test]
         public void SimpleModulo()
         {
             var c = ParseColumn("1 % 2");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1%2");
-            AssertSql(c, SqlWriterType.Oracle, "MOD(1, 2)");
-            AssertSql(c, SqlWriterType.MySql, "1%2");
-            AssertSql(c, SqlWriterType.Sqlite, "1%2");
-            AssertSql(c, SqlWriterType.Postgres, "1%2");
-            AssertSql(c, SqlWriterType.Db2, "1%2");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1%2")
+                .WithSql(SqlWriterType.Oracle, "MOD(1, 2)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -34,12 +28,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("1 + 2 % 3");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1+2%3");
-            AssertSql(c, SqlWriterType.Oracle, "1+MOD(2, 3)");
-            AssertSql(c, SqlWriterType.MySql, "1+2%3");
-            AssertSql(c, SqlWriterType.Sqlite, "1+2%3");
-            AssertSql(c, SqlWriterType.Postgres, "1+2%3");
-            AssertSql(c, SqlWriterType.Db2, "1+2%3");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1+2%3")
+                .WithSql(SqlWriterType.Oracle, "1+MOD(2, 3)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -47,12 +40,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("1 % 2 % 3 % 4");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1%2%3%4");
-            AssertSql(c, SqlWriterType.Oracle, "MOD(MOD(MOD(1, 2), 3), 4)");
-            AssertSql(c, SqlWriterType.MySql, "1%2%3%4");
-            AssertSql(c, SqlWriterType.Sqlite, "1%2%3%4");
-            AssertSql(c, SqlWriterType.Postgres, "1%2%3%4");
-            AssertSql(c, SqlWriterType.Db2, "1%2%3%4");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1%2%3%4")
+                .WithSql(SqlWriterType.Oracle, "MOD(MOD(MOD(1, 2), 3), 4)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -60,12 +52,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("1 * 2 % 3 * 4");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1*2%3*4");
-            AssertSql(c, SqlWriterType.Oracle, "MOD(1*2, 3)*4");
-            AssertSql(c, SqlWriterType.MySql, "1*2%3*4");
-            AssertSql(c, SqlWriterType.Sqlite, "1*2%3*4");
-            AssertSql(c, SqlWriterType.Postgres, "1*2%3*4");
-            AssertSql(c, SqlWriterType.Db2, "1*2%3*4");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1*2%3*4")
+                .WithSql(SqlWriterType.Oracle, "MOD(1*2, 3)*4");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -73,12 +64,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("1 * 2 % 3 * 4 % 5");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1*2%3*4%5");
-            AssertSql(c, SqlWriterType.Oracle, "MOD(MOD(1*2, 3)*4, 5)");
-            AssertSql(c, SqlWriterType.MySql, "1*2%3*4%5");
-            AssertSql(c, SqlWriterType.Sqlite, "1*2%3*4%5");
-            AssertSql(c, SqlWriterType.Postgres, "1*2%3*4%5");
-            AssertSql(c, SqlWriterType.Db2, "1*2%3*4%5");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1*2%3*4%5")
+                .WithSql(SqlWriterType.Oracle, "MOD(MOD(1*2, 3)*4, 5)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -86,12 +76,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("1 * 2 % 3 + 4 % 5");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1*2%3+4%5");
-            AssertSql(c, SqlWriterType.Oracle, "MOD(1*2, 3)+MOD(4, 5)");
-            AssertSql(c, SqlWriterType.MySql, "1*2%3+4%5");
-            AssertSql(c, SqlWriterType.Sqlite, "1*2%3+4%5");
-            AssertSql(c, SqlWriterType.Postgres, "1*2%3+4%5");
-            AssertSql(c, SqlWriterType.Db2, "1*2%3+4%5");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1*2%3+4%5")
+                .WithSql(SqlWriterType.Oracle, "MOD(1*2, 3)+MOD(4, 5)");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -99,12 +88,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("1 * 2 % 3 * 4 + 5 * 6");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1*2%3*4+5*6");
-            AssertSql(c, SqlWriterType.Oracle, "MOD(1*2, 3)*4+5*6");
-            AssertSql(c, SqlWriterType.MySql, "1*2%3*4+5*6");
-            AssertSql(c, SqlWriterType.Sqlite, "1*2%3*4+5*6");
-            AssertSql(c, SqlWriterType.Postgres, "1*2%3*4+5*6");
-            AssertSql(c, SqlWriterType.Db2, "1*2%3*4+5*6");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1*2%3*4+5*6")
+                .WithSql(SqlWriterType.Oracle, "MOD(1*2, 3)*4+5*6");
+
+            CommonMother.AssertSql(c, expected);
         }
 
 
@@ -113,12 +101,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("1 + 2 % 3 - 4");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1+2%3-4");
-            AssertSql(c, SqlWriterType.Oracle, "1+MOD(2, 3)-4");
-            AssertSql(c, SqlWriterType.MySql, "1+2%3-4");
-            AssertSql(c, SqlWriterType.Sqlite, "1+2%3-4");
-            AssertSql(c, SqlWriterType.Postgres, "1+2%3-4");
-            AssertSql(c, SqlWriterType.Db2, "1+2%3-4");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1+2%3-4")
+                .WithSql(SqlWriterType.Oracle, "1+MOD(2, 3)-4");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -126,12 +113,11 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("1 + 2 % 3 % 4 - 5");
 
-            AssertSql(c, SqlWriterType.SqlServer, "1+2%3%4-5");
-            AssertSql(c, SqlWriterType.Oracle, "1+MOD(MOD(2, 3), 4)-5");
-            AssertSql(c, SqlWriterType.MySql, "1+2%3%4-5");
-            AssertSql(c, SqlWriterType.Sqlite, "1+2%3%4-5");
-            AssertSql(c, SqlWriterType.Postgres, "1+2%3%4-5");
-            AssertSql(c, SqlWriterType.Db2, "1+2%3%4-5");
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1+2%3%4-5")
+                .WithSql(SqlWriterType.Oracle, "1+MOD(MOD(2, 3), 4)-5");
+
+            CommonMother.AssertSql(c, expected);
         }
     }
 }

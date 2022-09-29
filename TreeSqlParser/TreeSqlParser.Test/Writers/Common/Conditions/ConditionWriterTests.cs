@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using TreeSqlParser.Model.Conditions;
-using TreeSqlParser.Model.Selects;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Test.Writers.Common;
 
@@ -8,8 +7,6 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
 {
     public class ConditionWriterTests
     {
-        private string Sql(Condition c, SqlWriterType db) => CommonMother.Sql(c, db);
-
         private Condition ParseCondition(string sql) =>
             (Condition) SelectParser.ParseCondition(sql).Child;
 
@@ -31,11 +28,10 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
         {
             var condition = ParseCondition(sql);
 
-            foreach (var x in CommonMother.AllCommonWriters)
-            {
-                string generatedSql = x.GenerateSql(condition);
-                Assert.AreEqual(sql, generatedSql);
-            }
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql(sql);
+
+            CommonMother.AssertSql(condition, expected);
         }
 
         [Test]
@@ -43,12 +39,11 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
         {
             var condition = ParseCondition("1 IN (SELECT 2)");
 
-            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.SqlServer));
-            Assert.AreEqual("1 IN (SELECT 2 FROM dual)", Sql(condition, SqlWriterType.Oracle));
-            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.MySql));
-            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.Sqlite));
-            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.Postgres));
-            Assert.AreEqual("1 IN (SELECT 2)", Sql(condition, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("1 IN (SELECT 2)")
+                .WithSql(SqlWriterType.Oracle, "1 IN (SELECT 2 FROM dual)");
+
+            CommonMother.AssertSql(condition, expected);
         }
 
         [Test]
@@ -56,12 +51,11 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
         {
             var condition = ParseCondition("EXISTS (SELECT 1)");
 
-            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.SqlServer));
-            Assert.AreEqual("EXISTS (SELECT 1 FROM dual)", Sql(condition, SqlWriterType.Oracle));
-            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.MySql));
-            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.Sqlite));
-            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.Postgres));
-            Assert.AreEqual("EXISTS (SELECT 1)", Sql(condition, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("EXISTS (SELECT 1)")
+                .WithSql(SqlWriterType.Oracle, "EXISTS (SELECT 1 FROM dual)");
+
+            CommonMother.AssertSql(condition, expected);
         }
     }
 }

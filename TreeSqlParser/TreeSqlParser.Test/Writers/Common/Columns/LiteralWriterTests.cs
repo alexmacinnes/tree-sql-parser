@@ -11,8 +11,6 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         private Column ParseColumn(string sql) =>
             (Column) SelectParser.ParseColumn(sql).Child;
 
-        private string Sql(Column c, SqlWriterType db) => CommonMother.Sql(c, db);
-
         [TestCase("1")]
         [TestCase("-3")]
         [TestCase("1.23")]
@@ -21,13 +19,12 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         [TestCase("'abc''def'''''")]
         public void SqlSameOnAllDbs(string sql)
         {
-            var column = ParseColumn(sql);
+            var c = ParseColumn(sql);
 
-            foreach (var x in CommonMother.AllCommonWriters)
-            {
-                string generatedSql = x.GenerateSql(column);
-                Assert.AreEqual(sql, generatedSql);
-            }
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql(sql);
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -35,12 +32,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("{d '2020-12-31'}");
 
-            Assert.AreEqual("{d '2020-12-31'}", Sql(c, SqlWriterType.SqlServer));
-            Assert.AreEqual("DATE '2020-12-31'", Sql(c, SqlWriterType.Oracle));
-            Assert.AreEqual("DATE('2020-12-31')", Sql(c, SqlWriterType.MySql));
-            Assert.AreEqual("DATE('2020-12-31')", Sql(c, SqlWriterType.Sqlite));
-            Assert.AreEqual("DATE '2020-12-31'", Sql(c, SqlWriterType.Postgres));
-            Assert.AreEqual("DATE '2020-12-31'", Sql(c, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "{d '2020-12-31'}")
+                .WithSql(SqlWriterType.Oracle, "DATE '2020-12-31'")
+                .WithSql(SqlWriterType.MySql, "DATE('2020-12-31')")
+                .WithSql(SqlWriterType.MariaDb, "DATE('2020-12-31')")
+                .WithSql(SqlWriterType.Sqlite, "DATE('2020-12-31')")
+                .WithSql(SqlWriterType.Postgres, "DATE '2020-12-31'")
+                .WithSql(SqlWriterType.Db2, "DATE '2020-12-31'");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -48,12 +49,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("{ts '2020-12-31 23:58:59'}");
 
-            Assert.AreEqual("{ts '2020-12-31 23:58:59'}", Sql(c, SqlWriterType.SqlServer));
-            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59'", Sql(c, SqlWriterType.Oracle));
-            Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59')", Sql(c, SqlWriterType.MySql));
-            Assert.AreEqual("DATETIME('2020-12-31 23:58:59')", Sql(c, SqlWriterType.Sqlite));
-            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59'", Sql(c, SqlWriterType.Postgres));
-            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59'", Sql(c, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "{ts '2020-12-31 23:58:59'}")
+                .WithSql(SqlWriterType.Oracle, "TIMESTAMP '2020-12-31 23:58:59'")
+                .WithSql(SqlWriterType.MySql, "TIMESTAMP('2020-12-31  23:58:59')")
+                .WithSql(SqlWriterType.MariaDb, "TIMESTAMP('2020-12-31  23:58:59')")
+                .WithSql(SqlWriterType.Sqlite, "DATETIME('2020-12-31 23:58:59')")
+                .WithSql(SqlWriterType.Postgres, "TIMESTAMP '2020-12-31 23:58:59'")
+                .WithSql(SqlWriterType.Db2, "TIMESTAMP '2020-12-31 23:58:59'");
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [Test]
@@ -61,12 +66,16 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         {
             var c = ParseColumn("{ts '2020-12-31 23:58:59.1234567'}");
 
-            Assert.AreEqual("{ts '2020-12-31 23:58:59.1234567'}", Sql(c, SqlWriterType.SqlServer));
-            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59.1234567'", Sql(c, SqlWriterType.Oracle));
-            Assert.AreEqual("TIMESTAMP('2020-12-31  23:58:59.1234567')", Sql(c, SqlWriterType.MySql));
-            Assert.AreEqual("DATETIME('2020-12-31 23:58:59')", Sql(c, SqlWriterType.Sqlite));
-            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59.1234567'", Sql(c, SqlWriterType.Postgres));
-            Assert.AreEqual("TIMESTAMP '2020-12-31 23:58:59.1234567'", Sql(c, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, "{ts '2020-12-31 23:58:59.1234567'}")
+                .WithSql(SqlWriterType.Oracle, "TIMESTAMP '2020-12-31 23:58:59.1234567'")
+                .WithSql(SqlWriterType.MySql, "TIMESTAMP('2020-12-31  23:58:59.1234567')")
+                .WithSql(SqlWriterType.MariaDb, "TIMESTAMP('2020-12-31  23:58:59.1234567')")
+                .WithSql(SqlWriterType.Sqlite, "DATETIME('2020-12-31 23:58:59')")
+                .WithSql(SqlWriterType.Postgres, "TIMESTAMP '2020-12-31 23:58:59.1234567'")
+                .WithSql(SqlWriterType.Db2, "TIMESTAMP '2020-12-31 23:58:59.1234567'");
+
+            CommonMother.AssertSql(c, expected);
         }
     }
 }

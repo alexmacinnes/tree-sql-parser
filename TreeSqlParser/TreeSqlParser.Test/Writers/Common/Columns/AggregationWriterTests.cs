@@ -13,27 +13,6 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         private Column ParseColumn(string sql) =>
             (Column) SelectParser.ParseColumn(sql).Child;
 
-        private void AssertSql(string inputSql)
-        {
-            var column = ParseColumn(inputSql);
-            foreach (var x in CommonMother.AllCommonWriters)
-            {
-                string outputSql = x.GenerateSql(column);
-                Assert.AreEqual(inputSql, outputSql);
-            }
-        }
-
-        private void AssertThrows(string inputSql)
-        {
-            var column = ParseColumn(inputSql);
-            foreach (var x in CommonMother.AllCommonWriters)
-            {
-                Assert.Throws<InvalidOperationException>(
-                    () => x.GenerateSql(column),
-                    "");
-            }
-        }
-
         [TestCase("SUM(1)")]
         [TestCase("MAX(1)")]
         [TestCase("MIN(1)")]
@@ -43,13 +22,23 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
         [TestCase("COUNT(*)")]
         public void ValidAggregation(string sql)
         {
-            AssertSql(sql);
+            var c = ParseColumn(sql);
+
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql(sql);
+
+            CommonMother.AssertSql(c, expected);
         }
 
         [TestCase("STDEV(1)")]
         public void InvalidAggregationThrows(string sql)
         {
-            AssertThrows(sql);
+            var c = ParseColumn(sql);
+
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("EXCEPTION: Limited Aggregation Writer does not support Stdev");
+
+            CommonMother.AssertSql(c, expected);
         }
 
     }

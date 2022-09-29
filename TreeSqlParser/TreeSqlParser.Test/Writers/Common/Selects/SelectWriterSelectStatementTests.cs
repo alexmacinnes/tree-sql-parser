@@ -40,7 +40,7 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
                 "\"cte2\" AS (SELECT 2 FROM dual UNION ALL SELECT 3 FROM dual) " +
                 "SELECT 4 FROM dual";
 
-            string expectedMySql =
+            string expectedMySqlMariaDb =
                 "WITH " +
                 "`cte1` AS (SELECT 1), " +
                 "`cte2` AS (SELECT 2 UNION ALL SELECT 3) " +
@@ -64,12 +64,16 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
                 "\"cte2\" AS (SELECT 2 UNION ALL SELECT 3) " +
                 "SELECT 4";
 
-            Assert.AreEqual(expectedSqlServer, Sql(s, SqlWriterType.SqlServer));
-            Assert.AreEqual(expectedOracle, Sql(s, SqlWriterType.Oracle));
-            Assert.AreEqual(expectedMySql, Sql(s, SqlWriterType.MySql));
-            Assert.AreEqual(expectedSqlite, Sql(s, SqlWriterType.Sqlite));
-            Assert.AreEqual(expectedPostgres, Sql(s, SqlWriterType.Postgres));
-            Assert.AreEqual(expectedPostgres, Sql(s, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithSql(SqlWriterType.SqlServer, expectedSqlServer)
+                .WithSql(SqlWriterType.Oracle, expectedOracle)
+                .WithSql(SqlWriterType.MySql, expectedMySqlMariaDb)
+                .WithSql(SqlWriterType.MariaDb, expectedMySqlMariaDb)
+                .WithSql(SqlWriterType.Sqlite, expectedSqlite)
+                .WithSql(SqlWriterType.Postgres, expectedPostgres)
+                .WithSql(SqlWriterType.Db2, expectedDb2);
+
+            CommonMother.AssertSql(s, expected);
         }
 
         [Test]
@@ -79,12 +83,11 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
 
             var s = ParseSelectStatement(sql);
 
-            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.SqlServer));
-            Assert.AreEqual("SELECT 1 FROM dual ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Oracle));
-            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.MySql));
-            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Sqlite));
-            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Postgres));
-            Assert.AreEqual("SELECT 1 ORDER BY 2, 3 DESC", Sql(s, SqlWriterType.Db2));
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("SELECT 1 ORDER BY 2, 3 DESC")
+                .WithSql(SqlWriterType.Oracle, "SELECT 1 FROM dual ORDER BY 2, 3 DESC");
+
+            CommonMother.AssertSql(s, expected);
         }
     }
 }

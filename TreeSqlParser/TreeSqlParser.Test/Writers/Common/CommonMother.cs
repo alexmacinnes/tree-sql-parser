@@ -1,4 +1,7 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TreeSqlParser.Model;
 using TreeSqlParser.Writers;
 
@@ -6,16 +9,10 @@ namespace TreeSqlParser.Test.Writers.Common
 {
     internal class CommonMother
     {
-        public static ISqlWriter[] AllCommonWriters => new[]
-        {
-            SqlWriterFactory.CommonSqlWriter(SqlWriterType.SqlServer),
-            SqlWriterFactory.CommonSqlWriter(SqlWriterType.Oracle),
-            SqlWriterFactory.CommonSqlWriter(SqlWriterType.MySql),
-            SqlWriterFactory.CommonSqlWriter(SqlWriterType.Sqlite),
-            SqlWriterFactory.CommonSqlWriter(SqlWriterType.Postgres)
-        };
+        internal static IEnumerable<SqlWriterType> AllCommonWriterTypes =>
+            Enum.GetValues(typeof(SqlWriterType)).Cast<SqlWriterType>();
 
-        public static string Sql(SqlElement element, SqlWriterType writer)
+        internal static string Sql(SqlElement element, SqlWriterType writer)
         {
             try
             {
@@ -25,6 +22,20 @@ namespace TreeSqlParser.Test.Writers.Common
             {
                 return "EXCEPTION: " + e.Message;
             }
-        }       
+        }     
+        
+        public static void AssertSql(SqlElement element, ExpectedSqlResult expected)
+        {
+            var types = AllCommonWriterTypes;
+            if (expected.SkipUnlistedConversions)
+                types = types.Where(expected.HasSqlType);
+
+            foreach (var x in types)
+            {
+                string actualSql = Sql(element, x);
+                string expectedSql = expected.Sql(x);
+                Assert.AreEqual(expectedSql, actualSql, "SqlType: " + x.ToString());
+            }
+        }
     }
 }
