@@ -48,7 +48,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var expected = new ExpectedSqlResult()
                 .WithSql("{ts '2020-12-31 23:58:59'}", swt.SqlServer)
                 .WithSql("TIMESTAMP '2020-12-31 23:58:59'", swt.Oracle, swt.Postgres, swt.Db2)
-                .WithSql("TIMESTAMP('2020-12-31  23:58:59')", swt.MySql, swt.MariaDb)
+                .WithSql("TIMESTAMP('2020-12-31 23:58:59')", swt.MySql, swt.MariaDb)
                 .WithSql("DATETIME('2020-12-31 23:58:59')", swt.Sqlite);
 
             CommonMother.AssertSql(c, expected);
@@ -62,7 +62,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var expected = new ExpectedSqlResult()
                 .WithSql("{ts '2020-12-31 23:58:59.1234567'}", swt.SqlServer)
                 .WithSql("TIMESTAMP '2020-12-31 23:58:59.1234567'", swt.Oracle, swt.Postgres, swt.Db2)
-                .WithSql("TIMESTAMP('2020-12-31  23:58:59.1234567')", swt.MySql, swt.MariaDb)
+                .WithSql("TIMESTAMP('2020-12-31 23:58:59.1234567')", swt.MySql, swt.MariaDb)
                 .WithSql("DATETIME('2020-12-31 23:58:59')", swt.Sqlite); ;
 
             CommonMother.AssertSql(c, expected);

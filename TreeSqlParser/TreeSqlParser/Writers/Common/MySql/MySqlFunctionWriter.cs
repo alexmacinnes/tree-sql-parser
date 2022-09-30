@@ -38,7 +38,6 @@ namespace TreeSqlParser.Writers.Common.MySql
 
         protected override string Concat(IReadOnlyList<Column> strings) =>
             $"CONCAT({ColumnsSql(strings.ToArray())})";
-
         protected override string ConcatWithSeperator(Column seperator, IReadOnlyList<Column> strings) =>
             $"CONCAT_WS({ColumnSql(seperator)}, {ColumnsSql(strings.ToArray())})";
 

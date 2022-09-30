@@ -21,7 +21,7 @@ namespace TreeSqlParser.Writers.Common.Oracle
             $"ADD_MONTHS({ColumnsSql(baseDate, months)})";
 
         protected override string AddYears(Column baseDate, Column years) =>
-            $"ADD_MONTHS({ColumnSql(baseDate)}, 12 * ({ColumnSql(years)})";
+            $"ADD_MONTHS({ColumnSql(baseDate)}, 12 * ({ColumnSql(years)}))";
 
         protected override string Ceiling(Column expression) =>
             $"CEIL({ColumnSql(expression)})";
@@ -47,10 +47,10 @@ namespace TreeSqlParser.Writers.Common.Oracle
             $"COALESCE({ColumnsSql(expressions.ToArray())})";
 
         protected override string Concat(IReadOnlyList<Column> strings) =>
-            string.Join(" || ", strings.Select(ColumnSql));
+            ConcatWithOperator(strings);
 
         protected override string ConcatWithSeperator(Column seperator, IReadOnlyList<Column> strings) =>
-            string.Join($" || {ColumnSql(seperator)} || ", strings.Select(ColumnSql));
+            ConcatWithSeperatorWithOperator(seperator, strings);
 
         protected override string DateFromParts(Column year, Column month, Column day) =>
             $"TO_DATE(({ColumnSql(year)}) || ({ColumnSql(month)}) || ({ColumnSql(day)}), 'yyyyMMdd')";

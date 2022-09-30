@@ -52,10 +52,10 @@ namespace TreeSqlParser.Writers.Common.Sqlite
             $"COALESCE({ColumnsSql(expressions.ToArray())})";
 
         protected override string Concat(IReadOnlyList<Column> strings) =>
-            string.Join(" || ", strings.Select(ColumnSql));
+            ConcatWithOperator(strings);
 
         protected override string ConcatWithSeperator(Column seperator, IReadOnlyList<Column> strings) =>
-            string.Join($" || {ColumnSql(seperator)} || ", strings.Select(ColumnSql));
+            ConcatWithSeperatorWithOperator(seperator, strings);
 
         protected override string DateFromParts(Column year, Column month, Column day) =>
             $"DATE(SUBSTR('0000' || {ColumnSql(year)}, -4, 4) || '-' || SUBSTR('00' || {ColumnSql(month)}, -2, 2) || '-' || SUBSTR('00' || {ColumnSql(day)}, -2, 2))";
@@ -103,7 +103,7 @@ namespace TreeSqlParser.Writers.Common.Sqlite
             $"CAST(STRFTIME('%m', { ColumnSql(date)}) AS INT)";
 
         protected override string MonthsBetween(Column date1, Column date2) =>
-            throw new NotSupportedException("MONTHSBETWEEN function not available on Sqlite");
+            MonthsBetweenFromMonthsAndYears(date1, date2);
 
         protected override string NullIf(Column expression1, Column expression2) =>
             $"NULLIF({ColumnsSql(expression1, expression2)})";
@@ -125,8 +125,7 @@ namespace TreeSqlParser.Writers.Common.Sqlite
             string numberOfCharsSql = ColumnSql(numberOfChars);
             string startIndexSql = numberOfChars is IntegerColumn ? "-" + numberOfCharsSql : $"0 - ({numberOfCharsSql})";
             return $"SUBSTR({ColumnSql(inputText)}, {startIndexSql}, {numberOfCharsSql})";
-        }
-           
+        }      
 
         protected override string Round(Column expression, Column precision) =>
             $"ROUND({ColumnsSql(expression, precision)})";
@@ -165,6 +164,6 @@ namespace TreeSqlParser.Writers.Common.Sqlite
             $"CAST(STRFTIME('%Y', {ColumnSql(date)}) AS INT)";
 
         protected override string YearsBetween(Column date1, Column date2) =>
-            throw new NotSupportedException("YEARSBETWEEN function not available on Sqlite");
+            YearsBetweenFromYears(date1, date2);
     }
 }

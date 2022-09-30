@@ -21,7 +21,7 @@ namespace TreeSqlParser.Writers.Common.Postgres
             $"{ColumnSql(baseDate)} + (INTERVAL '1 month' * {ColumnSql(months)})";
 
         protected override string AddYears(Column baseDate, Column years) =>
-            $"{ColumnSql(baseDate)} + (INTERVAL '1y' * {ColumnSql(years)})";
+            $"(({ColumnSql(baseDate)}) + (INTERVAL '1y' * {ColumnSql(years)}))";
 
         protected override string Ceiling(Column expression) =>
             $"CEILING({ColumnSql(expression)})";
@@ -48,10 +48,10 @@ namespace TreeSqlParser.Writers.Common.Postgres
             $"COALESCE({ColumnsSql(expressions.ToArray())})";
 
         protected override string Concat(IReadOnlyList<Column> strings) =>
-            string.Join(" || ", strings.Select(ColumnSql));
+            ConcatWithOperator(strings);
 
         protected override string ConcatWithSeperator(Column seperator, IReadOnlyList<Column> strings) =>
-            string.Join($" || {ColumnSql(seperator)} || ", strings.Select(ColumnSql));
+            ConcatWithSeperatorWithOperator(seperator, strings);
 
         protected override string DateFromParts(Column year, Column month, Column day) =>
             $"MAKE_DATE({ColumnsSql(year, month, day)})";
@@ -98,7 +98,7 @@ namespace TreeSqlParser.Writers.Common.Postgres
             $"EXTRACT(MONTH FROM {ColumnSql(date)})";
 
         protected override string MonthsBetween(Column date1, Column date2) =>
-            $"(12*{YearsBetween(date1, date2)}) + ({Month(date2)} - {Month(date1)})";
+            MonthsBetweenFromMonthsAndYears(date1, date2);
 
         protected override string NullIf(Column expression1, Column expression2) =>
             $"NULLIF({ColumnsSql(expression1, expression2)})";
@@ -155,6 +155,6 @@ namespace TreeSqlParser.Writers.Common.Postgres
             $"EXTRACT(YEAR FROM {ColumnSql(date)})";
 
         protected override string YearsBetween(Column date1, Column date2) =>
-            $"({Year(date2)} - {Year(date1)})";
+            YearsBetweenFromYears(date1, date2);
     }
 }

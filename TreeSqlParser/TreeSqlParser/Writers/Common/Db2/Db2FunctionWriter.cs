@@ -48,13 +48,13 @@ namespace TreeSqlParser.Writers.Common.Db2
             $"COALESCE({ColumnsSql(expressions.ToArray())})";
 
         protected override string Concat(IReadOnlyList<Column> strings) =>
-            string.Join(" || ", strings.Select(ColumnSql));
+            ConcatWithOperator(strings);
 
         protected override string ConcatWithSeperator(Column seperator, IReadOnlyList<Column> strings) =>
-            string.Join($" || {ColumnSql(seperator)} || ", strings.Select(ColumnSql));
+            ConcatWithSeperatorWithOperator(seperator, strings);
 
         protected override string DateFromParts(Column year, Column month, Column day) =>
-            $"DATE({ColumnSql(year)} || '-' || {ColumnSql(month)}  || '-' || {ColumnSql(day)} )";
+            $"DATE(({ColumnSql(year)}) || '-' || ({ColumnSql(month)}) || '-' || ({ColumnSql(day)}))";
 
         protected override string Day(Column date) =>
             $"DAYOFMONTH({ColumnSql(date)})";
@@ -106,7 +106,7 @@ namespace TreeSqlParser.Writers.Common.Db2
             $"MONTH({ColumnSql(date)})";
 
         protected override string MonthsBetween(Column date1, Column date2) =>
-            $"(12*({YearsBetween(date1, date2)})) + ({Month(date2)} - {Month(date1)})";
+            MonthsBetweenFromMonthsAndYears(date1, date2);
 
         protected override string NullIf(Column expression1, Column expression2) =>
             $"NULLIF({ColumnsSql(expression1, expression2)})";
@@ -163,6 +163,6 @@ namespace TreeSqlParser.Writers.Common.Db2
             $"YEAR({ColumnSql(date)})";
 
         protected override string YearsBetween(Column date1, Column date2) =>
-            $"({Year(date2)} - {Year(date1)})";
+            YearsBetweenFromYears(date1, date2);
     }
 }

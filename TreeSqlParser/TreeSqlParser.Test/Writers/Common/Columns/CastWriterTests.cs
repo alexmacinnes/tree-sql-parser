@@ -47,7 +47,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var expected = new ExpectedSqlResult()
                 .WithDefaultSql("CAST(NULL AS int)")
                 .WithSql("CAST(NULL AS signed)", swt.MySql, swt.MariaDb)
-                .WithSql("(NULL)::integer", SqlWriterType.Postgres);
+                .WithSql("(NULL)::integer", swt.Postgres);
 
             CommonMother.AssertSql(c, expected);
         }

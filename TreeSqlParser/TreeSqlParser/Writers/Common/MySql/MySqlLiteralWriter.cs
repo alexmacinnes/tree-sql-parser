@@ -9,7 +9,7 @@ namespace TreeSqlParser.Writers.Common.MySql
             $"DATE('{x.Value:yyyy-MM-dd}')";
 
         protected override string DateTimeSql(DateTimeColumn x) =>
-            $"TIMESTAMP('{x.Value:yyyy-MM-dd  HH:mm:ss.FFFFFFF}')";
+            $"TIMESTAMP('{x.Value:yyyy-MM-dd HH:mm:ss.FFFFFFF}')";
 
         protected override string DecimalSql(DecimalColumn x) =>
             x.Value.ToString();

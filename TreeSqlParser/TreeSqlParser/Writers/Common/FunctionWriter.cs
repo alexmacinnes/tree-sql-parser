@@ -80,6 +80,23 @@ namespace TreeSqlParser.Writers.Common
             return result;
         }
 
+        #region Standard Function Implementations
+
+        protected string ConcatWithOperator(IReadOnlyList<Column> strings) =>
+            "(" + string.Join(" || ", strings.Select(x => $"({ColumnSql(x)})")) + ")";
+
+        protected string ConcatWithSeperatorWithOperator(Column seperator, IReadOnlyList<Column> strings) =>
+            "(" + string.Join($" || ({ColumnSql(seperator)}) || ", strings.Select(x => $"({ColumnSql(x)})")) + ")";
+
+        public string YearsBetweenFromYears(Column date1, Column date2) =>
+            $"({Year(date2)} - {Year(date1)})";
+
+        public string MonthsBetweenFromMonthsAndYears(Column date1, Column date2) =>
+            $"((12 * {YearsBetweenFromYears(date1, date2)}) + {Month(date2)} - {Month(date1)})";
+
+        #endregion
+
+
         #region Abstract Functions
 
         /// <summary>The absolute value of the expression</summary>

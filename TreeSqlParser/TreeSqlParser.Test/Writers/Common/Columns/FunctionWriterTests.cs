@@ -61,10 +61,10 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             var expected = new ExpectedSqlResult()
                 .WithSql("DATEADD(y, 3, {d '2000-12-31'})", swt.SqlServer)
-                .WithSql("ADD_MONTHS(DATE '2000-12-31', 12 * (3)", swt.Oracle)
+                .WithSql("ADD_MONTHS(DATE '2000-12-31', 12 * (3))", swt.Oracle)
                 .WithSql("ADDDATE(DATE('2000-12-31'), INTERVAL (3) YEAR)", swt.MySql, swt.MariaDb)
                 .WithSql("DATETIME(DATE('2000-12-31'), ''||(3)||' YEARS')", swt.Sqlite)
-                .WithSql("DATE '2000-12-31' + (INTERVAL '1y' * 3)", swt.Postgres)
+                .WithSql("((DATE '2000-12-31') + (INTERVAL '1y' * 3))", swt.Postgres)
                 .WithSql("ADD_YEARS(DATE '2000-12-31', 3)", swt.Db2);
 
             CommonMother.AssertSql(c, expected);
@@ -141,7 +141,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var c = ParseColumn("CONCAT('a','b','c')");
 
             var expected = new ExpectedSqlResult()
-                .WithDefaultSql("'a' || 'b' || 'c'")
+                .WithDefaultSql("(('a') || ('b') || ('c'))")
                 .WithSql("CONCAT('a', 'b', 'c')", swt.SqlServer, swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(c, expected);
@@ -153,7 +153,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var c = ParseColumn("CONCAT_WS('___', 'a','b','c')");
 
             var expected = new ExpectedSqlResult()
-                .WithDefaultSql("'a' || '___' || 'b' || '___' || 'c'")
+                .WithDefaultSql("(('a') || ('___') || ('b') || ('___') || ('c'))")
                 .WithSql("CONCAT_WS('___', 'a', 'b', 'c')", swt.SqlServer, swt.MySql, swt.MariaDb);
 
             CommonMother.AssertSql(c, expected);
@@ -170,7 +170,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
                 .WithSql("DATE(CONCAT_WS('-', 2020, 12, 31)))", swt.MySql, swt.MariaDb)
                 .WithSql("DATE(SUBSTR('0000' || 2020, -4, 4) || '-' || SUBSTR('00' || 12, -2, 2) || '-' || SUBSTR('00' || 31, -2, 2))", swt.Sqlite)
                 .WithSql("MAKE_DATE(2020, 12, 31)", swt.Postgres)
-                .WithSql("DATE(2020 || '-' || 12  || '-' || 31 )", swt.Db2);
+                .WithSql("DATE((2020) || '-' || (12) || '-' || (31))", swt.Db2);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -201,8 +201,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
                 .WithSql("(DATE '2001-12-31' - DATE '2000-12-31')", swt.Oracle)
                 .WithSql("DATEDIFF(DATE('2001-12-31'), DATE('2000-12-31'))", swt.MySql, swt.MariaDb)
                 .WithSql("CAST(JULIANDAY(DATE('2001-12-31') AS INT)) - CAST(JULIANDAY(DATE('2000-12-31') AS INT))", SqlWriterType.Sqlite)
-                .WithSql("((DATE '2001-12-31')::date - (DATE '2000-12-31')::date)", SqlWriterType.Postgres)
-                .WithSql("DAYS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31')", SqlWriterType.Db2);
+                .WithSql("((DATE '2001-12-31')::date - (DATE '2000-12-31')::date)", swt.Postgres)
+                .WithSql("DAYS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31')", swt.Db2);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -375,9 +375,9 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
                 .WithSql("DATEDIFF(m, {d '2000-12-30'}, {d '2001-12-31'})", swt.SqlServer)
                 .WithSql("FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-30'))", swt.Oracle)
                 .WithSql("TIMESTAMPDIFF(MONTH, DATE('2000-12-30'), DATE('2001-12-31'))", swt.MySql, swt.MariaDb)
-                .WithSql("EXCEPTION: MONTHSBETWEEN function not available on Sqlite", swt.Sqlite)
-                .WithSql("(12*(EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-30'))) + (EXTRACT(MONTH FROM DATE '2001-12-31') - EXTRACT(MONTH FROM DATE '2000-12-30'))", swt.Postgres)
-                .WithSql("(12*((YEAR(DATE '2001-12-31') - YEAR(DATE '2000-12-30')))) + (MONTH(DATE '2001-12-31') - MONTH(DATE '2000-12-30'))", swt.Db2);
+                .WithSql("((12 * (CAST(STRFTIME('%Y', DATE('2001-12-31')) AS INT) - CAST(STRFTIME('%Y', DATE('2000-12-30')) AS INT))) + CAST(STRFTIME('%m', DATE('2001-12-31')) AS INT) - CAST(STRFTIME('%m', DATE('2000-12-30')) AS INT))", swt.Sqlite)
+                .WithSql("((12 * (EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-30'))) + EXTRACT(MONTH FROM DATE '2001-12-31') - EXTRACT(MONTH FROM DATE '2000-12-30'))", swt.Postgres)
+                .WithSql("((12 * (YEAR(DATE '2001-12-31') - YEAR(DATE '2000-12-30'))) + MONTH(DATE '2001-12-31') - MONTH(DATE '2000-12-30'))", swt.Db2);
 
             CommonMother.AssertSql(c, expected);
         }
@@ -592,7 +592,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var expected = new ExpectedSqlResult()
                 .WithSql("CONVERT(date, {ts '2000-12-31 23:59:59.123'})", swt.SqlServer)
                 .WithSql("TRUNC(TIMESTAMP '2000-12-31 23:59:59.123')", swt.Oracle)
-                .WithSql("DATE(TIMESTAMP('2000-12-31  23:59:59.123'))", swt.MySql, swt.MariaDb)
+                .WithSql("DATE(TIMESTAMP('2000-12-31 23:59:59.123'))", swt.MySql, swt.MariaDb)
                 .WithSql("DATE(DATETIME('2000-12-31 23:59:59'))", swt.Sqlite)
                 .WithSql("DATE(TIMESTAMP '2000-12-31 23:59:59.123')", swt.Postgres, swt.Db2);
 
@@ -635,9 +635,9 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
                 .WithSql("DATEDIFF(year, {d '2000-12-31'}, {d '2001-12-31'})", swt.SqlServer)
                 .WithSql("FLOOR(MONTHS_BETWEEN(DATE '2001-12-31', DATE '2000-12-31') / 12)", swt.Oracle)
                 .WithSql("TIMESTAMPDIFF(YEAR, DATE('2000-12-31'), DATE('2001-12-31'))", swt.MySql, swt.MariaDb)
-                .WithSql("EXCEPTION: YEARSBETWEEN function not available on Sqlite", swt.Sqlite)
+                .WithSql("(CAST(STRFTIME('%Y', DATE('2001-12-31')) AS INT) - CAST(STRFTIME('%Y', DATE('2000-12-31')) AS INT))", swt.Sqlite)
                 .WithSql("(EXTRACT(YEAR FROM DATE '2001-12-31') - EXTRACT(YEAR FROM DATE '2000-12-31'))", swt.Postgres)
-                .WithSql("(YEAR(DATE '2001-12-31') - YEAR(DATE '2000-12-31'))", SqlWriterType.Db2);
+                .WithSql("(YEAR(DATE '2001-12-31') - YEAR(DATE '2000-12-31'))", swt.Db2);
 
             CommonMother.AssertSql(c, expected);
         }
