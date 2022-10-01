@@ -35,6 +35,9 @@ namespace TreeSqlParser.Test.SelectParser_Tests
         public void ParseNestedBracket() => SelectParserMother.TestParse("SELECT 1 WHERE ((1=2))");
 
         [Test]
+        public void ParseBracketColumnInCondition() => SelectParserMother.TestParse("SELECT 1 WHERE (1)>2");
+
+        [Test]
         public void ParseInList() => SelectParserMother.TestParse("SELECT 1 WHERE 1 IN (2,3)");
 
         [Test]

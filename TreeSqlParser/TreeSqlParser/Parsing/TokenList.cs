@@ -17,6 +17,8 @@ namespace TreeSqlParser.Parsing
 
         private int endIndex;                       // inclusive index of final token in range
 
+        private int? savedIndex;
+
         public TokenList(List<TSQLToken> tokens)
             : this(tokens, 0, tokens.Count - 1)
         { }
@@ -163,6 +165,14 @@ namespace TreeSqlParser.Parsing
         }
 
         public string DebugText => string.Join(" | ", RemainingTokens.Select(x => x.Text));
+
+        public void SaveCurrentIndex() => savedIndex = currentIndex;
+
+        public void RestoreCurrentIndex()
+        {
+            currentIndex = savedIndex.Value;
+            savedIndex = null;
+        }
 
     }
 }

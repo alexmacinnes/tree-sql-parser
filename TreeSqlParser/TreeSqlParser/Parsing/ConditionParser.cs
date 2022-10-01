@@ -69,9 +69,20 @@ namespace TreeSqlParser.Parsing
             if (tokenList.Peek().IsKeyword(TSQLKeywords.NOT))
                 return ParseNotCondition(parent, tokenList);
 
-            if (tokenList.Peek().IsCharacter(TSQLCharacters.OpenParentheses) && 
-                !tokenList.Peek(1).IsKeyword(TSQLKeywords.SELECT))
-                return ParseBracketedCondition(parent, tokenList);
+            //TODO - disgusting hack here - think of something better
+            // can't distinguish between bracketed condition: (1 > 2)
+            // and bracketed column in condition: (1) > 2 
+            try
+            {
+                tokenList.SaveCurrentIndex();
+                if (tokenList.Peek().IsCharacter(TSQLCharacters.OpenParentheses) &&
+                    !tokenList.Peek(1).IsKeyword(TSQLKeywords.SELECT))
+                    return ParseBracketedCondition(parent, tokenList);
+            }
+            catch 
+            {
+                tokenList.RestoreCurrentIndex();
+            }
 
             return ParseColumnComparison(parent, tokenList);
         }
