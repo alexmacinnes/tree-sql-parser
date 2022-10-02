@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TreeSqlParser.Model;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Conditions;
@@ -63,28 +64,64 @@ namespace TreeSqlParser.Parsing
 
         internal static Condition ParseNextCondition(SqlElement parent, TokenList tokenList)
         {
-            if (tokenList.Peek().IsKeyword(TSQLKeywords.EXISTS))
+            var token = tokenList.Peek();
+
+            if (token.IsKeyword(TSQLKeywords.EXISTS))
                 return ParseExistsCondition(parent, tokenList);
 
-            if (tokenList.Peek().IsKeyword(TSQLKeywords.NOT))
+            if (token.IsKeyword(TSQLKeywords.NOT))
                 return ParseNotCondition(parent, tokenList);
 
-            //TODO - disgusting hack here - think of something better
-            // can't distinguish between bracketed condition: (1 > 2)
-            // and bracketed column in condition: (1) > 2 
-            try
+            if (!token.IsCharacter(TSQLCharacters.OpenParentheses))
+                return ParseColumnComparison(parent, tokenList);
+
+            // the condition starts with '('
+            // this can either be a
+            //   A) bracketed condition e.g. (x < 100)
+            //   B) column condition with a bracketed column on the left hand side e.g. (x + y) < 100
+
+            if (IsColumnConditionNext(tokenList))
+                return ParseColumnComparison(parent, tokenList);
+
+            return ParseBracketedCondition(parent, tokenList);
+        }
+
+        private static bool IsColumnConditionNext(TokenList tokenList)
+        {
+            ParseUtilities.AssertIsChar(tokenList.Peek(), TSQLCharacters.OpenParentheses);
+
+            var clonedTokenList = tokenList.CloneFromCurrentPosition();
+
+            int level = 0;
+            while(clonedTokenList.HasMore)
             {
-                tokenList.SaveCurrentIndex();
-                if (tokenList.Peek().IsCharacter(TSQLCharacters.OpenParentheses) &&
-                    !tokenList.Peek(1).IsKeyword(TSQLKeywords.SELECT))
-                    return ParseBracketedCondition(parent, tokenList);
-            }
-            catch 
-            {
-                tokenList.RestoreCurrentIndex();
+                var nextToken = clonedTokenList.Take();
+                if (nextToken.IsCharacter(TSQLCharacters.OpenParentheses))
+                    level++;
+                else if (nextToken.IsCharacter(TSQLCharacters.CloseParentheses))
+                    level--;
+
+                if (level == 0)
+                    break;
             }
 
-            return ParseColumnComparison(parent, tokenList);
+            // this must be a bracketed condition at the end of the token list
+            if (!clonedTokenList.HasMore)
+                return false;
+
+            var tokenAfterBrackets = clonedTokenList.Take();
+            
+            var keyword = tokenAfterBrackets as TSQLKeyword;
+            if (keyword != null)
+            {
+                //if true the condition is something like '(x + y) BETWEEN 1 AND 10'
+                var keywords = new[] { TSQLKeywords.BETWEEN, TSQLKeywords.IN, TSQLKeywords.IS };
+                return keywords.Contains(keyword.Keyword);          
+            }
+
+            //if true the condition is something like '(x + y) > 10'
+            return columnComparisonMap.ContainsKey(tokenAfterBrackets.Text);
+
         }
 
         private static Condition ParseBracketedCondition(SqlElement parent, TokenList tokenList)

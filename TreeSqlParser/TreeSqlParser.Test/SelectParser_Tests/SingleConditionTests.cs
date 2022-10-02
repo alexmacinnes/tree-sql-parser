@@ -35,7 +35,16 @@ namespace TreeSqlParser.Test.SelectParser_Tests
         public void ParseNestedBracket() => SelectParserMother.TestParse("SELECT 1 WHERE ((1=2))");
 
         [Test]
-        public void ParseBracketColumnInCondition() => SelectParserMother.TestParse("SELECT 1 WHERE (1)>2");
+        public void ParseBracketColumnInComparisonCondition() => SelectParserMother.TestParse("SELECT 1 WHERE (1)>2");
+
+        [Test]
+        public void ParseBracketColumnInIsBetweenCondition() => SelectParserMother.TestParse("SELECT 1 WHERE (x) BETWEEN 1 AND 2");
+
+        [Test]
+        public void ParseBracketSubselectColumnInIsBetweenCondition() => SelectParserMother.TestParse("SELECT 1 WHERE (SELECT 2)>3");
+
+        [Test]
+        public void ParseBracketColumnInConditionHorribleNesting() => SelectParserMother.TestParse("SELECT 1 WHERE ((((((1))))>2))");
 
         [Test]
         public void ParseInList() => SelectParserMother.TestParse("SELECT 1 WHERE 1 IN (2,3)");
