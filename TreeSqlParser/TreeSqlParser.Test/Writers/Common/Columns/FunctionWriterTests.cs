@@ -8,6 +8,8 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 {
     class FunctionWriterTests
     {
+        private static SelectParser SelectParser = new SelectParser();
+
         private Column ParseColumn(string sql) =>
             (Column) SelectParser.ParseColumn(sql).Child;
 

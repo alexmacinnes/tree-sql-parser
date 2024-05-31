@@ -10,8 +10,10 @@ using TSQL.Tokens;
 
 namespace TreeSqlParser.Parsing
 {
-    internal class OverParser
+    public class OverParser
     {
+        public SelectParser SelectParser { get; set; }
+
         private static readonly IReadOnlyDictionary<string, ExtentType> ExtentTypeMap = EnumUtilities.ToDictionary<ExtentType, EnumParseTextAttribute>();
 
         private const string PARTITION = "PARTITION";
@@ -20,7 +22,7 @@ namespace TreeSqlParser.Parsing
         private const string UNBOUNDED = "UNBOUNDED";
         private const string ROW = "ROW";
 
-        public static Over ParseOver(SqlElement parent, TokenList tokenList)
+        internal protected virtual Over ParseOver(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.OVER))
                 return null;
@@ -36,11 +38,11 @@ namespace TreeSqlParser.Parsing
             {
                 innerTokens.Advance();
                 ParseUtilities.AssertIsKeyword(innerTokens.Take(), TSQLKeywords.BY);
-                result.PartitionBy = ColumnParser.ParseColumns(result, innerTokens);
+                result.PartitionBy = SelectParser.ColumnParser.ParseColumns(result, innerTokens);
             }
 
             if (innerTokens.TryTakeKeywords(TSQLKeywords.ORDER, TSQLKeywords.BY))
-                result.OrderBy = OrderByParser.ParseOrderByColumns(result, innerTokens);
+                result.OrderBy = SelectParser.OrderByParser.ParseOrderByColumns(result, innerTokens);
 
             var extentType = TryParseExtentType(innerTokens);
             if (extentType.HasValue)

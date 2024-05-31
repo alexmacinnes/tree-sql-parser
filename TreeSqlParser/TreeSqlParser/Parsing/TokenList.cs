@@ -9,7 +9,7 @@ using TSQL.Tokens;
 namespace TreeSqlParser.Parsing
 {
     [DebuggerDisplay("{DebugText}")]
-    internal class TokenList
+    public class TokenList
     {
         private readonly List<TSQLToken> tokens;
 

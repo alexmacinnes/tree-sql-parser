@@ -7,9 +7,9 @@ using TSQL;
 
 namespace TreeSqlParser.Parsing
 {
-    internal class SelectOptionsParser
+    public class SelectOptionsParser
     {
-        public static SelectOptions ParseSelectOptions(SqlElement parent, TokenList tokenList)
+        internal protected virtual SelectOptions ParseSelectOptions(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.OPTION))
                 return null;

@@ -15,7 +15,8 @@ using TreeSqlParser.Model;
 using TreeSqlParser.Parsing;
 
 string sql = "select id, surname from dbo.people";
-SqlRootElement root = SelectParser.ParseSelectStatement(sql);
+var parser = new SelectParser();
+SqlRootElement root = parser.ParseSelectStatement(sql);
 ```
 Traverse AST explicitly
 ```cs

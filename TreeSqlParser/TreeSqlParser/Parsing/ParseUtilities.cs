@@ -7,7 +7,7 @@ using TSQL.Tokens;
 
 namespace TreeSqlParser.Parsing
 {
-    internal class ParseUtilities
+    public class ParseUtilities
     {
         public static void AssertIsKeyword(TSQLToken token, params TSQLKeywords[] keywords)
         {

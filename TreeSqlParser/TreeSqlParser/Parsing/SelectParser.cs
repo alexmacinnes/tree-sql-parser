@@ -14,6 +14,37 @@ namespace TreeSqlParser.Parsing
 {
     public class SelectParser
     {
+        internal protected ColumnParser ColumnParser { get; set; }
+
+        internal protected ConditionParser ConditionParser { get; set; }
+
+        internal protected GroupByParser GroupByParser { get; set; }
+
+        internal protected OrderByParser OrderByParser { get; set; }
+
+        internal protected OverParser OverParser { get; set; }
+
+        internal protected PivotParser PivotParser { get; set; }
+
+        internal protected RelationParser RelationParser { get; set; }
+
+        internal protected SelectOptionsParser SelectOptionsParser { get; set; }
+
+        internal protected TopParser TopParser { get; set; }
+
+        public SelectParser()
+        {
+            ColumnParser = new ColumnParser() { SelectParser = this };
+            ConditionParser = new ConditionParser() { SelectParser = this };  
+            GroupByParser = new GroupByParser() { SelectParser = this };
+            OrderByParser = new OrderByParser() { SelectParser = this };
+            OverParser = new OverParser() { SelectParser = this };
+            PivotParser = new PivotParser() { SelectParser = this };
+            RelationParser = new RelationParser() { SelectParser = this };
+            SelectOptionsParser = new SelectOptionsParser();
+            TopParser = new TopParser() { SelectParser = this };
+        }
+
         private static readonly Dictionary<TSQLKeywords, SetModifier> SetModifiersMap = new Dictionary<TSQLKeywords, SetModifier>()
         {
             { TSQLKeywords.UNION, SetModifier.Union },
@@ -28,7 +59,7 @@ namespace TreeSqlParser.Parsing
             return new TokenList(tokens);
         }
 
-        public static SqlRootElement ParseSelectStatement(string sql)
+        public SqlRootElement ParseSelectStatement(string sql)
         {
             var tokenList = GetTokenList(sql);
 
@@ -38,7 +69,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        public static SqlRootElement ParseColumn(string sql)
+        public SqlRootElement ParseColumn(string sql)
         {
             var c = ParseColumnInternal(sql);
             var result = new SqlRootElement
@@ -50,13 +81,13 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        internal static Column ParseColumnInternal(string sql)
+        internal Column ParseColumnInternal(string sql)
         {
             var tokenList = GetTokenList(sql);
             return ColumnParser.ParseNextColumn(null, tokenList);
         }
 
-        public static SqlRootElement ParseCondition(string sql)
+        public SqlRootElement ParseCondition(string sql)
         {
             var c = ParseConditionInternal(sql);
             var result = new SqlRootElement
@@ -68,13 +99,13 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        internal static Condition ParseConditionInternal(string sql)
+        internal Condition ParseConditionInternal(string sql)
         {
             var tokenList = GetTokenList(sql);
             return ConditionParser.ParseCondition(null, tokenList);
         }
 
-        public static SqlRootElement ParseSelect(string sql)
+        public SqlRootElement ParseSelect(string sql)
         {
             var s = ParseSelectInternal(sql);
             var result = new SqlRootElement
@@ -86,19 +117,19 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        internal static Select ParseSelectInternal(string sql)
+        internal Select ParseSelectInternal(string sql)
         { 
             var tokenList = GetTokenList(sql);
             return ParseNextSelect(null, tokenList);
         }
 
-        public static List<SqlIdentifier> ParseMultiPartIdentifier(string sql)
+        public List<SqlIdentifier> ParseMultiPartIdentifier(string sql)
         {
             var tokenList = GetTokenList(sql);
             return ParseMultiPartIndentifier(tokenList).Select(x => new SqlIdentifier(x)).ToList();
         }
 
-        internal static SelectStatement ParseSelectStatement(SqlElement parent, TokenList tokenList)
+        public virtual SelectStatement ParseSelectStatement(SqlElement parent, TokenList tokenList)
         {
             var selectStatement = new SelectStatement { Parent = parent };
 
@@ -115,7 +146,7 @@ namespace TreeSqlParser.Parsing
             return selectStatement;
         }
 
-        private static List<CteSelect> ParseWithSelects(SelectStatement parent, TokenList tokenList)
+        protected virtual List<CteSelect> ParseWithSelects(SelectStatement parent, TokenList tokenList)
         {
             var result = new List<CteSelect>();
 
@@ -133,7 +164,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static CteSelect ParseNextWithSelect(SelectStatement parent, TokenList tokenList)
+        protected virtual CteSelect ParseNextWithSelect(SelectStatement parent, TokenList tokenList)
         {
             var result = new CteSelect { 
                 Parent = parent, 
@@ -152,7 +183,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static List<Select> ParseSelects(SelectStatement parent, TokenList tokenList)
+        protected virtual List<Select> ParseSelects(SelectStatement parent, TokenList tokenList)
         {
             var result = new List<Select>();
 
@@ -168,7 +199,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Select ParseNextSelect(SelectStatement parent, TokenList tokenList)
+        protected virtual Select ParseNextSelect(SelectStatement parent, TokenList tokenList)
         {
             if (!tokenList.HasMore)
                 return null;
@@ -198,12 +229,12 @@ namespace TreeSqlParser.Parsing
             return select;
         }
 
-        private static bool ParseDistinct(TokenList tokenList)
+        protected virtual bool ParseDistinct(TokenList tokenList)
         {
             return tokenList.TryTakeKeywords(TSQLKeywords.DISTINCT);
         }
 
-        private static SetModifier ParseSetModifier(TokenList tokenList)
+        protected virtual SetModifier ParseSetModifier(TokenList tokenList)
         {
             SetModifier result = SetModifier.None;
 
@@ -224,7 +255,7 @@ namespace TreeSqlParser.Parsing
             return result;            
         }
 
-        internal static List<string> ParseMultiPartIndentifier(TokenList tokenList)
+        internal protected virtual List<string> ParseMultiPartIndentifier(TokenList tokenList)
         {
             if (!(tokenList.Peek()?.AsIdentifier is TSQLIdentifier))
                 throw new InvalidOperationException($"Expected identifier, got {tokenList.Peek()?.Text}");

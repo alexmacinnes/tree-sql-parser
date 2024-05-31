@@ -11,15 +11,17 @@ using TSQL.Tokens;
 
 namespace TreeSqlParser.Parsing
 {
-    internal class OrderByParser
+    public class OrderByParser
     {
+        public SelectParser SelectParser { get; set; }
+
         private static readonly IReadOnlyDictionary<TSQLKeywords, ColumnSortOrder> ColumnSortOrderMap = new Dictionary<TSQLKeywords, ColumnSortOrder>
         {
             { TSQLKeywords.ASC, ColumnSortOrder.Asc },
             { TSQLKeywords.DESC, ColumnSortOrder.Desc }
         };
 
-        public static OrderBy ParseOrderBy(SqlElement parent, TokenList tokenList)
+        internal protected virtual OrderBy ParseOrderBy(SqlElement parent, TokenList tokenList)
         {
             if (tokenList.TryTakeKeywords(TSQLKeywords.ORDER, TSQLKeywords.BY))
             {
@@ -34,14 +36,14 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        public static List<OrderByColumn> ParseOrderByColumns(SqlElement parent, TokenList tokenList)
+        internal protected virtual List<OrderByColumn> ParseOrderByColumns(SqlElement parent, TokenList tokenList)
         {
             var result = new List<OrderByColumn>();
 
             while (true)
             {
                 var orderByColumn = new OrderByColumn { Parent = parent };
-                orderByColumn.Column = ColumnParser.ParseNextColumn(orderByColumn, tokenList, false);
+                orderByColumn.Column = SelectParser.ColumnParser.ParseNextColumn(orderByColumn, tokenList, false);
                 orderByColumn.Collate = TryParseCollate(tokenList);
                 orderByColumn.SortOrder = TryParseColumnSortOrder(tokenList);
 
@@ -54,7 +56,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static string TryParseCollate(TokenList tokenList)
+        protected virtual string TryParseCollate(TokenList tokenList)
         {
             if (tokenList.TryTakeKeywords(TSQLKeywords.COLLATE))
                 return tokenList.Take().Text;
@@ -62,7 +64,7 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        private static ColumnSortOrder TryParseColumnSortOrder(TokenList tokenList)
+        protected virtual ColumnSortOrder TryParseColumnSortOrder(TokenList tokenList)
         {
             var nextToken = tokenList.Peek();
             if (nextToken == null || !(nextToken is TSQLKeyword))
@@ -78,14 +80,14 @@ namespace TreeSqlParser.Parsing
             return ColumnSortOrder.Asc;
         }
 
-        private static Column ParseFetch(OrderBy parent, TokenList tokenList)
+        protected virtual Column ParseFetch(OrderBy parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.FETCH))
                 return null;
 
             AssertNextIdentifier(tokenList, "FETCH", "NEXT", "FIRST");
 
-            var column = ColumnParser.ParseNextColumn(parent, tokenList, false);
+            var column = SelectParser.ColumnParser.ParseNextColumn(parent, tokenList, false);
             
             AssertNextIdentifier(tokenList, "FETCH", "ROWS", "ROW");
             AssertNextIdentifier(tokenList, "FETCH", "ONLY");
@@ -93,20 +95,20 @@ namespace TreeSqlParser.Parsing
             return column;
         }
 
-        private static Column ParseOffset(OrderBy parent, TokenList tokenList)
+        protected virtual Column ParseOffset(OrderBy parent, TokenList tokenList)
         {
             if (PeekNextIdentifier(tokenList) != "OFFSET")
                 return null;
             tokenList.Advance();
 
-            var column = ColumnParser.ParseNextColumn(parent, tokenList, false);
+            var column = SelectParser.ColumnParser.ParseNextColumn(parent, tokenList, false);
 
             AssertNextIdentifier(tokenList, "OFFSET", "ROWS", "ROW");
 
             return column;
         }
 
-        private static void AssertNextIdentifier(TokenList tokenList, string context, params string[] validIdentifiers)
+        protected void AssertNextIdentifier(TokenList tokenList, string context, params string[] validIdentifiers)
         {
             string x = PeekNextIdentifier(tokenList);
             if (!(validIdentifiers.Contains(x)))
@@ -114,16 +116,12 @@ namespace TreeSqlParser.Parsing
             tokenList.Advance();
         }
 
-        private static string PeekNextIdentifier(TokenList tokenList)
+        protected string PeekNextIdentifier(TokenList tokenList)
         {
             // OFFSET are not recognised as keyowrds by TSQLParser
             var nextIdentifier = tokenList.Peek() as TSQLIdentifier;
             return nextIdentifier?.Text?.ToUpperInvariant();
         }
-
-
-
-
     }
 }
 

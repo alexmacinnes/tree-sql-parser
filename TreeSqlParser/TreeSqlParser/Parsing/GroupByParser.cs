@@ -8,9 +8,11 @@ using TSQL;
 
 namespace TreeSqlParser.Parsing
 {
-    internal class GroupByParser
+    public class GroupByParser
     {
-        public static List<GroupingSet> ParseGroupBy(SqlElement parent, TokenList tokenList)
+        public SelectParser SelectParser { get; set; }
+
+        internal protected virtual List<GroupingSet> ParseGroupBy(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.GROUP, TSQLKeywords.BY))
                 return null;
@@ -36,7 +38,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static GroupingSet ParseNextSet(SqlElement parent, TokenList tokenList)
+        protected virtual GroupingSet ParseNextSet(SqlElement parent, TokenList tokenList)
         {
             GroupingSetType t =
                 TryTakeText(tokenList, "ROLLUP") ? GroupingSetType.Rollup :
@@ -54,13 +56,12 @@ namespace TreeSqlParser.Parsing
                 Parent = parent,
                 SetType = t
             };
-            result.Columns = ColumnParser.ParseColumns(result, tokens);
+            result.Columns = SelectParser.ColumnParser.ParseColumns(result, tokens);
 
-            return result;
-            
+            return result;         
         }
 
-        private static bool TryTakeText(TokenList tokenList, params string[] words)
+        protected static bool TryTakeText(TokenList tokenList, params string[] words)
         {
             for (int i=0; i<words.Length; i++)
             {

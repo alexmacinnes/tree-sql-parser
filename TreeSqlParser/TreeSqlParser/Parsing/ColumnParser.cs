@@ -12,18 +12,15 @@ using TSQL.Tokens;
 
 namespace TreeSqlParser.Parsing
 {
-    internal class ColumnParser
+    public class ColumnParser
     {
         private static readonly IReadOnlyDictionary<string, Aggregation> AggregationsMap = EnumUtilities.ToDictionary<Aggregation>();
 
         private static readonly IReadOnlyDictionary<string, ArithmeticOperator> ArithmeticOperatorsMap = EnumUtilities.ToDictionary<ArithmeticOperator, EnumParseTextAttribute>();
 
-        //internal static List<Column> ParseColumns(SqlElement parent, TokenList tokenList)
-        //{
-        //    return ParseColumns(parent, tokens, ref nextIndex);
-        //}
+        public SelectParser SelectParser { get; set; }
 
-        internal static List<Column> ParseColumns(SqlElement parent, TokenList tokenList)
+        internal protected virtual List<Column> ParseColumns(SqlElement parent, TokenList tokenList)
         {
             var result = new List<Column>();
 
@@ -42,7 +39,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        public static Column ParseNextColumnSegment(SqlElement parent, TokenList tokenList)
+        internal protected virtual Column ParseNextColumnSegment(SqlElement parent, TokenList tokenList)
         {
             var nextToken = tokenList.Peek();            
             string nextTokenText = nextToken.Text.ToUpperInvariant();
@@ -74,7 +71,7 @@ namespace TreeSqlParser.Parsing
                 throw new InvalidOperationException("Unkown column type");
         }
 
-        private static Column ParseDateTimeEscapeSequence(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseDateTimeEscapeSequence(SqlElement parent, TokenList tokenList)
         {
             string dateTimeType;
             
@@ -106,13 +103,13 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static string Unquote(string text) =>
+        protected string Unquote(string text) =>
             text.Length > 1 && text.StartsWith("'") && text.EndsWith("'") ?
             text.Substring(1, text.Length-2) :
             throw new InvalidOperationException("Expected quoted text");
 
 
-        private static Column ParseNegativeNumericLiteral(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseNegativeNumericLiteral(SqlElement parent, TokenList tokenList)
         {
             string neg = tokenList.Take().Text;
             if (neg != "-")
@@ -132,7 +129,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Column ParseKeywordAsFunc(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseKeywordAsFunc(SqlElement parent, TokenList tokenList)
         {
             var fullName = new[] { new SqlIdentifier() { Name = tokenList.Take().Text } };
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
@@ -144,7 +141,7 @@ namespace TreeSqlParser.Parsing
             return funcColumn;
         }
 
-        private static VariableColumn ParseVariableColumn(SqlElement parent, TokenList tokenList)
+        protected virtual VariableColumn ParseVariableColumn(SqlElement parent, TokenList tokenList)
         {
             return new VariableColumn
             {
@@ -153,7 +150,7 @@ namespace TreeSqlParser.Parsing
             };
         }
 
-        private static Column ParseCastColumn(SqlElement parent, bool tryCast, TokenList tokenList)
+        protected virtual Column ParseCastColumn(SqlElement parent, bool tryCast, TokenList tokenList)
         {
             var innerTokens = tokenList.TakeBracketedTokens();
 
@@ -176,7 +173,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Column ParseConvertColumn(SqlElement parent, bool tryConvert, TokenList tokenList)
+        protected virtual Column ParseConvertColumn(SqlElement parent, bool tryConvert, TokenList tokenList)
         {
             var innerTokens = tokenList.TakeBracketedTokens();
 
@@ -196,7 +193,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Column ParseParseColumn(SqlElement parent, bool tryParse, TokenList tokenList)
+        protected virtual Column ParseParseColumn(SqlElement parent, bool tryParse, TokenList tokenList)
         {
             var innerTokens = tokenList.TakeBracketedTokens();
 
@@ -229,19 +226,15 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Column ParseNullColumn(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseNullColumn(SqlElement parent, TokenList tokenList)
         {
             ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.NULL);
 
             return new NullColumn { Parent = parent };
         }
 
-        //private static Column ParseNextColumn(SqlElement parent, List<TSQLToken> tokens)
-        //{
-        //    int nextIndex = 0;
-        //    return ParseNextColumn(parent, tokens, ref nextIndex);
-        //}
-        internal static Column ParseNextColumn(SqlElement parent, TokenList tokenList, bool allowAlias = true)
+
+        internal protected virtual Column ParseNextColumn(SqlElement parent, TokenList tokenList, bool allowAlias = true)
         {
             Column result = ParseNextColumnSegment(parent, tokenList);
 
@@ -274,7 +267,7 @@ namespace TreeSqlParser.Parsing
                 result.Parent = overColumn;
                 result = overColumn;
 
-                overColumn.Over = OverParser.ParseOver(overColumn, tokenList);
+                overColumn.Over = SelectParser.OverParser.ParseOver(overColumn, tokenList);
             }
 
             if (allowAlias)
@@ -297,7 +290,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static ArithmeticOperator? TryParseArithmeticOperator(TokenList tokenList)
+        protected virtual ArithmeticOperator? TryParseArithmeticOperator(TokenList tokenList)
         {
             if (tokenList.HasMore)
             {
@@ -324,7 +317,7 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        private static Column ParseCaseColumn(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseCaseColumn(SqlElement parent, TokenList tokenList)
         {
             ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.CASE);
 
@@ -336,7 +329,7 @@ namespace TreeSqlParser.Parsing
                     break;
 
                 var branch = new CaseBranch { Parent = result };
-                branch.Condition = ConditionParser.ParseCondition(branch, tokenList);
+                branch.Condition = SelectParser.ConditionParser.ParseCondition(branch, tokenList);
 
                 ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.THEN);
 
@@ -355,7 +348,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Column ParseBracketedColumn(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseBracketedColumn(SqlElement parent, TokenList tokenList)
         {
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
 
@@ -373,7 +366,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Column CreateSubselectColumn(SqlElement parent, TokenList tokenList)
+        protected virtual Column CreateSubselectColumn(SqlElement parent, TokenList tokenList)
         {
             var subselect = new SubselectColumn { Parent = parent };
             subselect.InnerSelect = SelectParser.ParseSelectStatement(subselect, tokenList);
@@ -381,7 +374,7 @@ namespace TreeSqlParser.Parsing
             return subselect;
         }
 
-        private static BracketedColumn CreateBracketedColumn(SqlElement parent, TokenList tokenList)
+        protected virtual BracketedColumn CreateBracketedColumn(SqlElement parent, TokenList tokenList)
         {
             var bracket = new BracketedColumn { Parent = parent };
             var columns = ParseColumns(bracket, tokenList);
@@ -393,7 +386,7 @@ namespace TreeSqlParser.Parsing
             return bracket;
         }
 
-        private static Column ParseAggregation(SqlElement parent, string name, TokenList tokenList)
+        protected virtual Column ParseAggregation(SqlElement parent, string name, TokenList tokenList)
         {
             var aggColumn = new AggregatedColumn { Parent = parent, Aggregation = AggregationsMap[name] };
             var innerTokens = tokenList.TakeBracketedTokens();
@@ -411,7 +404,7 @@ namespace TreeSqlParser.Parsing
             return aggColumn;
         }
 
-        private static FunctionColumn ParseFunc(SqlElement parent, TokenList tokenList, List<string> names)
+        protected virtual FunctionColumn ParseFunc(SqlElement parent, TokenList tokenList, List<string> names)
         {
             var fullName = names.Select(x => new SqlIdentifier(x)).ToArray();
             var funcColumn = new FunctionColumn { Name = fullName, Parent = parent };
@@ -419,7 +412,7 @@ namespace TreeSqlParser.Parsing
             return funcColumn;
         }
 
-        private static Column ParseIdentifier(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseIdentifier(SqlElement parent, TokenList tokenList)
         {
             var names = SelectParser.ParseMultiPartIndentifier(tokenList);
             string singleName = names.Count == 1 ? names[0].ToUpperInvariant() : null;
@@ -457,7 +450,7 @@ namespace TreeSqlParser.Parsing
             throw new InvalidOperationException($"Unexpected multi part column name {string.Join(".", names)}");
         }
 
-        private static Column ParseIifColumn(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseIifColumn(SqlElement parent, TokenList tokenList)
         {
             void consumeComma()
             {
@@ -466,7 +459,7 @@ namespace TreeSqlParser.Parsing
             }
 
             var result = new IifColumn { Parent = parent };
-            result.Condition = ConditionParser.ParseCondition(result, tokenList);
+            result.Condition = SelectParser.ConditionParser.ParseCondition(result, tokenList);
 
             consumeComma();
             result.TrueColumn = ParseNextColumn(result, tokenList);
@@ -480,7 +473,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Column ParseLiteralColumn(SqlElement parent, TokenList tokenList)
+        protected virtual Column ParseLiteralColumn(SqlElement parent, TokenList tokenList)
         {
             Column result = null;
 

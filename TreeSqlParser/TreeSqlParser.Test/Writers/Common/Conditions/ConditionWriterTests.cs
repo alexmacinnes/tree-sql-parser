@@ -8,6 +8,8 @@ namespace TreeSqlParser.Writers.Test.Common.Conditions
 {
     public class ConditionWriterTests
     {
+        private static SelectParser SelectParser = new SelectParser();
+
         private Condition ParseCondition(string sql) =>
             (Condition) SelectParser.ParseCondition(sql).Child;
 

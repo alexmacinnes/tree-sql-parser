@@ -8,6 +8,8 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
 {
     public class SelectWriterSelectTests
     {
+        private static SelectParser SelectParser = new SelectParser();
+
         private string Sql(SelectStatement s, SqlWriterType db) => CommonMother.Sql(s, db);
 
         private SelectStatement ParseSelectStatement(string sql) =>

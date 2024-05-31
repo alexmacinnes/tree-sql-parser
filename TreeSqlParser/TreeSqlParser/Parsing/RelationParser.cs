@@ -12,9 +12,11 @@ using Table = TreeSqlParser.Model.Relations.Table;
 
 namespace TreeSqlParser.Parsing
 {
-    internal class RelationParser
+    public class RelationParser
     {
-        internal static List<Relation> ParseRelations(SqlElement parent, TokenList tokenList)
+        public SelectParser SelectParser { get; set; }
+
+        internal protected virtual List<Relation> ParseRelations(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.FROM))
                 return null;
@@ -33,7 +35,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Relation ParseNextRelation(SqlElement parent, TokenList tokenList)
+        protected virtual Relation ParseNextRelation(SqlElement parent, TokenList tokenList)
         {
             Relation relation;
             if (tokenList.Peek()?.IsCharacter(TSQLCharacters.OpenParentheses) == true)
@@ -72,7 +74,7 @@ namespace TreeSqlParser.Parsing
                 };
                 join.RightRelation = ParseNextRelation(join, tokenList);
                 if (tokenList.TryTakeKeywords(TSQLKeywords.ON))
-                    join.Condition = ConditionParser.ParseCondition(join, tokenList);
+                    join.Condition = SelectParser.ConditionParser.ParseCondition(join, tokenList);
 
                 joinChain.Joins.Add(join);
             }
@@ -80,7 +82,7 @@ namespace TreeSqlParser.Parsing
             return relation;
         }
 
-        private static JoinType? TryParseJoinType(TokenList tokenList)
+        protected virtual JoinType? TryParseJoinType(TokenList tokenList)
         {
             void consumeOuterJoin()
             {
@@ -148,7 +150,7 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        private static Table ParseTable(SqlElement parent, TokenList tokenList)
+        protected virtual Table ParseTable(SqlElement parent, TokenList tokenList)
         {
             var table = new Table
             {
@@ -161,7 +163,7 @@ namespace TreeSqlParser.Parsing
             return table;
         }
 
-        private static SqlIdentifier ParseRelationAlias(TokenList tokenList)
+        protected virtual SqlIdentifier ParseRelationAlias(TokenList tokenList)
         {
             string alias = ParseUtilities.TryTakeAlias(tokenList);
             if (alias != null)
@@ -170,7 +172,7 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        private static Relation ParseBracketedRelation(SqlElement parent, TokenList tokenList)
+        protected virtual Relation ParseBracketedRelation(SqlElement parent, TokenList tokenList)
         {
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
 
@@ -182,7 +184,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static Relation ParseSubselect(SqlElement parent, TokenList tokenList)
+        protected virtual Relation ParseSubselect(SqlElement parent, TokenList tokenList)
         {
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
 

@@ -11,6 +11,8 @@ namespace TreeSqlParser.Test.SelectParser_Tests
 {
     internal class SelectParserMother
     {
+        private static SelectParser SelectParser = new SelectParser();
+
         public static void TestParse(string sql, string expected = null)
         {
             var root = SelectParser.ParseSelectStatement(sql);

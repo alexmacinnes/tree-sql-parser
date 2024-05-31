@@ -75,5 +75,6 @@ namespace TreeSqlParser.Test.SelectParser_Tests
 
         [Test]
         public void ParseLike() => SelectParserMother.TestParse("SELECT 1 WHERE a LIKE '%foo%'");
+
     }
 }

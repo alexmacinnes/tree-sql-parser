@@ -8,7 +8,9 @@ using swt = TreeSqlParser.Writers.SqlWriterType;
 namespace TreeSqlParser.Writers.Test.Common.Relations
 {
     public class RelationWriterTests
-    { 
+    {
+        private static SelectParser SelectParser = new SelectParser();
+
         private Relation ParseRelation(string sql) =>
             ((SelectStatement)SelectParser.ParseSelectStatement("select * from " + sql).Child).Selects[0].From[0];
 

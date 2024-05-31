@@ -7,15 +7,17 @@ using TSQL;
 
 namespace TreeSqlParser.Parsing
 {
-    internal class TopParser
+    public class TopParser
     {
-        internal static SelectTop ParseTop(SqlElement parent, TokenList tokenList)
+        public SelectParser SelectParser { get; set; }
+
+        internal protected virtual SelectTop ParseTop(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.TOP))
                 return null;
 
             var result = new SelectTop { Parent = parent };
-            result.Top = ColumnParser.ParseNextColumnSegment(result, tokenList);
+            result.Top = SelectParser.ColumnParser.ParseNextColumnSegment(result, tokenList);
             result.Percent = tokenList.TryTakeKeywords(TSQLKeywords.PERCENT);
             result.WithTies = tokenList.TryTakeKeywords(TSQLKeywords.WITH);
             if (result.WithTies)
