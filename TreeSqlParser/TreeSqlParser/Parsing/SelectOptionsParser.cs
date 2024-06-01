@@ -9,7 +9,7 @@ namespace TreeSqlParser.Parsing
 {
     public class SelectOptionsParser
     {
-        internal protected virtual SelectOptions ParseSelectOptions(SqlElement parent, TokenList tokenList)
+        public virtual SelectOptions ParseSelectOptions(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.OPTION))
                 return null;

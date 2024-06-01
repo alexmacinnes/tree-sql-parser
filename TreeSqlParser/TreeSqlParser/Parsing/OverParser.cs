@@ -22,7 +22,7 @@ namespace TreeSqlParser.Parsing
         private const string UNBOUNDED = "UNBOUNDED";
         private const string ROW = "ROW";
 
-        internal protected virtual Over ParseOver(SqlElement parent, TokenList tokenList)
+        public virtual Over ParseOver(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.OVER))
                 return null;
@@ -51,7 +51,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static OverExtent ParseExtent(Over parent, ExtentType extentType, TokenList tokenList)
+        public virtual OverExtent ParseExtent(Over parent, ExtentType extentType, TokenList tokenList)
         {
             var result = new OverExtent { Parent = parent, ExtentType = extentType };
 
@@ -79,7 +79,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        private static int? ParseBound(TokenList tokenList)
+        public virtual int? ParseBound(TokenList tokenList)
         {
             if (tokenList.TryTakeKeywords(TSQLKeywords.CURRENT))
             {
@@ -103,7 +103,7 @@ namespace TreeSqlParser.Parsing
             return n;
         }
 
-        private static uint ParseUint(TokenList tokenList)
+        public virtual uint ParseUint(TokenList tokenList)
         {
             string text = tokenList.Take().Text;
 
@@ -113,7 +113,7 @@ namespace TreeSqlParser.Parsing
             throw new InvalidOperationException($"Expected unsigned int in window extent, found {text}");
         }
 
-        private static ExtentType? TryParseExtentType(TokenList tokenList)
+        public virtual ExtentType? TryParseExtentType(TokenList tokenList)
         {
             var keyword = tokenList.Peek()?.Text?.ToUpperInvariant();
             if (keyword != null)

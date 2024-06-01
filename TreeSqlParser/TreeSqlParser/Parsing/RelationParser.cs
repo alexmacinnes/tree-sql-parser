@@ -16,7 +16,7 @@ namespace TreeSqlParser.Parsing
     {
         public SelectParser SelectParser { get; set; }
 
-        internal protected virtual List<Relation> ParseRelations(SqlElement parent, TokenList tokenList)
+        public virtual List<Relation> ParseRelations(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.FROM))
                 return null;
@@ -35,7 +35,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        protected virtual Relation ParseNextRelation(SqlElement parent, TokenList tokenList)
+        public virtual Relation ParseNextRelation(SqlElement parent, TokenList tokenList)
         {
             Relation relation;
             if (tokenList.Peek()?.IsCharacter(TSQLCharacters.OpenParentheses) == true)
@@ -82,7 +82,7 @@ namespace TreeSqlParser.Parsing
             return relation;
         }
 
-        protected virtual JoinType? TryParseJoinType(TokenList tokenList)
+        public virtual JoinType? TryParseJoinType(TokenList tokenList)
         {
             void consumeOuterJoin()
             {
@@ -150,7 +150,7 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        protected virtual Table ParseTable(SqlElement parent, TokenList tokenList)
+        public virtual Table ParseTable(SqlElement parent, TokenList tokenList)
         {
             var table = new Table
             {
@@ -163,7 +163,7 @@ namespace TreeSqlParser.Parsing
             return table;
         }
 
-        protected virtual SqlIdentifier ParseRelationAlias(TokenList tokenList)
+        public virtual SqlIdentifier ParseRelationAlias(TokenList tokenList)
         {
             string alias = ParseUtilities.TryTakeAlias(tokenList);
             if (alias != null)
@@ -172,7 +172,7 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        protected virtual Relation ParseBracketedRelation(SqlElement parent, TokenList tokenList)
+        public virtual Relation ParseBracketedRelation(SqlElement parent, TokenList tokenList)
         {
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
 
@@ -184,7 +184,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        protected virtual Relation ParseSubselect(SqlElement parent, TokenList tokenList)
+        public virtual Relation ParseSubselect(SqlElement parent, TokenList tokenList)
         {
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
 

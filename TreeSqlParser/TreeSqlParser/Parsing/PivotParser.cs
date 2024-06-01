@@ -11,7 +11,7 @@ namespace TreeSqlParser.Parsing
     {
         public SelectParser SelectParser { get; set; }
 
-        internal protected virtual Pivot TryParsePivot(SqlElement parent, TokenList tokenList)
+        public virtual Pivot TryParsePivot(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.PIVOT))
                 return null;

@@ -14,7 +14,7 @@ namespace TreeSqlParser.Test.SelectParser_Tests
     {
         private class CustomColumnParser : ColumnParser
         {
-            protected override Column ParseNextColumnSegment(SqlElement parent, TokenList tokenList)
+            public override Column ParseNextColumnSegment(SqlElement parent, TokenList tokenList)
             {
                 var t = tokenList.Peek();
                 if (t.Text == "$baz")
@@ -27,7 +27,7 @@ namespace TreeSqlParser.Test.SelectParser_Tests
         }
         private class CustomConditionParser : ConditionParser
         {
-            protected override Condition ParseNextCondition(SqlElement parent, TokenList tokenList)
+            public override Condition ParseNextCondition(SqlElement parent, TokenList tokenList)
             {
                 var t = tokenList.Peek();
                 if (t.Text == "$foo")

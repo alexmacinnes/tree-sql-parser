@@ -21,7 +21,7 @@ namespace TreeSqlParser.Parsing
             { TSQLKeywords.DESC, ColumnSortOrder.Desc }
         };
 
-        internal protected virtual OrderBy ParseOrderBy(SqlElement parent, TokenList tokenList)
+        public virtual OrderBy ParseOrderBy(SqlElement parent, TokenList tokenList)
         {
             if (tokenList.TryTakeKeywords(TSQLKeywords.ORDER, TSQLKeywords.BY))
             {
@@ -36,7 +36,7 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        internal protected virtual List<OrderByColumn> ParseOrderByColumns(SqlElement parent, TokenList tokenList)
+        public virtual List<OrderByColumn> ParseOrderByColumns(SqlElement parent, TokenList tokenList)
         {
             var result = new List<OrderByColumn>();
 
@@ -56,7 +56,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        protected virtual string TryParseCollate(TokenList tokenList)
+        public string TryParseCollate(TokenList tokenList)
         {
             if (tokenList.TryTakeKeywords(TSQLKeywords.COLLATE))
                 return tokenList.Take().Text;
@@ -64,7 +64,7 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        protected virtual ColumnSortOrder TryParseColumnSortOrder(TokenList tokenList)
+        public ColumnSortOrder TryParseColumnSortOrder(TokenList tokenList)
         {
             var nextToken = tokenList.Peek();
             if (nextToken == null || !(nextToken is TSQLKeyword))
@@ -80,7 +80,7 @@ namespace TreeSqlParser.Parsing
             return ColumnSortOrder.Asc;
         }
 
-        protected virtual Column ParseFetch(OrderBy parent, TokenList tokenList)
+        public Column ParseFetch(OrderBy parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.FETCH))
                 return null;
@@ -95,7 +95,7 @@ namespace TreeSqlParser.Parsing
             return column;
         }
 
-        protected virtual Column ParseOffset(OrderBy parent, TokenList tokenList)
+        public Column ParseOffset(OrderBy parent, TokenList tokenList)
         {
             if (PeekNextIdentifier(tokenList) != "OFFSET")
                 return null;

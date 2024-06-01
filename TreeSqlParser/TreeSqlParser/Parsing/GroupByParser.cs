@@ -12,7 +12,7 @@ namespace TreeSqlParser.Parsing
     {
         public SelectParser SelectParser { get; set; }
 
-        internal protected virtual List<GroupingSet> ParseGroupBy(SqlElement parent, TokenList tokenList)
+        public virtual List<GroupingSet> ParseGroupBy(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.GROUP, TSQLKeywords.BY))
                 return null;
@@ -38,7 +38,7 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        protected virtual GroupingSet ParseNextSet(SqlElement parent, TokenList tokenList)
+        public virtual GroupingSet ParseNextSet(SqlElement parent, TokenList tokenList)
         {
             GroupingSetType t =
                 TryTakeText(tokenList, "ROLLUP") ? GroupingSetType.Rollup :

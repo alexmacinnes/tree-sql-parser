@@ -11,7 +11,7 @@ namespace TreeSqlParser.Parsing
     {
         public SelectParser SelectParser { get; set; }
 
-        internal protected virtual SelectTop ParseTop(SqlElement parent, TokenList tokenList)
+        public virtual SelectTop ParseTop(SqlElement parent, TokenList tokenList)
         {
             if (!tokenList.TryTakeKeywords(TSQLKeywords.TOP))
                 return null;
