@@ -14,23 +14,23 @@ namespace TreeSqlParser.Parsing
 {
     public class SelectParser
     {
-        internal protected ColumnParser ColumnParser { get; set; }
+        public ColumnParser ColumnParser { get; protected set; }
 
-        internal protected ConditionParser ConditionParser { get; set; }
+        public ConditionParser ConditionParser { get; protected set; }
 
-        internal protected GroupByParser GroupByParser { get; set; }
+        public GroupByParser GroupByParser { get; protected set; }
 
-        internal protected OrderByParser OrderByParser { get; set; }
+        public OrderByParser OrderByParser { get; protected set; }
 
-        internal protected OverParser OverParser { get; set; }
+        public OverParser OverParser { get; protected set; }
 
-        internal protected PivotParser PivotParser { get; set; }
+        public PivotParser PivotParser { get; protected set; }
 
-        internal protected RelationParser RelationParser { get; set; }
+        public RelationParser RelationParser { get; protected set; }
 
-        internal protected SelectOptionsParser SelectOptionsParser { get; set; }
+        public SelectOptionsParser SelectOptionsParser { get; protected set; }
 
-        internal protected TopParser TopParser { get; set; }
+        public TopParser TopParser { get; protected set; }
 
         public SelectParser()
         {
