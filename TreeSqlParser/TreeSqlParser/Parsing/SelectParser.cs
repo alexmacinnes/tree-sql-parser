@@ -7,6 +7,7 @@ using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Conditions;
 using TreeSqlParser.Model.Enums;
 using TreeSqlParser.Model.Selects;
+using TreeSqlParser.Parsing.Errors;
 using TSQL;
 using TSQL.Tokens;
 
@@ -164,7 +165,7 @@ namespace TreeSqlParser.Parsing
 
             var tokenList = parseContext.TokenList;
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.WITH, parseContext))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.WITH))
                 return result;
 
             while(true)
@@ -225,7 +226,7 @@ namespace TreeSqlParser.Parsing
 
             select.SetModifier = ParseSetModifier(parseContext);
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.SELECT, parseContext))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.SELECT))
                 return null;
 
             select.Top = TopParser.ParseTop(select, parseContext);
@@ -235,12 +236,12 @@ namespace TreeSqlParser.Parsing
             select.From = RelationParser.ParseRelations(select, parseContext);
             select.Pivot = PivotParser.TryParsePivot(select, parseContext);
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.WHERE, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.WHERE))
                 select.WhereCondition = ConditionParser.ParseCondition(select, parseContext);
 
             select.GroupBy = GroupByParser.ParseGroupBy(select, parseContext);
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.HAVING, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.HAVING))
                 select.HavingCondition = ConditionParser.ParseCondition(select, parseContext);
 
             return select;
@@ -248,7 +249,7 @@ namespace TreeSqlParser.Parsing
 
         protected virtual bool ParseDistinct(ParseContext parseContext)
         {
-            return parseContext.TokenList.TryTakeKeywords(TSQLKeywords.DISTINCT, parseContext);
+            return parseContext.TokenList.TryTakeKeywords(parseContext, TSQLKeywords.DISTINCT);
         }
 
         protected virtual SetModifier ParseSetModifier(ParseContext parseContext)

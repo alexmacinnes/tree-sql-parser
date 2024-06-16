@@ -43,7 +43,7 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            bool tookAs = tokenList.TryTakeKeywords(TSQLKeywords.AS, parseContext);
+            bool tookAs = tokenList.TryTakeKeywords(parseContext, TSQLKeywords.AS);
             if (tokenList.Peek()?.AsIdentifier != null)
                 return tokenList.Take().Text;
             else if (tookAs)

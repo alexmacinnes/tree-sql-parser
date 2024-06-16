@@ -175,15 +175,15 @@ namespace TreeSqlParser.Parsing
             var leftColumn = SelectParser.ColumnParser.ParseNextColumn(null, parseContext);
             var tokenList = parseContext.TokenList;
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.IN, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.IN))
             {
                 return ParseInCondition(parent, leftColumn, parseContext);
             }
-            else if (tokenList.TryTakeKeywords(TSQLKeywords.BETWEEN, parseContext))
+            else if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.BETWEEN))
             {
                 return ParseBetweenCondition(parent, leftColumn, parseContext);
             }
-            else if (tokenList.TryTakeKeywords(TSQLKeywords.IS, parseContext))
+            else if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.IS))
             {
                 return ParseIsCondition(parent, leftColumn, parseContext);
             }
@@ -231,10 +231,10 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.SOME, parseContext) || tokenList.TryTakeKeywords(TSQLKeywords.ANY, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.SOME) || tokenList.TryTakeKeywords(parseContext, TSQLKeywords.ANY))
                 return SetConditionType.Some;           // ANY is synonym for SOME
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.ALL, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.ALL))
                 return SetConditionType.All;
 
             return null;
@@ -256,7 +256,7 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            bool not = tokenList.TryTakeKeywords(TSQLKeywords.NOT, parseContext);
+            bool not = tokenList.TryTakeKeywords(parseContext, TSQLKeywords.NOT);
 
             ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.NULL);
 

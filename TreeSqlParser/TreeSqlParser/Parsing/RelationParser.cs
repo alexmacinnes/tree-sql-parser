@@ -20,7 +20,7 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.FROM, parseContext))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.FROM))
                 return null;
 
             var result = new List<Relation>();
@@ -77,7 +77,7 @@ namespace TreeSqlParser.Parsing
                     JoinType = joinType.Value
                 };
                 join.RightRelation = ParseNextRelation(join, parseContext);
-                if (tokenList.TryTakeKeywords(TSQLKeywords.ON, parseContext))
+                if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.ON))
                     join.Condition = SelectParser.ConditionParser.ParseCondition(join, parseContext);
 
                 joinChain.Joins.Add(join);
@@ -93,7 +93,7 @@ namespace TreeSqlParser.Parsing
             void consumeOuterJoin()
             {
                 tokenList.Advance();
-                tokenList.TryTakeKeywords(TSQLKeywords.OUTER, parseContext);
+                tokenList.TryTakeKeywords(parseContext, TSQLKeywords.OUTER);
                 ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.JOIN);
             }
 
@@ -139,7 +139,7 @@ namespace TreeSqlParser.Parsing
             else if (keyword == TSQLKeywords.CROSS)
             {
                 tokenList.Advance();
-                if (tokenList.TryTakeKeywords(TSQLKeywords.JOIN, parseContext))
+                if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.JOIN))
                     return JoinType.CrossJoin;
 
                 consumeApply();

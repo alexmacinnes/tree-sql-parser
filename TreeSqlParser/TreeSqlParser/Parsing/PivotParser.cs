@@ -12,7 +12,7 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.PIVOT, parseContext))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.PIVOT))
                 return null;
 
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);

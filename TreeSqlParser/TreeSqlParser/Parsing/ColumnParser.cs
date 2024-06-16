@@ -343,7 +343,7 @@ namespace TreeSqlParser.Parsing
 
             while (tokenList.HasMore)
             {
-                if (!(tokenList.TryTakeKeywords(TSQLKeywords.WHEN, parseContext)))
+                if (!(tokenList.TryTakeKeywords(parseContext, TSQLKeywords.WHEN)))
                     break;
 
                 var branch = new CaseBranch { Parent = result };
@@ -356,7 +356,7 @@ namespace TreeSqlParser.Parsing
                 result.Branches.Add(branch);
             }
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.ELSE, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.ELSE))
             {
                 result.DefaultColumn = ParseNextColumn(result, parseContext);
             }
@@ -412,7 +412,7 @@ namespace TreeSqlParser.Parsing
             var aggColumn = new AggregatedColumn { Parent = parent, Aggregation = AggregationsMap[name] };
             var innerTokens = parseContext.TokenList.TakeBracketedTokens();
 
-            if (innerTokens.TryTakeKeywords(TSQLKeywords.DISTINCT, parseContext))
+            if (innerTokens.TryTakeKeywords(parseContext, TSQLKeywords.DISTINCT))
             {
                 aggColumn.Distinct = true;
             }

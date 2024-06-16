@@ -24,7 +24,7 @@ namespace TreeSqlParser.Parsing
         public virtual OrderBy ParseOrderBy(SqlElement parent, ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
-            if (tokenList.TryTakeKeywords(TSQLKeywords.ORDER, parseContext, TSQLKeywords.BY))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.ORDER, TSQLKeywords.BY))
             {
                 var result = new OrderBy { Parent = parent };
                 result.Columns = ParseOrderByColumns(result, parseContext);
@@ -60,7 +60,7 @@ namespace TreeSqlParser.Parsing
         public string TryParseCollate(ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
-            if (tokenList.TryTakeKeywords(TSQLKeywords.COLLATE, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.COLLATE))
                 return tokenList.Take().Text;
 
             return null;
@@ -86,7 +86,7 @@ namespace TreeSqlParser.Parsing
         public Column ParseFetch(OrderBy parent, ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.FETCH, parseContext))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.FETCH))
                 return null;
 
             AssertNextIdentifier(parseContext, "FETCH", "NEXT", "FIRST");

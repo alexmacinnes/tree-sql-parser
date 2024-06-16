@@ -13,7 +13,7 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.OPTION, parseContext))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.OPTION))
                 return null;
 
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))

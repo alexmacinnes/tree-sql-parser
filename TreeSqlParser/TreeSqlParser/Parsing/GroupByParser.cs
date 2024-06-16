@@ -16,7 +16,7 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.GROUP, parseContext, TSQLKeywords.BY))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.GROUP, TSQLKeywords.BY))
                 return null;
 
             var result = new List<GroupingSet>();

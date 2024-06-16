@@ -26,7 +26,7 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.OVER, parseContext))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.OVER))
                 return null;
 
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
@@ -44,7 +44,7 @@ namespace TreeSqlParser.Parsing
                 result.PartitionBy = SelectParser.ColumnParser.ParseColumns(result, subContext);
             }
 
-            if (innerTokens.TryTakeKeywords(TSQLKeywords.ORDER, subContext, TSQLKeywords.BY))
+            if (innerTokens.TryTakeKeywords(subContext, TSQLKeywords.ORDER, TSQLKeywords.BY))
                 result.OrderBy = SelectParser.OrderByParser.ParseOrderByColumns(result, subContext);
 
             var extentType = TryParseExtentType(subContext);
@@ -62,7 +62,7 @@ namespace TreeSqlParser.Parsing
 
             var result = new OverExtent { Parent = parent, ExtentType = extentType };
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.BETWEEN, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.BETWEEN))
             {
                 result.LowerBound = ParseBound(parseContext);
                 ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.AND);
@@ -89,7 +89,7 @@ namespace TreeSqlParser.Parsing
         public virtual int? ParseBound(ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
-            if (tokenList.TryTakeKeywords(TSQLKeywords.CURRENT, parseContext))
+            if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.CURRENT))
             {
                 TakeKeyword(tokenList, ROW);
                 return 0;

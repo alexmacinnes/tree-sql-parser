@@ -15,13 +15,13 @@ namespace TreeSqlParser.Parsing
         {
             var tokenList = parseContext.TokenList;
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.TOP, parseContext))
+            if (!tokenList.TryTakeKeywords(parseContext, TSQLKeywords.TOP))
                 return null;
 
             var result = new SelectTop { Parent = parent };
             result.Top = SelectParser.ColumnParser.ParseNextColumnSegment(result, parseContext);
-            result.Percent = tokenList.TryTakeKeywords(TSQLKeywords.PERCENT, parseContext);
-            result.WithTies = tokenList.TryTakeKeywords(TSQLKeywords.WITH, parseContext);
+            result.Percent = tokenList.TryTakeKeywords(parseContext, TSQLKeywords.PERCENT);
+            result.WithTies = tokenList.TryTakeKeywords(parseContext, TSQLKeywords.WITH);
             if (result.WithTies)
             {
                 string nextToken = tokenList.Take()?.Text?.ToUpperInvariant();
