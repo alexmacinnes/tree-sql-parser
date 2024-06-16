@@ -12,19 +12,22 @@ namespace TreeSqlParser.Parsing
     {
         public SelectParser SelectParser { get; set; }
 
-        public virtual List<GroupingSet> ParseGroupBy(SqlElement parent, TokenList tokenList)
+        public virtual List<GroupingSet> ParseGroupBy(SqlElement parent, ParseContext parseContext)
         {
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.GROUP, TSQLKeywords.BY))
+            var tokenList = parseContext.TokenList;
+
+            if (!tokenList.TryTakeKeywords(TSQLKeywords.GROUP, parseContext, TSQLKeywords.BY))
                 return null;
 
             var result = new List<GroupingSet>();
             if (TryTakeText(tokenList, "GROUPING", "SETS"))
             {
-                ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
+                ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
                 var innerTokens = tokenList.TakeBracketedTokens();
                 while (true)
                 {
-                    result.Add(ParseNextSet(parent, innerTokens));
+                    var subContext = parseContext.Subcontext(innerTokens);
+                    result.Add(ParseNextSet(parent, subContext));
 
                     if (!innerTokens.TryTakeCharacter(TSQLCharacters.Comma))
                         break;
@@ -32,31 +35,33 @@ namespace TreeSqlParser.Parsing
             }
             else
             {
-                result.Add(ParseNextSet(parent, tokenList));
+                result.Add(ParseNextSet(parent, parseContext));
             }
 
             return result;
         }
 
-        public virtual GroupingSet ParseNextSet(SqlElement parent, TokenList tokenList)
+        public virtual GroupingSet ParseNextSet(SqlElement parent, ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
+
             GroupingSetType t =
                 TryTakeText(tokenList, "ROLLUP") ? GroupingSetType.Rollup :
                 TryTakeText(tokenList, "CUBE") ? GroupingSetType.Cube :
                 GroupingSetType.Columns;
 
-            TokenList tokens;
+            ParseContext subContext;
             if (tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
-                tokens = tokenList.TakeBracketedTokens();
+                subContext = parseContext.Subcontext(tokenList.TakeBracketedTokens());
             else
-                tokens = tokenList;
+                subContext = parseContext;
 
             var result = new GroupingSet
             {
                 Parent = parent,
                 SetType = t
             };
-            result.Columns = SelectParser.ColumnParser.ParseColumns(result, tokens);
+            result.Columns = SelectParser.ColumnParser.ParseColumns(result, subContext);
 
             return result;         
         }

@@ -141,14 +141,14 @@ namespace TreeSqlParser.Parsing
             return sb.ToString();
         }
 
-        public bool TryTakeKeywords(TSQLKeywords first, params TSQLKeywords[] others)
+        public bool TryTakeKeywords(TSQLKeywords first, ParseContext parseContext, params TSQLKeywords[] others)
         {
             if (Peek()?.IsKeyword(first) != true)
                 return false;
             Advance();
 
             foreach (var x in others)
-                ParseUtilities.AssertIsKeyword(Take(), x);
+                ParseUtilities.AssertIsKeyword(Take(), parseContext, x);
 
             return true;
         }

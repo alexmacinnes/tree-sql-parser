@@ -52,19 +52,31 @@ namespace TreeSqlParser.Parsing
             { TSQLKeywords.EXCEPT, SetModifier.Except }
         };
 
-        private static TokenList GetTokenList(string sql)
+        private static ParseContext GetParseContext(string sql)
         {
-            var tokens = TSQLTokenizer.ParseTokens(sql);
-            KeywordMetadata.CheckKeywordBlacklist(tokens);
-            return new TokenList(tokens);
+            var tokens = TSQLTokenizer.ParseTokens(sql, includeWhitespace: true);
+            var grouped = tokens.GroupBy(x => x is TSQLWhitespace).ToArray();
+            var whitespace = grouped.FirstOrDefault(g => g.Key)?.Cast<TSQLWhitespace>()?.ToList() ?? new List<TSQLWhitespace>();
+            var nonWhitespace = grouped.FirstOrDefault(g => !g.Key).ToList() ?? new List<TSQLToken>();
+
+            var errorGenerator = new ErrorGenerator(whitespace);
+            KeywordMetadata.CheckKeywordBlacklist(nonWhitespace, errorGenerator);
+            
+            var tokenList = new TokenList(nonWhitespace);
+
+            return new ParseContext
+            {
+                TokenList = tokenList,
+                ErrorGenerator = errorGenerator
+            };
         }
 
         public SqlRootElement ParseSelectStatement(string sql)
         {
-            var tokenList = GetTokenList(sql);
+            var parseContext = GetParseContext(sql);
 
             var result = new SqlRootElement();
-            result.Child = ParseSelectStatement(result, tokenList);
+            result.Child = ParseSelectStatement(result, parseContext);
 
             return result;
         }
@@ -83,8 +95,8 @@ namespace TreeSqlParser.Parsing
 
         internal Column ParseColumnInternal(string sql)
         {
-            var tokenList = GetTokenList(sql);
-            return ColumnParser.ParseNextColumn(null, tokenList);
+            var parseContext = GetParseContext(sql);
+            return ColumnParser.ParseNextColumn(null, parseContext);
         }
 
         public SqlRootElement ParseCondition(string sql)
@@ -101,8 +113,8 @@ namespace TreeSqlParser.Parsing
 
         internal Condition ParseConditionInternal(string sql)
         {
-            var tokenList = GetTokenList(sql);
-            return ConditionParser.ParseCondition(null, tokenList);
+            var parseContext = GetParseContext(sql);
+            return ConditionParser.ParseCondition(null, parseContext);
         }
 
         public SqlRootElement ParseSelect(string sql)
@@ -118,44 +130,46 @@ namespace TreeSqlParser.Parsing
         }
 
         internal Select ParseSelectInternal(string sql)
-        { 
-            var tokenList = GetTokenList(sql);
-            return ParseNextSelect(null, tokenList);
+        {
+            var parseContext = GetParseContext(sql);
+            return ParseNextSelect(null, parseContext);
         }
 
         public List<SqlIdentifier> ParseMultiPartIdentifier(string sql)
         {
-            var tokenList = GetTokenList(sql);
-            return ParseMultiPartIndentifier(tokenList).Select(x => new SqlIdentifier(x)).ToList();
+            var parseContext = GetParseContext(sql);
+            return ParseMultiPartIndentifier(parseContext).Select(x => new SqlIdentifier(x)).ToList();
         }
 
-        public virtual SelectStatement ParseSelectStatement(SqlElement parent, TokenList tokenList)
+        public virtual SelectStatement ParseSelectStatement(SqlElement parent, ParseContext parseContext)
         {
             var selectStatement = new SelectStatement { Parent = parent };
 
-            selectStatement.WithSelects = ParseWithSelects(selectStatement, tokenList);
-            selectStatement.Selects = ParseSelects(selectStatement, tokenList);
+            selectStatement.WithSelects = ParseWithSelects(selectStatement, parseContext);
+            selectStatement.Selects = ParseSelects(selectStatement, parseContext);
 
-            selectStatement.OrderBy = OrderByParser.ParseOrderBy(selectStatement, tokenList);
+            selectStatement.OrderBy = OrderByParser.ParseOrderBy(selectStatement, parseContext);
 
-            selectStatement.Options = SelectOptionsParser.ParseSelectOptions(selectStatement, tokenList);
+            selectStatement.Options = SelectOptionsParser.ParseSelectOptions(selectStatement, parseContext);
 
-            if (tokenList.HasMore)
+            if (parseContext.TokenList.HasMore)
                 throw new InvalidCastException("Parsing incomplete");
 
             return selectStatement;
         }
 
-        protected virtual List<CteSelect> ParseWithSelects(SelectStatement parent, TokenList tokenList)
+        protected virtual List<CteSelect> ParseWithSelects(SelectStatement parent, ParseContext parseContext)
         {
             var result = new List<CteSelect>();
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.WITH))
+            var tokenList = parseContext.TokenList;
+
+            if (!tokenList.TryTakeKeywords(TSQLKeywords.WITH, parseContext))
                 return result;
 
             while(true)
             {
-                result.Add(ParseNextWithSelect(parent, tokenList));
+                result.Add(ParseNextWithSelect(parent, parseContext));
 
                 if (!tokenList.TryTakeCharacter(TSQLCharacters.Comma))
                     break;
@@ -164,18 +178,20 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        protected virtual CteSelect ParseNextWithSelect(SelectStatement parent, TokenList tokenList)
+        protected virtual CteSelect ParseNextWithSelect(SelectStatement parent, ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
+
             var result = new CteSelect { 
                 Parent = parent, 
-                Alias = new SqlIdentifier(ParseUtilities.ParseAlias(tokenList.Take())) 
+                Alias = new SqlIdentifier(ParseUtilities.ParseAlias(tokenList.Take(), parseContext)) 
             };
 
-            ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.AS);
-            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
+            ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.AS);
+            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerTokenList = tokenList.TakeBracketedTokens();
-            var innerStatement = ParseSelectStatement(null, innerTokenList);
+            var innerContext = parseContext.Subcontext(tokenList.TakeBracketedTokens());
+            var innerStatement = ParseSelectStatement(null, innerContext);
 
             innerStatement.Selects.ForEach(x => x.Parent = result);
             result.Selects = innerStatement.Selects;
@@ -183,13 +199,13 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        protected virtual List<Select> ParseSelects(SelectStatement parent, TokenList tokenList)
+        protected virtual List<Select> ParseSelects(SelectStatement parent, ParseContext parseContext)
         {
             var result = new List<Select>();
 
             while (true)
             {
-                var select = ParseNextSelect(parent, tokenList);
+                var select = ParseNextSelect(parent, parseContext);
                 if (select != null)
                     result.Add(select);
                 else
@@ -199,45 +215,47 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        protected virtual Select ParseNextSelect(SelectStatement parent, TokenList tokenList)
+        protected virtual Select ParseNextSelect(SelectStatement parent, ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
             if (!tokenList.HasMore)
                 return null;
 
             var select = new Select { Parent = parent };
 
-            select.SetModifier = ParseSetModifier(tokenList);
+            select.SetModifier = ParseSetModifier(parseContext);
 
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.SELECT))
+            if (!tokenList.TryTakeKeywords(TSQLKeywords.SELECT, parseContext))
                 return null;
 
-            select.Top = TopParser.ParseTop(select, tokenList);
-            select.Distinct = ParseDistinct(tokenList);
+            select.Top = TopParser.ParseTop(select, parseContext);
+            select.Distinct = ParseDistinct(parseContext);
 
-            select.Columns = ColumnParser.ParseColumns(select, tokenList);
-            select.From = RelationParser.ParseRelations(select, tokenList);
-            select.Pivot = PivotParser.TryParsePivot(select, tokenList);
+            select.Columns = ColumnParser.ParseColumns(select, parseContext);
+            select.From = RelationParser.ParseRelations(select, parseContext);
+            select.Pivot = PivotParser.TryParsePivot(select, parseContext);
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.WHERE))
-                select.WhereCondition = ConditionParser.ParseCondition(select, tokenList);
+            if (tokenList.TryTakeKeywords(TSQLKeywords.WHERE, parseContext))
+                select.WhereCondition = ConditionParser.ParseCondition(select, parseContext);
 
-            select.GroupBy = GroupByParser.ParseGroupBy(select, tokenList);
+            select.GroupBy = GroupByParser.ParseGroupBy(select, parseContext);
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.HAVING))
-                select.HavingCondition = ConditionParser.ParseCondition(select, tokenList);
+            if (tokenList.TryTakeKeywords(TSQLKeywords.HAVING, parseContext))
+                select.HavingCondition = ConditionParser.ParseCondition(select, parseContext);
 
             return select;
         }
 
-        protected virtual bool ParseDistinct(TokenList tokenList)
+        protected virtual bool ParseDistinct(ParseContext parseContext)
         {
-            return tokenList.TryTakeKeywords(TSQLKeywords.DISTINCT);
+            return parseContext.TokenList.TryTakeKeywords(TSQLKeywords.DISTINCT, parseContext);
         }
 
-        protected virtual SetModifier ParseSetModifier(TokenList tokenList)
+        protected virtual SetModifier ParseSetModifier(ParseContext parseContext)
         {
             SetModifier result = SetModifier.None;
 
+            var tokenList = parseContext.TokenList;
             var nextToken = tokenList.Peek()?.AsKeyword;
             if (nextToken != null)
             {
@@ -255,8 +273,9 @@ namespace TreeSqlParser.Parsing
             return result;            
         }
 
-        internal protected virtual List<string> ParseMultiPartIndentifier(TokenList tokenList)
+        internal protected virtual List<string> ParseMultiPartIndentifier(ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
             if (!(tokenList.Peek()?.AsIdentifier is TSQLIdentifier))
                 throw new InvalidOperationException($"Expected identifier, got {tokenList.Peek()?.Text}");
 

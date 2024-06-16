@@ -9,20 +9,20 @@ namespace TreeSqlParser.Parsing
 {
     public class ParseUtilities
     {
-        public static void AssertIsKeyword(TSQLToken token, params TSQLKeywords[] keywords)
+        public static void AssertIsKeyword(TSQLToken token, ParseContext parseContext, params TSQLKeywords[] keywords)
         {
             var k = token.AsKeyword?.Keyword;
             if (!(k.HasValue && keywords.Contains(k.Value)))
                 throw new InvalidOperationException($"Expected keyword {string.Join(",", keywords.Select(x => x.ToString()))}, found {token.Text}");
         }
 
-        public static void AssertIsChar(TSQLToken token, TSQLCharacters character)
+        public static void AssertIsChar(TSQLToken token, TSQLCharacters character, ParseContext parseContext)
         {
             if (!token.IsCharacter(TSQLCharacters.OpenParentheses))
                 throw new InvalidOperationException($"Expected character {character.ToString()}, found {token.Text}");
         }
 
-        public static int ParseInteger(TSQLToken token)
+        public static int ParseInteger(TSQLToken token, ParseContext parseContext)
         {
             if (token.AsNumericLiteral != null && int.TryParse(token.Text, out int val))
                 return val;
@@ -31,7 +31,7 @@ namespace TreeSqlParser.Parsing
         }
 
         
-        public static string ParseAlias(TSQLToken token)
+        public static string ParseAlias(TSQLToken token, ParseContext parseContext)
         {
             if (token.AsIdentifier != null)
                 return token.Text;
@@ -39,9 +39,11 @@ namespace TreeSqlParser.Parsing
             throw new InvalidOperationException($"Expected identifier, found {token.Text}");
         }
         
-        public static string TryTakeAlias(TokenList tokenList)
+        public static string TryTakeAlias(ParseContext parseContext)
         {
-            bool tookAs = tokenList.TryTakeKeywords(TSQLKeywords.AS);
+            var tokenList = parseContext.TokenList;
+
+            bool tookAs = tokenList.TryTakeKeywords(TSQLKeywords.AS, parseContext);
             if (tokenList.Peek()?.AsIdentifier != null)
                 return tokenList.Take().Text;
             else if (tookAs)

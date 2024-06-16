@@ -14,21 +14,23 @@ namespace TreeSqlParser.Test.SelectParser_Tests
     {
         private class CustomColumnParser : ColumnParser
         {
-            public override Column ParseNextColumnSegment(SqlElement parent, TokenList tokenList)
+            public override Column ParseNextColumnSegment(SqlElement parent, ParseContext parseContext)
             {
+                var tokenList = parseContext.TokenList;
                 var t = tokenList.Peek();
                 if (t.Text == "$baz")
                 {
                     tokenList.Advance();
                     return new FooColumn() { Parent = parent };
                 }
-                return base.ParseNextColumnSegment(parent, tokenList);
+                return base.ParseNextColumnSegment(parent, parseContext);
             }
         }
         private class CustomConditionParser : ConditionParser
         {
-            public override Condition ParseNextCondition(SqlElement parent, TokenList tokenList)
+            public override Condition ParseNextCondition(SqlElement parent, ParseContext parseContext)
             {
+                var tokenList = parseContext.TokenList;
                 var t = tokenList.Peek();
                 if (t.Text == "$foo")
                 {
@@ -36,7 +38,7 @@ namespace TreeSqlParser.Test.SelectParser_Tests
                     return new FooCondition() { Parent = parent };
                 }
 
-                return base.ParseNextCondition(parent, tokenList);
+                return base.ParseNextCondition(parent, parseContext);
             }
         }
 

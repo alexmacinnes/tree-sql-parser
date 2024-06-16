@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using TreeSqlParser.Parsing;
 using TSQL;
 using TSQL.Tokens;
 
@@ -10,7 +11,7 @@ namespace TreeSqlParser.Metadata
 {
     internal class KeywordMetadata
     {
-        internal static void CheckKeywordBlacklist(List<TSQLToken> tokens)
+        internal static void CheckKeywordBlacklist(List<TSQLToken> tokens, ErrorGenerator errorGenerator)
         {
             var keywords = tokens.OfType<TSQLKeyword>().Select(x => x.Keyword).Distinct().ToArray();
             var black = keywords

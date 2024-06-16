@@ -16,16 +16,18 @@ namespace TreeSqlParser.Parsing
     {
         public SelectParser SelectParser { get; set; }
 
-        public virtual List<Relation> ParseRelations(SqlElement parent, TokenList tokenList)
+        public virtual List<Relation> ParseRelations(SqlElement parent, ParseContext parseContext)
         {
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.FROM))
+            var tokenList = parseContext.TokenList;
+
+            if (!tokenList.TryTakeKeywords(TSQLKeywords.FROM, parseContext))
                 return null;
 
             var result = new List<Relation>();
 
             while (tokenList.HasMore)
             {
-                var relation = ParseNextRelation(parent, tokenList);
+                var relation = ParseNextRelation(parent, parseContext);
                 result.Add(relation);
 
                 if (!tokenList.TryTakeCharacter(TSQLCharacters.Comma))
@@ -35,24 +37,26 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        public virtual Relation ParseNextRelation(SqlElement parent, TokenList tokenList)
+        public virtual Relation ParseNextRelation(SqlElement parent, ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
+
             Relation relation;
             if (tokenList.Peek()?.IsCharacter(TSQLCharacters.OpenParentheses) == true)
             {
                 if (tokenList.Peek(1)?.IsKeyword(TSQLKeywords.SELECT) == true)
-                    relation = ParseSubselect(parent, tokenList);
+                    relation = ParseSubselect(parent, parseContext);
                 else
-                    relation = ParseBracketedRelation(parent, tokenList);
+                    relation = ParseBracketedRelation(parent, parseContext);
             }
             else
             {
-                relation = ParseTable(parent, tokenList);
+                relation = ParseTable(parent, parseContext);
             }
 
             while (true)
             {
-                var joinType = TryParseJoinType(tokenList);
+                var joinType = TryParseJoinType(parseContext);
                 if (!joinType.HasValue)
                     break;
 
@@ -72,9 +76,9 @@ namespace TreeSqlParser.Parsing
                     Parent = joinChain,
                     JoinType = joinType.Value
                 };
-                join.RightRelation = ParseNextRelation(join, tokenList);
-                if (tokenList.TryTakeKeywords(TSQLKeywords.ON))
-                    join.Condition = SelectParser.ConditionParser.ParseCondition(join, tokenList);
+                join.RightRelation = ParseNextRelation(join, parseContext);
+                if (tokenList.TryTakeKeywords(TSQLKeywords.ON, parseContext))
+                    join.Condition = SelectParser.ConditionParser.ParseCondition(join, parseContext);
 
                 joinChain.Joins.Add(join);
             }
@@ -82,13 +86,15 @@ namespace TreeSqlParser.Parsing
             return relation;
         }
 
-        public virtual JoinType? TryParseJoinType(TokenList tokenList)
+        public virtual JoinType? TryParseJoinType(ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
+
             void consumeOuterJoin()
             {
                 tokenList.Advance();
-                tokenList.TryTakeKeywords(TSQLKeywords.OUTER);
-                ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.JOIN);
+                tokenList.TryTakeKeywords(TSQLKeywords.OUTER, parseContext);
+                ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.JOIN);
             }
 
             void consumeApply()
@@ -112,7 +118,7 @@ namespace TreeSqlParser.Parsing
             else if (keyword == TSQLKeywords.INNER)
             {
                 tokenList.Advance();
-                ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.JOIN);
+                ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.JOIN);
                 return JoinType.InnerJoin;
             }
             else if (keyword == TSQLKeywords.LEFT)
@@ -133,7 +139,7 @@ namespace TreeSqlParser.Parsing
             else if (keyword == TSQLKeywords.CROSS)
             {
                 tokenList.Advance();
-                if (tokenList.TryTakeKeywords(TSQLKeywords.JOIN))
+                if (tokenList.TryTakeKeywords(TSQLKeywords.JOIN, parseContext))
                     return JoinType.CrossJoin;
 
                 consumeApply();
@@ -150,49 +156,55 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        public virtual Table ParseTable(SqlElement parent, TokenList tokenList)
+        public virtual Table ParseTable(SqlElement parent, ParseContext parseContext)
         {
             var table = new Table
             {
                 Parent = parent,
-                Name = SelectParser.ParseMultiPartIndentifier(tokenList).Select(x => new SqlIdentifier(x)).ToArray()
+                Name = SelectParser.ParseMultiPartIndentifier(parseContext).Select(x => new SqlIdentifier(x)).ToArray()
             };
 
-            table.Alias = ParseRelationAlias(tokenList);
+            table.Alias = ParseRelationAlias(parseContext);
 
             return table;
         }
 
-        public virtual SqlIdentifier ParseRelationAlias(TokenList tokenList)
+        public virtual SqlIdentifier ParseRelationAlias(ParseContext parseContext)
         {
-            string alias = ParseUtilities.TryTakeAlias(tokenList);
+            string alias = ParseUtilities.TryTakeAlias(parseContext);
             if (alias != null)
                 return new SqlIdentifier(alias);
 
             return null;
         }
 
-        public virtual Relation ParseBracketedRelation(SqlElement parent, TokenList tokenList)
+        public virtual Relation ParseBracketedRelation(SqlElement parent, ParseContext parseContext)
         {
-            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
+            var tokenList = parseContext.TokenList;
+
+            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
             var innerTokens = tokenList.TakeBracketedTokens();
+            var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new BracketedRelation { Parent = parent };
-            result.InnerRelation = ParseNextRelation(result, innerTokens);
+            result.InnerRelation = ParseNextRelation(result, subContext);
 
             return result;
         }
 
-        public virtual Relation ParseSubselect(SqlElement parent, TokenList tokenList)
+        public virtual Relation ParseSubselect(SqlElement parent, ParseContext parseContext)
         {
-            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
+            var tokenList = parseContext.TokenList;
+
+            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
             var innerTokens = tokenList.TakeBracketedTokens();
+            var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new SubselectRelation { Parent = parent };
-            result.InnerSelect = SelectParser.ParseSelectStatement(result, innerTokens);
-            result.Alias = ParseRelationAlias(tokenList);
+            result.InnerSelect = SelectParser.ParseSelectStatement(result, subContext);
+            result.Alias = ParseRelationAlias(parseContext);
 
             return result;
         }

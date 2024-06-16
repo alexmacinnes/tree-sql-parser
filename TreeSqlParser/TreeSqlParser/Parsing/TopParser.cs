@@ -11,15 +11,17 @@ namespace TreeSqlParser.Parsing
     {
         public SelectParser SelectParser { get; set; }
 
-        public virtual SelectTop ParseTop(SqlElement parent, TokenList tokenList)
+        public virtual SelectTop ParseTop(SqlElement parent, ParseContext parseContext)
         {
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.TOP))
+            var tokenList = parseContext.TokenList;
+
+            if (!tokenList.TryTakeKeywords(TSQLKeywords.TOP, parseContext))
                 return null;
 
             var result = new SelectTop { Parent = parent };
-            result.Top = SelectParser.ColumnParser.ParseNextColumnSegment(result, tokenList);
-            result.Percent = tokenList.TryTakeKeywords(TSQLKeywords.PERCENT);
-            result.WithTies = tokenList.TryTakeKeywords(TSQLKeywords.WITH);
+            result.Top = SelectParser.ColumnParser.ParseNextColumnSegment(result, parseContext);
+            result.Percent = tokenList.TryTakeKeywords(TSQLKeywords.PERCENT, parseContext);
+            result.WithTies = tokenList.TryTakeKeywords(TSQLKeywords.WITH, parseContext);
             if (result.WithTies)
             {
                 string nextToken = tokenList.Take()?.Text?.ToUpperInvariant();

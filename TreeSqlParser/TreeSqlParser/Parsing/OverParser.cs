@@ -22,48 +22,55 @@ namespace TreeSqlParser.Parsing
         private const string UNBOUNDED = "UNBOUNDED";
         private const string ROW = "ROW";
 
-        public virtual Over ParseOver(SqlElement parent, TokenList tokenList)
+        public virtual Over ParseOver(SqlElement parent, ParseContext parseContext)
         {
-            if (!tokenList.TryTakeKeywords(TSQLKeywords.OVER))
+            var tokenList = parseContext.TokenList;
+
+            if (!tokenList.TryTakeKeywords(TSQLKeywords.OVER, parseContext))
                 return null;
 
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
                 throw new InvalidOperationException("Expected open parentheses after OVER");
 
             var innerTokens = tokenList.TakeBracketedTokens();
+            var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new Over { Parent = parent };
 
             if (innerTokens.Peek()?.Text.ToUpper() == PARTITION)
             {
                 innerTokens.Advance();
-                ParseUtilities.AssertIsKeyword(innerTokens.Take(), TSQLKeywords.BY);
-                result.PartitionBy = SelectParser.ColumnParser.ParseColumns(result, innerTokens);
+                ParseUtilities.AssertIsKeyword(innerTokens.Take(), subContext, TSQLKeywords.BY);
+                result.PartitionBy = SelectParser.ColumnParser.ParseColumns(result, subContext);
             }
 
-            if (innerTokens.TryTakeKeywords(TSQLKeywords.ORDER, TSQLKeywords.BY))
-                result.OrderBy = SelectParser.OrderByParser.ParseOrderByColumns(result, innerTokens);
+            if (innerTokens.TryTakeKeywords(TSQLKeywords.ORDER, subContext, TSQLKeywords.BY))
+                result.OrderBy = SelectParser.OrderByParser.ParseOrderByColumns(result, subContext);
 
-            var extentType = TryParseExtentType(innerTokens);
+            var extentType = TryParseExtentType(subContext);
             if (extentType.HasValue)
-                result.Extent = ParseExtent(result, extentType.Value, innerTokens);
+            {  
+                result.Extent = ParseExtent(result, extentType.Value, subContext);
+            }
 
             return result;
         }
 
-        public virtual OverExtent ParseExtent(Over parent, ExtentType extentType, TokenList tokenList)
+        public virtual OverExtent ParseExtent(Over parent, ExtentType extentType, ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
+
             var result = new OverExtent { Parent = parent, ExtentType = extentType };
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.BETWEEN))
+            if (tokenList.TryTakeKeywords(TSQLKeywords.BETWEEN, parseContext))
             {
-                result.LowerBound = ParseBound(tokenList);
-                ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.AND);
-                result.UpperBound = ParseBound(tokenList);
+                result.LowerBound = ParseBound(parseContext);
+                ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.AND);
+                result.UpperBound = ParseBound(parseContext);
             }
             else
             {
-                int? bound = ParseBound(tokenList);
+                int? bound = ParseBound(parseContext);
                 if (bound.HasValue && bound.Value > 0)
                 {
                     result.LowerBound = 0;
@@ -79,9 +86,10 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        public virtual int? ParseBound(TokenList tokenList)
+        public virtual int? ParseBound(ParseContext parseContext)
         {
-            if (tokenList.TryTakeKeywords(TSQLKeywords.CURRENT))
+            var tokenList = parseContext.TokenList;
+            if (tokenList.TryTakeKeywords(TSQLKeywords.CURRENT, parseContext))
             {
                 TakeKeyword(tokenList, ROW);
                 return 0;
@@ -92,7 +100,7 @@ namespace TreeSqlParser.Parsing
                 return null;
             }
 
-            int n = (int) ParseUint(tokenList);
+            int n = (int) ParseUint(parseContext);
 
             string boundText = tokenList.Take()?.Text?.ToUpperInvariant();
             if (boundText == PRECEDING)
@@ -103,8 +111,9 @@ namespace TreeSqlParser.Parsing
             return n;
         }
 
-        public virtual uint ParseUint(TokenList tokenList)
+        public virtual uint ParseUint(ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
             string text = tokenList.Take().Text;
 
             if (uint.TryParse(text, out uint result))
@@ -113,8 +122,9 @@ namespace TreeSqlParser.Parsing
             throw new InvalidOperationException($"Expected unsigned int in window extent, found {text}");
         }
 
-        public virtual ExtentType? TryParseExtentType(TokenList tokenList)
+        public virtual ExtentType? TryParseExtentType(ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
             var keyword = tokenList.Peek()?.Text?.ToUpperInvariant();
             if (keyword != null)
             {

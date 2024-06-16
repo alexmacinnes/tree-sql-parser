@@ -24,9 +24,11 @@ namespace TreeSqlParser.Parsing
 
         public SelectParser SelectParser { get; set; }
 
-        public virtual Condition ParseCondition(SqlElement parent, TokenList tokenList)
+        public virtual Condition ParseCondition(SqlElement parent, ParseContext parseContext)
         {
-            var condition = ParseNextCondition(parent, tokenList);
+            var tokenList = parseContext.TokenList;
+
+            var condition = ParseNextCondition(parent, parseContext);
 
             while (tokenList.HasMore)
             {
@@ -57,40 +59,42 @@ namespace TreeSqlParser.Parsing
                     Parent = conditionChain,
                     LogicCondition = logicCondition,
                 };
-                operation.RightCondition = ParseNextCondition(operation, tokenList);
+                operation.RightCondition = ParseNextCondition(operation, parseContext);
                 conditionChain.OtherConditions.Add(operation);
             }
 
             return condition;
         }
 
-        public virtual Condition ParseNextCondition(SqlElement parent, TokenList tokenList)
+        public virtual Condition ParseNextCondition(SqlElement parent, ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
             var token = tokenList.Peek();
 
             if (token.IsKeyword(TSQLKeywords.EXISTS))
-                return ParseExistsCondition(parent, tokenList);
+                return ParseExistsCondition(parent, parseContext);
 
             if (token.IsKeyword(TSQLKeywords.NOT))
-                return ParseNotCondition(parent, tokenList);
+                return ParseNotCondition(parent, parseContext);
 
             if (!token.IsCharacter(TSQLCharacters.OpenParentheses))
-                return ParseColumnComparison(parent, tokenList);
+                return ParseColumnComparison(parent, parseContext);
 
             // the condition starts with '('
             // this can either be a
             //   A) bracketed condition e.g. (x < 100)
             //   B) column condition with a bracketed column on the left hand side e.g. (x + y) < 100
 
-            if (IsColumnConditionNext(tokenList))
-                return ParseColumnComparison(parent, tokenList);
+            if (IsColumnConditionNext(parseContext))
+                return ParseColumnComparison(parent, parseContext);
 
-            return ParseBracketedCondition(parent, tokenList);
+            return ParseBracketedCondition(parent, parseContext);
         }
 
-        public virtual bool IsColumnConditionNext(TokenList tokenList)
+        public virtual bool IsColumnConditionNext(ParseContext parseContext)
         {
-            ParseUtilities.AssertIsChar(tokenList.Peek(), TSQLCharacters.OpenParentheses);
+            var tokenList = parseContext.TokenList;
+            ParseUtilities.AssertIsChar(tokenList.Peek(), TSQLCharacters.OpenParentheses, parseContext);
 
             var clonedTokenList = tokenList.CloneFromCurrentPosition();
 
@@ -126,67 +130,73 @@ namespace TreeSqlParser.Parsing
 
         }
 
-        public virtual Condition ParseBracketedCondition(SqlElement parent, TokenList tokenList)
+        public virtual Condition ParseBracketedCondition(SqlElement parent, ParseContext parseContext)
         {
-            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
+            var tokenList = parseContext.TokenList;
+            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
             var innerTokens = tokenList.TakeBracketedTokens();
+            var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new BracketCondition { Parent = parent };
-            result.InnerCondition = ParseCondition(result, innerTokens);
+            result.InnerCondition = ParseCondition(result, subContext);
 
             return result;
         }
 
-        public virtual Condition ParseExistsCondition(SqlElement parent, TokenList tokenList)
+        public virtual Condition ParseExistsCondition(SqlElement parent, ParseContext parseContext)
         {
-            ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.EXISTS);
-            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
+            var tokenList = parseContext.TokenList;
+
+            ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.EXISTS);
+            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
             var innerTokens = tokenList.TakeBracketedTokens();
+            var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new ExistsCondition { Parent = parent };
-            result.Subselect = SelectParser.ParseSelectStatement(result, innerTokens);
+            result.Subselect = SelectParser.ParseSelectStatement(result, subContext);
 
             return result;
         }
 
-        public virtual Condition ParseNotCondition(SqlElement parent, TokenList tokenList)
+        public virtual Condition ParseNotCondition(SqlElement parent, ParseContext parseContext)
         {
-            ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.NOT);
+            ParseUtilities.AssertIsKeyword(parseContext.TokenList.Take(), parseContext, TSQLKeywords.NOT);
 
             var result = new NotCondition { Parent = parent };
-            result.InnerCondition = ParseCondition(result, tokenList);
+            result.InnerCondition = ParseCondition(result, parseContext);
 
             return result;
         }
 
-        public virtual Condition ParseColumnComparison(SqlElement parent, TokenList tokenList)
+        public virtual Condition ParseColumnComparison(SqlElement parent, ParseContext parseContext)
         {
-            var leftColumn = SelectParser.ColumnParser.ParseNextColumn(null, tokenList);
+            var leftColumn = SelectParser.ColumnParser.ParseNextColumn(null, parseContext);
+            var tokenList = parseContext.TokenList;
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.IN))
+            if (tokenList.TryTakeKeywords(TSQLKeywords.IN, parseContext))
             {
-                return ParseInCondition(parent, leftColumn, tokenList);
+                return ParseInCondition(parent, leftColumn, parseContext);
             }
-            else if (tokenList.TryTakeKeywords(TSQLKeywords.BETWEEN))
+            else if (tokenList.TryTakeKeywords(TSQLKeywords.BETWEEN, parseContext))
             {
-                return ParseBetweenCondition(parent, leftColumn, tokenList);
+                return ParseBetweenCondition(parent, leftColumn, parseContext);
             }
-            else if (tokenList.TryTakeKeywords(TSQLKeywords.IS))
+            else if (tokenList.TryTakeKeywords(TSQLKeywords.IS, parseContext))
             {
-                return ParseIsCondition(parent, leftColumn, tokenList);
+                return ParseIsCondition(parent, leftColumn, parseContext);
             }
             else
             {
-                return ParseTwoColumnComparison(parent, leftColumn, tokenList);
+                return ParseTwoColumnComparison(parent, leftColumn, parseContext);
             }
         }
 
-        public virtual Condition ParseTwoColumnComparison(SqlElement parent, Column leftColumn, TokenList tokenList)
+        public virtual Condition ParseTwoColumnComparison(SqlElement parent, Column leftColumn, ParseContext parseContext)
         {
-            var comparison = ParseColumnComparison(tokenList);
-            var setConditionType = TryParseSetConditionType(tokenList);
+            var comparison = ParseColumnComparison(parseContext);
+            var setConditionType = TryParseSetConditionType(parseContext);
 
             if (setConditionType.HasValue)
             {
@@ -198,7 +208,7 @@ namespace TreeSqlParser.Parsing
                     SetConditionType = setConditionType.Value
                 };
                 leftColumn.Parent = result;
-                result.SubselectColumn = SelectParser.ColumnParser.ParseNextColumn(result, tokenList);
+                result.SubselectColumn = SelectParser.ColumnParser.ParseNextColumn(result, parseContext);
 
                 return result;
             }
@@ -211,25 +221,28 @@ namespace TreeSqlParser.Parsing
                     Comparison = comparison
                 };
                 leftColumn.Parent = result;
-                result.RightColumn = SelectParser.ColumnParser.ParseNextColumn(result, tokenList);
+                result.RightColumn = SelectParser.ColumnParser.ParseNextColumn(result, parseContext);
 
                 return result;
             }
         }
 
-        public virtual SetConditionType? TryParseSetConditionType(TokenList tokenList)
+        public virtual SetConditionType? TryParseSetConditionType(ParseContext parseContext)
         {
-            if (tokenList.TryTakeKeywords(TSQLKeywords.SOME) || tokenList.TryTakeKeywords(TSQLKeywords.ANY))
+            var tokenList = parseContext.TokenList;
+
+            if (tokenList.TryTakeKeywords(TSQLKeywords.SOME, parseContext) || tokenList.TryTakeKeywords(TSQLKeywords.ANY, parseContext))
                 return SetConditionType.Some;           // ANY is synonym for SOME
 
-            if (tokenList.TryTakeKeywords(TSQLKeywords.ALL))
+            if (tokenList.TryTakeKeywords(TSQLKeywords.ALL, parseContext))
                 return SetConditionType.All;
 
             return null;
         }
 
-        public virtual ColumnComparison ParseColumnComparison(TokenList tokenList)
+        public virtual ColumnComparison ParseColumnComparison(ParseContext parseContext)
         {
+            var tokenList = parseContext.TokenList;
             if (columnComparisonMap.TryGetValue(tokenList.Peek().Text, out ColumnComparison result))
             {
                 tokenList.Advance();
@@ -239,11 +252,13 @@ namespace TreeSqlParser.Parsing
             throw new InvalidOperationException($"Expected column comparison, found {tokenList.Peek().Text}");
         }
 
-        public virtual Condition ParseIsCondition(SqlElement parent, Column leftColumn, TokenList tokenList)
+        public virtual Condition ParseIsCondition(SqlElement parent, Column leftColumn, ParseContext parseContext)
         {
-            bool not = tokenList.TryTakeKeywords(TSQLKeywords.NOT);
+            var tokenList = parseContext.TokenList;
 
-            ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.NULL);
+            bool not = tokenList.TryTakeKeywords(TSQLKeywords.NOT, parseContext);
+
+            ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.NULL);
 
             if (not)
             {
@@ -259,37 +274,41 @@ namespace TreeSqlParser.Parsing
             }
         }
 
-        public virtual Condition ParseBetweenCondition(SqlElement parent, Column leftColumn, TokenList tokenList)
+        public virtual Condition ParseBetweenCondition(SqlElement parent, Column leftColumn, ParseContext parseContext)
         {
             var result = new BetweenCondition { Parent = parent, LeftColumn = leftColumn };
             leftColumn.Parent = result;
             
-            result.LowerBound = SelectParser.ColumnParser.ParseNextColumn(result, tokenList);
+            result.LowerBound = SelectParser.ColumnParser.ParseNextColumn(result, parseContext);
 
-            ParseUtilities.AssertIsKeyword(tokenList.Take(), TSQLKeywords.AND);
+            ParseUtilities.AssertIsKeyword(parseContext.TokenList.Take(), parseContext, TSQLKeywords.AND);
             
-            result.UpperBound = SelectParser.ColumnParser.ParseNextColumn(result, tokenList);
+            result.UpperBound = SelectParser.ColumnParser.ParseNextColumn(result, parseContext);
 
             return result;
         }
 
-        public virtual Condition ParseInCondition(SqlElement parent, Column leftColumn, TokenList tokenList)
+        public virtual Condition ParseInCondition(SqlElement parent, Column leftColumn, ParseContext parseContext)
         {
-            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses);
+            var tokenList = parseContext.TokenList;
+
+            ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
             var innerTokens = tokenList.TakeBracketedTokens();
+            var subContext = parseContext.Subcontext(innerTokens);
+
             if (innerTokens.Peek().IsKeyword(TSQLKeywords.SELECT))
             {
                 var result = new InSubselectCondition { Parent = parent, LeftColumn = leftColumn };
                 leftColumn.Parent = result;
-                result.Subselect = SelectParser.ParseSelectStatement(result, innerTokens);
+                result.Subselect = SelectParser.ParseSelectStatement(result, subContext);
                 return result;
             } 
             else
             {
                 var result = new InListCondition { Parent = parent, LeftColumn = leftColumn };
                 leftColumn.Parent = result;
-                result.RightColumns = SelectParser.ColumnParser.ParseColumns(result, innerTokens);
+                result.RightColumns = SelectParser.ColumnParser.ParseColumns(result, subContext);
                 return result;
             }
         }
