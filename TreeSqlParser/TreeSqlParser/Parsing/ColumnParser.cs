@@ -64,14 +64,14 @@ namespace TreeSqlParser.Parsing
             else if (nextToken.IsKeyword(TSQLKeywords.CASE))
                 return ParseCaseColumn(parent, parseContext);
             else if (nextToken.IsKeyword(TSQLKeywords.NULL))
-                return ParseNullColumn(parent, parseContext);             
+                return ParseNullColumn(parent, parseContext);
             else if (nextToken.AsOperator != null && nextToken.Text == "*")
             {
                 tokenList.Advance();
                 return new StarColumn() { Parent = parent };
             }
             else
-                throw new InvalidOperationException("Unkown column type");
+                throw parseContext.ErrorGenerator.ParseException("Unkown column type", nextToken);
         }
 
         public virtual Column ParseDateTimeEscapeSequence(SqlElement parent, ParseContext parseContext)
@@ -79,11 +79,15 @@ namespace TreeSqlParser.Parsing
             string dateTimeType;
 
             var tokenList = parseContext.TokenList;
-            string firstText = tokenList.Take().Text;
+            var token = tokenList.Take();
+            string firstText = token.Text;
             if (firstText.Length > 1)
                 dateTimeType = firstText.Substring(1);
             else
-                dateTimeType = tokenList.Take().Text;
+            {
+                token = tokenList.Take();
+                dateTimeType = token.Text;
+            }
 
             Column result;
             switch (dateTimeType)
@@ -98,15 +102,17 @@ namespace TreeSqlParser.Parsing
                     result = new TimeColumn { Parent = parent, Value = TimeSpan.Parse(Unquote(tokenList.Take().Text)) };
                     break;
                 default:
-                    throw new InvalidOperationException("Unknown datetime literal type: " + dateTimeType);
+                    throw parseContext.ErrorGenerator.ParseException("Unknown datetime literal type: " + dateTimeType, token);
             }
 
-            if (tokenList.Take().Text != "}")
-                throw new InvalidOperationException("Expected closing brace: }");
+            token = tokenList.Take();
+            if (token.Text != "}")
+                throw parseContext.ErrorGenerator.ParseException("Expected closing brace: }", token);
 
             return result;
         }
 
+        //TODO
         public string Unquote(string text) =>
             text.Length > 1 && text.StartsWith("'") && text.EndsWith("'") ?
             text.Substring(1, text.Length-2) :
@@ -116,9 +122,10 @@ namespace TreeSqlParser.Parsing
         public virtual Column ParseNegativeNumericLiteral(SqlElement parent, ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
-            string neg = tokenList.Take().Text;
+            var token = tokenList.Take();
+            string neg = token.Text;
             if (neg != "-")
-                throw new InvalidOperationException("Expected negative operator: -");
+                throw parseContext.ErrorGenerator.ParseException("", token);
 
             var numLiteral = (TSQLNumericLiteral) tokenList.Take();
 
@@ -137,10 +144,11 @@ namespace TreeSqlParser.Parsing
         public virtual Column ParseKeywordAsFunc(SqlElement parent, ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
+            var errorToken = tokenList.Peek();
 
             var fullName = new[] { new SqlIdentifier() { Name = tokenList.Take().Text } };
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
-                throw new NotSupportedException("Expected open parenthesis after: " + fullName[0].Name);
+                throw parseContext.ErrorGenerator.ParseException("Expected open parenthesis after: " + fullName[0].Name, errorToken);
 
             var funcColumn = new FunctionColumn { Name = fullName, Parent = parent };
 
@@ -161,11 +169,12 @@ namespace TreeSqlParser.Parsing
 
         public virtual Column ParseCastColumn(SqlElement parent, bool tryCast, ParseContext parseContext)
         {
+            var errorToken = parseContext.TokenList.Peek();
             var innerTokens = parseContext.TokenList.TakeBracketedTokens();
 
             int? asIndex = innerTokens.FindLastIndex(x => x.IsKeyword(TSQLKeywords.AS));
             if (!asIndex.HasValue)
-                throw new InvalidOperationException("Expected token: AS");
+                throw parseContext.ErrorGenerator.ParseException("Expected token: AS", errorToken);
             var asTokens = innerTokens.RemainingTokens.Skip(asIndex.Value + 1).ToList();           // everything following the AS keyword                   
             var typeText = string.Join(string.Empty, asTokens.Select(x => x.Text));
             innerTokens.RemoveLastNTokens(asTokens.Count() + 1);
@@ -173,7 +182,7 @@ namespace TreeSqlParser.Parsing
             var subContext = parseContext.Subcontext(innerTokens);
             var columns = ParseColumns(null, subContext);
             if (columns.Count != 1)
-                throw new InvalidOperationException($"Expected single column element in CAST, found {columns.Count}");
+                throw parseContext.ErrorGenerator.ParseException($"Expected single column element in CAST, found {columns.Count}", errorToken);
 
             var result = new CastColumn { Parent = parent, TryCast = tryCast };
             result.Column = columns[0];
@@ -185,6 +194,7 @@ namespace TreeSqlParser.Parsing
 
         public virtual Column ParseConvertColumn(SqlElement parent, bool tryConvert, ParseContext parseContext)
         {
+            var errorToken = parseContext.TokenList.Peek();
             var innerTokens = parseContext.TokenList.TakeBracketedTokens();
 
             string typeText = innerTokens.ParseTextUntilComma();
@@ -195,7 +205,7 @@ namespace TreeSqlParser.Parsing
             var subContext = parseContext.Subcontext(innerTokens);
             var columns = ParseColumns(result, subContext);
             if (columns.Count < 1 || columns.Count > 2)
-                throw new InvalidOperationException($"Expected 1 or 2 inner columns in CONVERT column, found {columns.Count}");
+                throw parseContext.ErrorGenerator.ParseException($"Expected 1 or 2 inner columns in CONVERT column, found {columns.Count}", errorToken);
 
             result.Column = columns[0];
             if (columns.Count == 2)
@@ -206,6 +216,7 @@ namespace TreeSqlParser.Parsing
 
         public virtual Column ParseParseColumn(SqlElement parent, bool tryParse, ParseContext parseContext)
         {
+            var errorToken = parseContext.TokenList.Peek();
             var innerTokens = parseContext.TokenList.TakeBracketedTokens();
 
             string culture = null;
@@ -216,7 +227,7 @@ namespace TreeSqlParser.Parsing
                 {
                     var t1 = innerTokens.PeekEnd();
                     if (t1.AsStringLiteral == null)
-                        throw new NotSupportedException("Expected literal text column, found " + t1.Text);
+                        throw parseContext.ErrorGenerator.ParseException("Expected literal text column, found " + t1.Text, errorToken);
 
                     culture = t1.Text.Substring(1, t1.Text.Length - 2);
                     innerTokens.RemoveLastNTokens(2);
@@ -225,7 +236,8 @@ namespace TreeSqlParser.Parsing
 
             int? asIndex = innerTokens.FindLastIndex(x => x.IsKeyword(TSQLKeywords.AS));
             if (!asIndex.HasValue)
-                throw new InvalidOperationException("Expected token: AS");
+                throw parseContext.ErrorGenerator.ParseException("Expected token: AS", errorToken);
+
             var asTokens = innerTokens.RemainingTokens.Skip(asIndex.Value + 1).ToList();           // everything following the AS keyword                   
             var typeText = string.Join(string.Empty, asTokens.Select(x => x.Text));
             innerTokens.RemoveLastNTokens(asTokens.Count() + 1);
@@ -369,13 +381,14 @@ namespace TreeSqlParser.Parsing
         public virtual Column ParseBracketedColumn(SqlElement parent, ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
+            var errorToken = tokenList.Peek();
 
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
             var innerTokens = tokenList.TakeBracketedTokens();
 
             if (!innerTokens.HasMore)
-                throw new InvalidOperationException("Empty brackets found");
+                throw parseContext.ErrorGenerator.ParseException("Empty brackets found", errorToken);
 
             var subContext = parseContext.Subcontext(innerTokens);
             Column result;
@@ -397,11 +410,13 @@ namespace TreeSqlParser.Parsing
 
         public virtual BracketedColumn CreateBracketedColumn(SqlElement parent, ParseContext parseContext)
         {
+            var errorToken = parseContext.TokenList.Peek();
+
             var bracket = new BracketedColumn { Parent = parent };
             var columns = ParseColumns(bracket, parseContext);
 
             if (columns.Count != 1)
-                throw new InvalidOperationException($"Expected 1 bracketed column, found {columns.Count}");
+                throw parseContext.ErrorGenerator.ParseException($"Expected 1 bracketed column, found {columns.Count}", errorToken);
 
             bracket.InnerColumn = columns[0];
             return bracket;
@@ -409,7 +424,9 @@ namespace TreeSqlParser.Parsing
 
         public virtual Column ParseAggregation(SqlElement parent, string name, ParseContext parseContext)
         {
-            var aggColumn = new AggregatedColumn { Parent = parent, Aggregation = AggregationsMap[name] };
+            var errorToken = parseContext.TokenList.Peek();
+
+            var aggColumn = new AggregatedColumn { Parent = parent, Aggregation = AggregationsMap[name] };       
             var innerTokens = parseContext.TokenList.TakeBracketedTokens();
 
             if (innerTokens.TryTakeKeywords(parseContext, TSQLKeywords.DISTINCT))
@@ -420,8 +437,8 @@ namespace TreeSqlParser.Parsing
             var subContext = parseContext.Subcontext(innerTokens);
             aggColumn.InnerColumns = ParseColumns(aggColumn, subContext);
 
-            if (!aggColumn.InnerColumns.Any())           
-                throw new InvalidOperationException($"Aggregtion {aggColumn.Aggregation} with no inner columns");
+            if (!aggColumn.InnerColumns.Any())
+                throw parseContext.ErrorGenerator.ParseException($"Aggregtion {aggColumn.Aggregation} with no inner columns", errorToken);
 
             return aggColumn;
         }
@@ -441,6 +458,8 @@ namespace TreeSqlParser.Parsing
         public virtual Column ParseIdentifier(SqlElement parent, ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
+            var errorToken = tokenList.Peek();
+
             var names = SelectParser.ParseMultiPartIndentifier(parseContext);
             string singleName = names.Count == 1 ? names[0].ToUpperInvariant() : null;
 
@@ -474,15 +493,16 @@ namespace TreeSqlParser.Parsing
                 return new PrimitiveColumn { TableAlias = new SqlIdentifier(names[0]), Name = new SqlIdentifier(names[1]), Parent = parent };
             }
 
-            throw new InvalidOperationException($"Unexpected multi part column name {string.Join(".", names)}");
+            throw parseContext.ErrorGenerator.ParseException($"Unexpected multi part column name {string.Join(".", names)}", errorToken);        
         }
 
         public virtual Column ParseIifColumn(SqlElement parent, ParseContext parseContext)
         {
+            var errorToken = parseContext.TokenList.Peek();
             void consumeComma()
             {
                 if (!parseContext.TokenList.TryTakeCharacter(TSQLCharacters.Comma))
-                    throw new InvalidOperationException("Expected comma in IIF column");
+                    throw parseContext.ErrorGenerator.ParseException("Expected comma in IIF column", errorToken);
             }
 
             var result = new IifColumn { Parent = parent };
@@ -495,7 +515,7 @@ namespace TreeSqlParser.Parsing
             result.FalseColumn = ParseNextColumn(result, parseContext);
 
             if (!parseContext.TokenList.TryTakeCharacter(TSQLCharacters.CloseParentheses))
-                throw new InvalidOperationException("Expected closing bracket in IIF column");
+                throw parseContext.ErrorGenerator.ParseException("Expected closing bracket in IIF column", errorToken);
 
             return result;
         }
@@ -520,7 +540,7 @@ namespace TreeSqlParser.Parsing
             }
 
             if (result == null)
-                throw new InvalidOperationException($"Expected literal column, found {nextToken.Text}");
+                throw parseContext.ErrorGenerator.ParseException("Expected literal column, found {nextToken.Text}", nextToken);
 
             tokenList.Advance();
             return result;
