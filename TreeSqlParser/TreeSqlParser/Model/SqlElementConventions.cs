@@ -61,7 +61,7 @@ namespace TreeSqlParser.Model
                         return new CloneablePropertyAdaptor(p);
                 }
 
-                throw new InvalidOperationException("Unknown property type");
+                 throw new InvalidOperationException("Unknown property type");
             }
 
             private static bool IsCloneable(Type x) => 

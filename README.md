@@ -89,6 +89,7 @@ string commonDb2ql = SqlWriterFactory.CommonSqlWriter(SqlWriterType.Db2).Generat
 | FUNCTIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Limited set of known functions - see below
 | AGGREGATIONS | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | SUM, MIN, MAX, AVG, COUNT, COUNT DISTINCT only
 | GROUP BY | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Simple columns only, no GROUPING SETS
+| TOP | :heavy_check_mark::heavy_check_mark: | | | | | Use FETCH, OFFSET instead on other DBs | 
 | FETCH, OFFSET | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | :heavy_check_mark::heavy_check_mark: | 
 | CAST column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | CAST as following types only: nvarchar, varchar, int, real, timestamp
 | CONVERT column | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | TRY_CONVERT not supported

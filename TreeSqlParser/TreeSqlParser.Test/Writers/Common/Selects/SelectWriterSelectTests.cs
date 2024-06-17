@@ -116,8 +116,56 @@ namespace TreeSqlParser.Writers.Test.Common.Selects
                 .WithSql("SELECT \"x\" ORDER BY 1 LIMIT 500", swt.Postgres)
                 .WithSql("SELECT \"x\" ORDER BY 1 FETCH NEXT 500 ROWS ONLY", swt.Db2);
 
+            CommonMother.AssertSql(s, expected);
+        }
+
+        [Test]
+        public void SelectTop()
+        {
+            var s = ParseSelectStatement("SELECT TOP 3 x");
+
+            var expected = new ExpectedSqlResult()
+                .WithSql("SELECT TOP (3) [x]", swt.SqlServer)
+                .WithDefaultSql("EXCEPTION: Select Top is not supported");
+
             CommonMother.AssertSql(s, expected); 
         }
+
+        [Test]
+        public void SelectTopPercent()
+        {
+            var s = ParseSelectStatement("SELECT TOP 3 PERCENT x");
+
+            var expected = new ExpectedSqlResult()
+                .WithSql("SELECT TOP (3) PERCENT [x]", swt.SqlServer)
+                .WithDefaultSql("EXCEPTION: Select Top is not supported");
+
+            CommonMother.AssertSql(s, expected);
+        }
+
+        [Test]
+        public void SelectTopWithTies()
+        {
+            var s = ParseSelectStatement("SELECT TOP 3 WITH TIES x");
+
+            var expected = new ExpectedSqlResult()
+                .WithSql("SELECT TOP (3) WITH TIES [x]", swt.SqlServer)
+                .WithDefaultSql("EXCEPTION: Select Top is not supported");
+
+            CommonMother.AssertSql(s, expected);
+        }
+        [Test]
+        public void SelectTopComplete()
+        {
+            var s = ParseSelectStatement("SELECT TOP 3 PERCENT WITH TIES x");
+
+            var expected = new ExpectedSqlResult()
+                .WithSql("SELECT TOP (3) PERCENT WITH TIES [x]", swt.SqlServer)
+                .WithDefaultSql("EXCEPTION: Select Top is not supported");
+
+            CommonMother.AssertSql(s, expected);
+        }
+
 
         [Test]
         public void SelectOffset()

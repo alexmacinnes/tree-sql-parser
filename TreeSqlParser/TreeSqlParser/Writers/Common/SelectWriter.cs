@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using TreeSqlParser.Model;
 using TreeSqlParser.Model.Columns;
 using TreeSqlParser.Model.Enums;
@@ -26,6 +27,9 @@ namespace TreeSqlParser.Writers.Common
                 sb.Append(setMod).Append(" ");
 
             sb.Append("SELECT ");
+
+            sb.Append(TopSql(s.Top));
+
             sb.Append(string.Join(", ", s.Columns.Select(sqlWriter.GenerateSql)));
 
             string from = FromSql(s);
@@ -45,6 +49,13 @@ namespace TreeSqlParser.Writers.Common
                 sb.Append(" ").Append(having);
 
             return sb.ToString();
+        }
+
+        protected virtual string TopSql(SelectTop top)
+        {
+            if (top != null)
+                throw new InvalidOperationException("Select Top is not supported");
+            return string.Empty;
         }
 
         protected virtual string HavingSql(Select s)
