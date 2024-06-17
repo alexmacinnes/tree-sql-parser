@@ -114,9 +114,12 @@ namespace TreeSqlParser.Parsing
 
         protected void AssertNextIdentifier(ParseContext parseContext, string context, params string[] validIdentifiers)
         {
+            var errorToken = parseContext.TokenList.Peek();
+
             string x = PeekNextIdentifier(parseContext);
             if (!(validIdentifiers.Contains(x)))
-                throw new InvalidOperationException($"Expected {validIdentifiers[0]} keyword in {context}");
+                throw parseContext.ErrorGenerator.ParseException($"Expected {string.Join(", ", validIdentifiers)} keyword in {context}", parseContext.TokenList.Peek());
+   
             parseContext.TokenList.Advance();
         }
 

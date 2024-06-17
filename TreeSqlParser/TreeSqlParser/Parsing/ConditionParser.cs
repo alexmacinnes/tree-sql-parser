@@ -249,7 +249,7 @@ namespace TreeSqlParser.Parsing
                 return result;
             }
 
-            throw new InvalidOperationException($"Expected column comparison, found {tokenList.Peek().Text}");
+            throw parseContext.ErrorGenerator.ParseException($"Expected column comparison, found {tokenList.Peek().Text}", tokenList.Peek());
         }
 
         public virtual Condition ParseIsCondition(SqlElement parent, Column leftColumn, ParseContext parseContext)

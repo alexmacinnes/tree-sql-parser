@@ -24,9 +24,10 @@ namespace TreeSqlParser.Parsing
             result.WithTies = tokenList.TryTakeKeywords(parseContext, TSQLKeywords.WITH);
             if (result.WithTies)
             {
-                string nextToken = tokenList.Take()?.Text?.ToUpperInvariant();
-                if (nextToken != "TIES")
-                    throw new InvalidOperationException("Expected TIES following WITH in TOP");
+                var token = tokenList.Take();
+                string nextTokenText = token?.Text?.ToUpperInvariant();
+                if (nextTokenText != "TIES")
+                    parseContext.ErrorGenerator.ParseException("Expected TIES following WITH in TOP", token);
             }
 
             return result;

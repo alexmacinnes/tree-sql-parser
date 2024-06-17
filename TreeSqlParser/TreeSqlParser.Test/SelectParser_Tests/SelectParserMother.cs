@@ -6,6 +6,7 @@ using NUnit.Framework;
 using System.Linq;
 using TreeSqlParser.Parsing;
 using TreeSqlParser.Writers.Full;
+using TreeSqlParser.Parsing.Errors;
 
 namespace TreeSqlParser.Test.SelectParser_Tests
 {
@@ -32,10 +33,9 @@ namespace TreeSqlParser.Test.SelectParser_Tests
             Assert.IsEmpty(elementsInCommon);
         }
 
-
         public static void TestParseThrows(string sql, string expectedMsg)
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => TestParse(sql));
+            var ex = Assert.Throws<TreeSqlParseException>(() => TestParse(sql));
             Assert.AreEqual(expectedMsg, ex.Message);
         }
 

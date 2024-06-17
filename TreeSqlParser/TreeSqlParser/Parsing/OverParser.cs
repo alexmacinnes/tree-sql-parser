@@ -30,7 +30,7 @@ namespace TreeSqlParser.Parsing
                 return null;
 
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
-                throw new InvalidOperationException("Expected open parentheses after OVER");
+                throw parseContext.ErrorGenerator.ParseException("Expected open parentheses after OVER", tokenList.Peek());
 
             var innerTokens = tokenList.TakeBracketedTokens();
             var subContext = parseContext.Subcontext(innerTokens);
@@ -91,7 +91,7 @@ namespace TreeSqlParser.Parsing
             var tokenList = parseContext.TokenList;
             if (tokenList.TryTakeKeywords(parseContext, TSQLKeywords.CURRENT))
             {
-                TakeKeyword(tokenList, ROW);
+                TakeKeyword(ROW, parseContext);
                 return 0;
             }
 
@@ -102,11 +102,12 @@ namespace TreeSqlParser.Parsing
 
             int n = (int) ParseUint(parseContext);
 
-            string boundText = tokenList.Take()?.Text?.ToUpperInvariant();
+            var nextToken = tokenList.Take();
+            string boundText = nextToken?.Text?.ToUpperInvariant();
             if (boundText == PRECEDING)
                 n = 0 - n;
             else if (boundText != FOLLOWING)
-                throw new InvalidOperationException("Expected keyword PRECEDING or FOLLOWING");
+                throw parseContext.ErrorGenerator.ParseException("Expected keyword PRECEDING or FOLLOWING", nextToken);
 
             return n;
         }
@@ -114,12 +115,13 @@ namespace TreeSqlParser.Parsing
         public virtual uint ParseUint(ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
-            string text = tokenList.Take().Text;
+            var nextToken = tokenList.Take();
+            string text = nextToken?.Text;
 
             if (uint.TryParse(text, out uint result))
                 return result;
 
-            throw new InvalidOperationException($"Expected unsigned int in window extent, found {text}");
+            throw parseContext.ErrorGenerator.ParseException($"Expected unsigned int in window extent, found {text ?? ""}", nextToken);
         }
 
         public virtual ExtentType? TryParseExtentType(ParseContext parseContext)
@@ -138,11 +140,12 @@ namespace TreeSqlParser.Parsing
             return null;
         }
 
-        private static void TakeKeyword(TokenList tokenList, string keyword)
+        private static void TakeKeyword(string keyword, ParseContext parseContext)
         {
-            string text = tokenList.Take()?.Text?.ToUpperInvariant();
+            var token = parseContext.TokenList.Take();
+            string text = token.Text?.ToUpperInvariant();
             if (text != keyword)
-                throw new InvalidOperationException($"Expected {keyword} keyword, found {text}");
+                throw parseContext.ErrorGenerator.ParseException($"Expected {keyword} keyword, found {text}", token);
         }
     }
 }

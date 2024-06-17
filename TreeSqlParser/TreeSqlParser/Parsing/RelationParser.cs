@@ -99,8 +99,9 @@ namespace TreeSqlParser.Parsing
 
             void consumeApply()
             {
-                if (tokenList.Take()?.Text?.ToUpperInvariant() != "APPLY")
-                    throw new InvalidOperationException("Expected keyword JOIN or APPLY");
+                var token = tokenList.Take();
+                if (token?.Text?.ToUpperInvariant() != "APPLY")
+                    throw parseContext.ErrorGenerator.ParseException("Expected keyword JOIN or APPLY", token);
             }
 
             if (!tokenList.HasMore) return null;

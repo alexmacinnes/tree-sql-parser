@@ -17,7 +17,7 @@ namespace TreeSqlParser.Parsing
                 return null;
 
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
-                throw new InvalidOperationException("Expected open parentheses after OPTION");
+                throw parseContext.ErrorGenerator.ParseException("Expected open parentheses after OPTION", tokenList.Peek());
 
             var innerTokens = tokenList.TakeBracketedTokens();
             var result = new SelectOptions() { Parent = parent, Options = new List<string>() };

@@ -277,8 +277,9 @@ namespace TreeSqlParser.Parsing
         internal protected virtual List<string> ParseMultiPartIndentifier(ParseContext parseContext)
         {
             var tokenList = parseContext.TokenList;
-            if (!(tokenList.Peek()?.AsIdentifier is TSQLIdentifier))
-                throw new InvalidOperationException($"Expected identifier, got {tokenList.Peek()?.Text}");
+            var token = tokenList.Peek();
+            if (!(token?.AsIdentifier is TSQLIdentifier))
+                throw parseContext.ErrorGenerator.ParseException($"Expected identifier, got {token?.Text}", token);
 
             var result = new List<string> { tokenList.Take().Text };
 
