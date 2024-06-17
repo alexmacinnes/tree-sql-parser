@@ -23,7 +23,7 @@ namespace TreeSqlParser.Parsing
             if (TryTakeText(tokenList, "GROUPING", "SETS"))
             {
                 ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
-                var innerTokens = tokenList.TakeBracketedTokens();
+                var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
                 while (true)
                 {
                     var subContext = parseContext.Subcontext(innerTokens);
@@ -52,7 +52,7 @@ namespace TreeSqlParser.Parsing
 
             ParseContext subContext;
             if (tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
-                subContext = parseContext.Subcontext(tokenList.TakeBracketedTokens());
+                subContext = parseContext.Subcontext(tokenList.TakeBracketedTokens(parseContext.ErrorGenerator));
             else
                 subContext = parseContext;
 

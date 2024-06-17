@@ -158,7 +158,7 @@ namespace TreeSqlParser.Parsing
 
             var funcColumn = new FunctionColumn { Name = fullName, Parent = parent };
 
-            var subContext = parseContext.Subcontext(tokenList.TakeBracketedTokens());
+            var subContext = parseContext.Subcontext(tokenList.TakeBracketedTokens(parseContext.ErrorGenerator));
             funcColumn.Parameters = ParseColumns(funcColumn, subContext);
 
             return funcColumn;
@@ -176,7 +176,7 @@ namespace TreeSqlParser.Parsing
         public virtual Column ParseCastColumn(SqlElement parent, bool tryCast, ParseContext parseContext)
         {
             var errorToken = parseContext.TokenList.Peek();
-            var innerTokens = parseContext.TokenList.TakeBracketedTokens();
+            var innerTokens = parseContext.TokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
 
             int? asIndex = innerTokens.FindLastIndex(x => x.IsKeyword(TSQLKeywords.AS));
             if (!asIndex.HasValue)
@@ -201,9 +201,9 @@ namespace TreeSqlParser.Parsing
         public virtual Column ParseConvertColumn(SqlElement parent, bool tryConvert, ParseContext parseContext)
         {
             var errorToken = parseContext.TokenList.Peek();
-            var innerTokens = parseContext.TokenList.TakeBracketedTokens();
+            var innerTokens = parseContext.TokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
 
-            string typeText = innerTokens.ParseTextUntilComma();
+            string typeText = innerTokens.ParseTextUntilComma(parseContext.ErrorGenerator);
 
             var result = new ConvertColumn { Parent = parent, TryConvert = tryConvert };
             result.DataType = new ColumnDataType { Parent = result, Value = typeText };
@@ -223,7 +223,7 @@ namespace TreeSqlParser.Parsing
         public virtual Column ParseParseColumn(SqlElement parent, bool tryParse, ParseContext parseContext)
         {
             var errorToken = parseContext.TokenList.Peek();
-            var innerTokens = parseContext.TokenList.TakeBracketedTokens();
+            var innerTokens = parseContext.TokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
 
             string culture = null;
             if (innerTokens.RemainingCount >= 2)
@@ -391,7 +391,7 @@ namespace TreeSqlParser.Parsing
 
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
 
             if (!innerTokens.HasMore)
                 throw parseContext.ErrorGenerator.ParseException("Empty brackets found", errorToken);
@@ -433,7 +433,7 @@ namespace TreeSqlParser.Parsing
             var errorToken = parseContext.TokenList.Peek();
 
             var aggColumn = new AggregatedColumn { Parent = parent, Aggregation = AggregationsMap[name] };       
-            var innerTokens = parseContext.TokenList.TakeBracketedTokens();
+            var innerTokens = parseContext.TokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
 
             if (innerTokens.TryTakeKeywords(parseContext, TSQLKeywords.DISTINCT))
             {
@@ -454,7 +454,7 @@ namespace TreeSqlParser.Parsing
             var fullName = names.Select(x => new SqlIdentifier(x)).ToArray();
             var funcColumn = new FunctionColumn { Name = fullName, Parent = parent };
 
-            var innerTokens = parseContext.TokenList.TakeBracketedTokens();
+            var innerTokens = parseContext.TokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subContext = parseContext.Subcontext(innerTokens);
             funcColumn.Parameters = ParseColumns(funcColumn, subContext);
 

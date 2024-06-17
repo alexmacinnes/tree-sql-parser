@@ -13,7 +13,8 @@ namespace TreeSqlParser.Metadata
     {
         internal static void CheckKeywordBlacklist(List<TSQLToken> tokens, ErrorGenerator errorGenerator)
         {
-            var keywords = tokens.OfType<TSQLKeyword>().Select(x => x.Keyword).Distinct().ToArray();
+            var keywordTokens = tokens.OfType<TSQLKeyword>().ToArray();
+            var keywords = keywordTokens.Select(x => x.Keyword).Distinct().ToArray();
             var black = keywords
                 .Intersect(KeywordMetadata.BlackList)
                 .Select(KeywordName)
@@ -21,7 +22,10 @@ namespace TreeSqlParser.Metadata
                 .ToArray();
 
             if (black.Any())
-                throw new InvalidOperationException("The following keywords are not supported: " + string.Join(", ", black));
+            {
+                var token = keywordTokens.First(x => KeywordMetadata.BlackList.Contains(x.Keyword));
+                throw errorGenerator.ParseException("The following keywords are not supported: " + string.Join(", ", black), token);
+            }
         }
 
         private static string KeywordName(TSQLKeywords k)

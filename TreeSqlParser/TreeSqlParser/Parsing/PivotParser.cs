@@ -16,7 +16,7 @@ namespace TreeSqlParser.Parsing
                 return null;
 
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subcontext = parseContext.Subcontext(innerTokens);
 
             var result = new Pivot { Parent = parent };
@@ -28,7 +28,7 @@ namespace TreeSqlParser.Parsing
             ParseUtilities.AssertIsKeyword(innerTokens.Take(), parseContext, TSQLKeywords.IN);
             ParseUtilities.AssertIsChar(innerTokens.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerInnerTokens = innerTokens.TakeBracketedTokens();
+            var innerInnerTokens = innerTokens.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subSubContext = subcontext.Subcontext(innerInnerTokens);
             result.PivotValues = SelectParser.ColumnParser.ParseColumns(result, subSubContext);
 

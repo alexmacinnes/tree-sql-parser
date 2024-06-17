@@ -13,13 +13,13 @@ namespace TreeSqlParser.Parsing
         {
             var k = token.AsKeyword?.Keyword;
             if (!(k.HasValue && keywords.Contains(k.Value)))
-                throw new InvalidOperationException($"Expected keyword {string.Join(",", keywords.Select(x => x.ToString()))}, found {token.Text}");
+                throw parseContext.ErrorGenerator.ParseException($"Expected keyword {string.Join(",", keywords.Select(x => x.ToString()))}, found {token.Text}", token);
         }
 
         public static void AssertIsChar(TSQLToken token, TSQLCharacters character, ParseContext parseContext)
         {
             if (!token.IsCharacter(TSQLCharacters.OpenParentheses))
-                throw new InvalidOperationException($"Expected character {character.ToString()}, found {token.Text}");
+                throw parseContext.ErrorGenerator.ParseException($"Expected character {character.ToString()}, found {token.Text}", token);
         }
 
         public static int ParseInteger(TSQLToken token, ParseContext parseContext)
@@ -27,7 +27,7 @@ namespace TreeSqlParser.Parsing
             if (token.AsNumericLiteral != null && int.TryParse(token.Text, out int val))
                 return val;
 
-            throw new InvalidOperationException($"Expected integer, found {token.Text}");
+            throw parseContext.ErrorGenerator.ParseException($"Expected integer, found {token.Text}", token);
         }
 
         
@@ -36,7 +36,7 @@ namespace TreeSqlParser.Parsing
             if (token.AsIdentifier != null)
                 return token.Text;
 
-            throw new InvalidOperationException($"Expected identifier, found {token.Text}");
+            throw parseContext.ErrorGenerator.ParseException($"Expected identifier, found {token.Text}", token);
         }
         
         public static string TryTakeAlias(ParseContext parseContext)
@@ -44,10 +44,11 @@ namespace TreeSqlParser.Parsing
             var tokenList = parseContext.TokenList;
 
             bool tookAs = tokenList.TryTakeKeywords(parseContext, TSQLKeywords.AS);
-            if (tokenList.Peek()?.AsIdentifier != null)
+            var token = tokenList.Peek();
+            if (token?.AsIdentifier != null)
                 return tokenList.Take().Text;
             else if (tookAs)
-                throw new InvalidOperationException("Expected alias after AS");
+                throw parseContext.ErrorGenerator.ParseException("Expected alias after AS", token);
             else
                 return null;
         }

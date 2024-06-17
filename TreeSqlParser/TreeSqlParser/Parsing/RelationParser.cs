@@ -185,7 +185,7 @@ namespace TreeSqlParser.Parsing
 
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new BracketedRelation { Parent = parent };
@@ -200,7 +200,7 @@ namespace TreeSqlParser.Parsing
 
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new SubselectRelation { Parent = parent };

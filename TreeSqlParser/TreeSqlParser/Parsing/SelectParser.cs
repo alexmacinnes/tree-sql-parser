@@ -154,7 +154,7 @@ namespace TreeSqlParser.Parsing
             selectStatement.Options = SelectOptionsParser.ParseSelectOptions(selectStatement, parseContext);
 
             if (parseContext.TokenList.HasMore)
-                throw new InvalidCastException("Parsing incomplete");
+                throw parseContext.ErrorGenerator.ParseException("Parsing incomplete", parseContext.TokenList.Peek());
 
             return selectStatement;
         }
@@ -191,7 +191,7 @@ namespace TreeSqlParser.Parsing
             ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.AS);
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerContext = parseContext.Subcontext(tokenList.TakeBracketedTokens());
+            var innerContext = parseContext.Subcontext(tokenList.TakeBracketedTokens(parseContext.ErrorGenerator));
             var innerStatement = ParseSelectStatement(null, innerContext);
 
             innerStatement.Selects.ForEach(x => x.Parent = result);

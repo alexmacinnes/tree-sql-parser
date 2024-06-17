@@ -32,7 +32,7 @@ namespace TreeSqlParser.Parsing
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
                 throw parseContext.ErrorGenerator.ParseException("Expected open parentheses after OVER", tokenList.Peek());
 
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new Over { Parent = parent };

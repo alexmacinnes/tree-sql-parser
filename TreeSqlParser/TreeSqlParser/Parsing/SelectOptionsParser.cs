@@ -19,11 +19,11 @@ namespace TreeSqlParser.Parsing
             if (!tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
                 throw parseContext.ErrorGenerator.ParseException("Expected open parentheses after OPTION", tokenList.Peek());
 
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var result = new SelectOptions() { Parent = parent, Options = new List<string>() };
 
             while (innerTokens.HasMore)
-                result.Options.Add(innerTokens.ParseTextUntilComma(" "));
+                result.Options.Add(innerTokens.ParseTextUntilComma(parseContext.ErrorGenerator, " "));
 
             return result;
         }

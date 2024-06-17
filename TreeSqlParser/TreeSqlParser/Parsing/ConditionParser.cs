@@ -135,7 +135,7 @@ namespace TreeSqlParser.Parsing
             var tokenList = parseContext.TokenList;
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new BracketCondition { Parent = parent };
@@ -151,7 +151,7 @@ namespace TreeSqlParser.Parsing
             ParseUtilities.AssertIsKeyword(tokenList.Take(), parseContext, TSQLKeywords.EXISTS);
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subContext = parseContext.Subcontext(innerTokens);
 
             var result = new ExistsCondition { Parent = parent };
@@ -294,7 +294,7 @@ namespace TreeSqlParser.Parsing
 
             ParseUtilities.AssertIsChar(tokenList.Take(), TSQLCharacters.OpenParentheses, parseContext);
 
-            var innerTokens = tokenList.TakeBracketedTokens();
+            var innerTokens = tokenList.TakeBracketedTokens(parseContext.ErrorGenerator);
             var subContext = parseContext.Subcontext(innerTokens);
 
             if (innerTokens.Peek().IsKeyword(TSQLKeywords.SELECT))

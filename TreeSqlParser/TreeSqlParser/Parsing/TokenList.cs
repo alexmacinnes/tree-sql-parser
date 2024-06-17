@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using TreeSqlParser.Parsing.Errors;
 using TSQL;
 using TSQL.Tokens;
 
@@ -40,8 +41,10 @@ namespace TreeSqlParser.Parsing
 
         public bool HasNMore(int n) => currentIndex + n - 1 <= endIndex;
 
-        public TokenList TakeBracketedTokens()
+        public TokenList TakeBracketedTokens(ErrorGenerator errorGenerator)
         {
+            var errorToken = Peek();
+
             int nestLevel = 1;          // assume nextToken is immediately following opening bracket
             for (int i = currentIndex; i <= endIndex; i++)
             {
@@ -62,7 +65,7 @@ namespace TreeSqlParser.Parsing
                 }
             }
 
-            throw new InvalidOperationException("Did not find closing bracket");
+            throw errorGenerator.ParseException("Did not find closing bracket", errorToken);
         }
 
         /*
@@ -106,7 +109,7 @@ namespace TreeSqlParser.Parsing
 
         private TSQLToken TryGet(int index) => index > endIndex ? null : tokens[index];
 
-        public string ParseTextUntilComma(string separator = "")
+        public string ParseTextUntilComma(ErrorGenerator errorGenerator, string separator = "")
         {
             var sb = new StringBuilder();
 
@@ -120,7 +123,7 @@ namespace TreeSqlParser.Parsing
                 {
                     nestLevel--;
                     if (nestLevel < 0)
-                        throw new InvalidOperationException("Unexpected closing bracket");
+                        throw errorGenerator.ParseException("Unexpected closing bracket", t);
                 }
 
                 if (nestLevel == 0 && t.IsCharacter(TSQLCharacters.Comma))
