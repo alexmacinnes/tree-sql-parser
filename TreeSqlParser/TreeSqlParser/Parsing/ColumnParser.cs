@@ -8,6 +8,7 @@ using TreeSqlParser.Model.Enums;
 using TreeSqlParser.Parsing.Enums;
 using TSQL;
 using TSQL.Tokens;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace TreeSqlParser.Parsing
@@ -93,13 +94,13 @@ namespace TreeSqlParser.Parsing
             switch (dateTimeType)
             {
                 case "d":
-                    result = new DateColumn { Parent = parent, Value = DateTime.Parse(Unquote(tokenList.Take().Text)) };
+                    result = new DateColumn { Parent = parent, Value = DateTime.Parse(Unquote(parseContext)) };
                     break;
                 case "ts":
-                    result = new DateTimeColumn { Parent = parent, Value = DateTime.Parse(Unquote(tokenList.Take().Text)) };
+                    result = new DateTimeColumn { Parent = parent, Value = DateTime.Parse(Unquote(parseContext)) };
                     break;
                 case "t":
-                    result = new TimeColumn { Parent = parent, Value = TimeSpan.Parse(Unquote(tokenList.Take().Text)) };
+                    result = new TimeColumn { Parent = parent, Value = TimeSpan.Parse(Unquote(parseContext)) };
                     break;
                 default:
                     throw parseContext.ErrorGenerator.ParseException("Unknown datetime literal type: " + dateTimeType, token);
@@ -112,11 +113,16 @@ namespace TreeSqlParser.Parsing
             return result;
         }
 
-        //TODO
-        public string Unquote(string text) =>
-            text.Length > 1 && text.StartsWith("'") && text.EndsWith("'") ?
-            text.Substring(1, text.Length-2) :
-            throw new InvalidOperationException("Expected quoted text");
+        public string Unquote(ParseContext parseContext)
+        {
+            var token = parseContext.TokenList.Take();
+            string text = token?.Text;
+            if (text != null && text.Length > 1 && text.StartsWith("'") && text.EndsWith("'"))
+                return text.Substring(1, text.Length - 2);
+
+            throw parseContext.ErrorGenerator.ParseException("Expected quoted text", token);
+        }
+
 
 
         public virtual Column ParseNegativeNumericLiteral(SqlElement parent, ParseContext parseContext)
