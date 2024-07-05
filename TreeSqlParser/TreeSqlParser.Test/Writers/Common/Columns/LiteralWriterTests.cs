@@ -69,5 +69,29 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             CommonMother.AssertSql(c, expected);
         }
+
+        [Test]
+        public void BoolLiteralTrue()
+        {
+            var c = ParseColumn("TRUE");
+
+            var expected = new ExpectedSqlResult()
+                .WithSql("1", swt.SqlServer, swt.MySql, swt.Sqlite, swt.MariaDb)
+                .WithSql("TRUE", swt.Oracle, swt.Db2, swt.Postgres);
+
+            CommonMother.AssertSql(c, expected);
+        }
+
+        [Test]
+        public void BoolLiteralFalse()
+        {
+            var c = ParseColumn("FALSE");
+
+            var expected = new ExpectedSqlResult()
+                .WithSql("0", swt.SqlServer, swt.MySql, swt.Sqlite, swt.MariaDb)
+                .WithSql("FALSE", swt.Oracle, swt.Db2, swt.Postgres);
+
+            CommonMother.AssertSql(c, expected);
+        }
     }
 }

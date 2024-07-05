@@ -19,5 +19,8 @@ namespace TreeSqlParser.Writers.Common.MySql
 
         protected override string StringSql(StringColumn x) =>
             $"'{x.Value.Replace("'", "''")}'";
+
+        protected override string BoolSql(BoolColumn x) =>
+            x.Value ? "1" : "0";
     }
 }

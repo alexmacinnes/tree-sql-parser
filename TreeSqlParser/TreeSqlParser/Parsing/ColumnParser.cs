@@ -469,26 +469,34 @@ namespace TreeSqlParser.Parsing
             var names = SelectParser.ParseMultiPartIndentifier(parseContext);
             string singleName = names.Count == 1 ? names[0].ToUpperInvariant() : null;
 
+            if (singleName == "TRUE")
+                return new BoolColumn { Value = true, Parent = parent };
+            if (singleName == "FALSE")
+                return new BoolColumn { Value = false, Parent = parent };
+
             if (tokenList.TryTakeCharacter(TSQLCharacters.OpenParentheses))
             {
-                if (singleName == "CAST")
-                    return ParseCastColumn(parent, false, parseContext);
-                if (singleName == "TRY_CAST")
-                    return ParseCastColumn(parent, true, parseContext);
-                if (singleName == "CONVERT")
-                    return ParseConvertColumn(parent, false, parseContext);
-                if (singleName == "TRY_CONVERT")
-                    return ParseConvertColumn(parent, true, parseContext);
-                if (singleName == "PARSE")
-                    return ParseParseColumn(parent, false, parseContext);
-                if (singleName == "TRY_PARSE")
-                    return ParseParseColumn(parent, true, parseContext);
-                if (singleName == "IIF")
-                    return ParseIifColumn(parent, parseContext);
-                else if (AggregationsMap.ContainsKey(names[0]))
+                if (singleName != null)
+                {
+                    if (singleName == "CAST")
+                        return ParseCastColumn(parent, false, parseContext);
+                    if (singleName == "TRY_CAST")
+                        return ParseCastColumn(parent, true, parseContext);
+                    if (singleName == "CONVERT")
+                        return ParseConvertColumn(parent, false, parseContext);
+                    if (singleName == "TRY_CONVERT")
+                        return ParseConvertColumn(parent, true, parseContext);
+                    if (singleName == "PARSE")
+                        return ParseParseColumn(parent, false, parseContext);
+                    if (singleName == "TRY_PARSE")
+                        return ParseParseColumn(parent, true, parseContext);
+                    if (singleName == "IIF")
+                        return ParseIifColumn(parent, parseContext);
+                }
+                if (AggregationsMap.ContainsKey(names[0]))
                     return ParseAggregation(parent, names[0], parseContext);
-                else
-                    return ParseFunc(parent, parseContext, names);
+
+                return ParseFunc(parent, parseContext, names);
             }
             else if (names.Count == 1)
             {

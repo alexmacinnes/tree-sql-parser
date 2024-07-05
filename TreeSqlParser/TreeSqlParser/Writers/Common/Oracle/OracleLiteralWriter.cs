@@ -18,5 +18,8 @@ namespace TreeSqlParser.Writers.Common.Oracle
 
         protected override string StringSql(StringColumn x) =>
             $"'{x.Value.Replace("'", "''")}'";
+
+        protected override string BoolSql(BoolColumn x) =>
+            x.Value ? "TRUE" : "FALSE";
     }
 }

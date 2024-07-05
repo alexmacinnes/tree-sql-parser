@@ -21,6 +21,13 @@ namespace TreeSqlParser.Writers.Full
 
         private Dictionary<Type, Func<SqlElement, string>> sqlFuncs;
 
+        /// <summary>SQL Server does not have a concept of Boolean values.
+        /// If this is set, any TRUE or FALSE columns in the tree will be emitted as 1 or 0.
+        /// If not, throw an exception.
+        /// Default is false.       
+        /// </summary>
+        public bool ConvertBoolColumnsToInteger { get; set; } = false;
+
         public FullSqlServerWriter()
         {
             sqlFuncs = new Dictionary<Type, Func<SqlElement, string>>
@@ -44,6 +51,7 @@ namespace TreeSqlParser.Writers.Full
                 { typeof(DateColumn), (x) => DateColumnSql((DateColumn)x) },
                 { typeof(DateTimeColumn), (x) => DateTimeColumnSql((DateTimeColumn)x) },
                 { typeof(DecimalColumn), (x) => DecimalColumnSql((DecimalColumn)x) },
+                { typeof(BoolColumn), (x) => BoolColumnSql((BoolColumn)x) },
                 { typeof(FunctionColumn), (x) => FunctionColumnSql((FunctionColumn)x) },
                 { typeof(IifColumn), (x) => IifColumnSql((IifColumn)x) },
                 { typeof(IntegerColumn), (x) => IntegerColumnSql((IntegerColumn)x) },
@@ -249,6 +257,11 @@ namespace TreeSqlParser.Writers.Full
 
         protected virtual string DecimalColumnSql(DecimalColumn x) =>
             x.Value.ToString();
+
+        protected virtual string BoolColumnSql(BoolColumn x) =>
+            ConvertBoolColumnsToInteger
+            ? (x.Value ? "1" : "0")
+            : throw new NotSupportedException("Boolean columns are not directly supported on SQL Server.");
 
         protected virtual string ExistsConditionSql(ExistsCondition x) =>
             $"EXISTS ({SelectStatementSql(x.Subselect)})";

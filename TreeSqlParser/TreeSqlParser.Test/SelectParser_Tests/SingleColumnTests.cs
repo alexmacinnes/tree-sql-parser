@@ -42,6 +42,15 @@ namespace TreeSqlParser.Test.SelectParser_Tests
         public void ParseTimeNanoseconds() => SelectParserMother.TestParse("SELECT {t '23:59:59.1234567'}");
 
         [Test]
+        public void ParseTrue() => SelectParserMother.TestParse("SELECT tRUe", "SELECT 1");
+
+        [Test]
+        public void ParseFalse() => SelectParserMother.TestParse("SELECT fALSe", "SELECT 0");
+
+        [Test]
+        public void ParseTrueAsIdentifier() => SelectParserMother.TestParse("SELECT [true]", "SELECT [true]");
+
+        [Test]
         public void ParseStar() => SelectParserMother.TestParse("SELECT *");
 
         [Test]

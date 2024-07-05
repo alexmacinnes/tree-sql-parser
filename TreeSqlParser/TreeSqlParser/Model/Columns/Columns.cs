@@ -52,6 +52,12 @@ namespace TreeSqlParser.Model.Columns
     }
 
     [DebuggerDisplay("{DebuggerDisplay}")]
+    public class BoolColumn : LiteralColumn<bool>
+    {
+        public override string DebuggerDisplay => Value.ToString();
+    }
+
+    [DebuggerDisplay("{DebuggerDisplay}")]
     public class StringColumn : LiteralColumn<string>
     {
         public override string DebuggerDisplay => Value;

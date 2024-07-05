@@ -20,7 +20,8 @@ namespace TreeSqlParser.Test.SelectParser_Tests
 
             AssertIntegrity(root);
             
-            string actual = new FullSqlServerWriter().GenerateSql(root);
+            var writer = new FullSqlServerWriter() { ConvertBoolColumnsToInteger = true };
+            string actual = writer.GenerateSql(root);
             expected ??= sql;
 
             Assert.AreEqual(expected, actual);

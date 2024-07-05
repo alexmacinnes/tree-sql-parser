@@ -17,6 +17,8 @@ namespace TreeSqlParser.Writers.Common
                 return DateSql(d);
             if (c is DateTimeColumn dt)
                 return DateTimeSql(dt);
+            if (c is BoolColumn b)
+                return BoolSql(b);
 
             throw new NotSupportedException("Unknown sql literal: " + c.GetType().Name);
         }
@@ -31,5 +33,6 @@ namespace TreeSqlParser.Writers.Common
 
         protected abstract string IntegerSql(IntegerColumn x);
 
+        protected abstract string BoolSql(BoolColumn x);
     }
 }
