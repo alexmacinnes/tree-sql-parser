@@ -62,7 +62,7 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
             var c = ParseColumn("ADDYEARS({d '2000-12-31'}, 3)");
 
             var expected = new ExpectedSqlResult()
-                .WithSql("DATEADD(y, 3, {d '2000-12-31'})", swt.SqlServer)
+                .WithSql("DATEADD(yy, 3, {d '2000-12-31'})", swt.SqlServer)
                 .WithSql("ADD_MONTHS(DATE '2000-12-31', 12 * (3))", swt.Oracle)
                 .WithSql("ADDDATE(DATE('2000-12-31'), INTERVAL (3) YEAR)", swt.MySql, swt.MariaDb)
                 .WithSql("DATETIME(DATE('2000-12-31'), ''||(3)||' YEARS')", swt.Sqlite)

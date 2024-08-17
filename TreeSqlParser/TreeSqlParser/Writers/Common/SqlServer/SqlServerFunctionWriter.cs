@@ -20,7 +20,7 @@ namespace TreeSqlParser.Writers.Common.SqlServer
             $"DATEADD(m, {ColumnSql(months)}, {ColumnSql(baseDate)})";
 
         protected override string AddYears(Column baseDate, Column years) =>
-            $"DATEADD(y, {ColumnSql(years)}, {ColumnSql(baseDate)})";
+            $"DATEADD(yy, {ColumnSql(years)}, {ColumnSql(baseDate)})";
 
         protected override string Ceiling(Column expression) =>
             $"CEILING({ColumnSql(expression)})";
