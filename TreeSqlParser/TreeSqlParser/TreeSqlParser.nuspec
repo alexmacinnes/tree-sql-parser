@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>Tree-Sql-Parser</id>
-		<version>0.9.0</version>
+		<version>0.9.1</version>
 		<title>Tree-Sql-Parser</title>
 		<authors>Alex MacInnes</authors>
 		<owners>Alex MacInnes</owners>
@@ -10,7 +10,7 @@
 		<projectUrl>https://github.com/alexmacinnes/tree-sql-parser</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Library for Parsing, Transforming and Translating SQL queries. See GitHub for details https://github.com/alexmacinnes/tree-sql-parser</description>
-		<releaseNotes>Improved parse exception reporting</releaseNotes>
+		<releaseNotes>Added support for bool columns</releaseNotes>
 		<copyright>Copyright © 2022</copyright>
 		<tags>sql parser sql-server tsql oracle translate mysql mariadb sqlite postgres db2</tags>
 		<dependencies>
