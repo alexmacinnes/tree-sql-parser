@@ -60,7 +60,7 @@ namespace TreeSqlParser.Writers.Full
                 { typeof(OverColumn), (x) => OverColumnSql((OverColumn)x) },
                 { typeof(ParseColumn), (x) => ParseColumnSql((ParseColumn)x) },
                 { typeof(PrimitiveColumn), (x) => PrimitiveColumnSql((PrimitiveColumn)x) },
-                { typeof(StarColumn), (x) => StarColumnSql() },
+                { typeof(StarColumn), (x) => StarColumnSql((StarColumn)x) },
                 { typeof(StringColumn), (x) => StringColumnSql((StringColumn)x) },
                 { typeof(SubselectColumn), (x) => SubselectColumnSql((SubselectColumn)x) },
                 { typeof(TimeColumn), (x) => TimeColumnSql((TimeColumn)x) },
@@ -532,8 +532,8 @@ namespace TreeSqlParser.Writers.Full
         protected virtual string SqlIdentifierSql(SqlIdentifier x) =>
             x.IsBracketed ? $"[{x.Name}]" : x.Name;
 
-        protected virtual string StarColumnSql() => 
-            "*";
+        protected virtual string StarColumnSql(StarColumn x) => 
+            x.TableAlias == null ? "*" : $"{SqlIdentifierSql(x.TableAlias)}.*";
 
         protected virtual string StringColumnSql(StringColumn x) =>
             $"'{x.Value}'";

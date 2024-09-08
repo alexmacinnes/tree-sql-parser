@@ -92,5 +92,29 @@ namespace TreeSqlParser.Writers.Test.Common.Columns
 
             CommonMother.AssertSql(c, expected);
         }
+
+        [Test]
+        public void StarColumn()
+        {
+            var c = ParseColumn("*");
+
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("*");
+
+            CommonMother.AssertSql(c, expected);
+        }
+
+        [Test]
+        public void TableStarColumn()
+        {
+            var c = ParseColumn("tbl.*");
+
+            var expected = new ExpectedSqlResult()
+                .WithDefaultSql("\"tbl\".*")
+                .WithSql("[tbl].*", swt.SqlServer, swt.Sqlite)
+                .WithSql("`tbl`.*", swt.MySql, swt.MariaDb);
+
+            CommonMother.AssertSql(c, expected);
+        }
     }
 }

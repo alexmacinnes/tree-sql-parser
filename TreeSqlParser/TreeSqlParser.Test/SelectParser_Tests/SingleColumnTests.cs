@@ -54,6 +54,9 @@ namespace TreeSqlParser.Test.SelectParser_Tests
         public void ParseStar() => SelectParserMother.TestParse("SELECT *");
 
         [Test]
+        public void ParseTableStar() => SelectParserMother.TestParse("SELECT tbl.*");
+
+        [Test]
         public void ParseAlias() => SelectParserMother.TestParse("SELECT 1 AS foo");
 
         [Test]
@@ -91,6 +94,9 @@ namespace TreeSqlParser.Test.SelectParser_Tests
 
         [Test]
         public void ParseCountAll() => SelectParserMother.TestParse("SELECT COUNT(*)");
+
+        [Test]
+        public void ParseCountTableAll() => SelectParserMother.TestParse("SELECT COUNT(tbl.*)");
 
         [Test]
         public void ParseAggregationWithNesting() => SelectParserMother.TestParse("SELECT SUM(foo(1))");

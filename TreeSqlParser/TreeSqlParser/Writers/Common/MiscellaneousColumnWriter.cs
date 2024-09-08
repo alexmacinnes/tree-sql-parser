@@ -32,8 +32,8 @@ namespace TreeSqlParser.Writers.Common
                 return CaseColumnSql(cs);
             if (c is SubselectColumn s)
                 return SubselectColumnSql(s);
-            if (c is StarColumn)
-                return StarColumn();
+            if (c is StarColumn st)
+                return StarColumn(st);
             if (c is NullColumn)
                 return NullColumn();
 
@@ -42,7 +42,10 @@ namespace TreeSqlParser.Writers.Common
 
         protected virtual string NullColumn() => "NULL";
 
-        protected virtual string StarColumn() => "*";
+        protected virtual string StarColumn(StarColumn c) =>
+            c.TableAlias?.Name == null ?
+            "*" :
+            Delimit(c.TableAlias) + ".*";
 
         protected virtual string SubselectColumnSql(SubselectColumn c) =>
             "(" + Sql(c.InnerSelect) + ")";

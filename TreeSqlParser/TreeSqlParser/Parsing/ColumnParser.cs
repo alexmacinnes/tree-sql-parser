@@ -500,11 +500,16 @@ namespace TreeSqlParser.Parsing
             }
             else if (names.Count == 1)
             {
+                if (names[0] == "*")
+                    return new StarColumn { Parent = parent };
                 return new PrimitiveColumn { Name = new SqlIdentifier(names[0]), Parent = parent };
             }
             else if (names.Count == 2)
             {
-                return new PrimitiveColumn { TableAlias = new SqlIdentifier(names[0]), Name = new SqlIdentifier(names[1]), Parent = parent };
+                var tbl = new SqlIdentifier(names[0]);
+                if (names[1] == "*")
+                    return new StarColumn { TableAlias = tbl, Parent = parent };
+                return new PrimitiveColumn { TableAlias = tbl, Name = new SqlIdentifier(names[1]), Parent = parent };
             }
 
             throw parseContext.ErrorGenerator.ParseException($"Unexpected multi part column name {string.Join(".", names)}", errorToken);        

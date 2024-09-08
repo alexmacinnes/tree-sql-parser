@@ -291,6 +291,14 @@ namespace TreeSqlParser.Parsing
                 tokenList.Advance(2);
             }
 
+            if (tokenList.HasMore
+                && tokenList.Peek().IsCharacter(TSQLCharacters.Period)
+                && tokenList.Peek(1)?.Text == "*")
+            {
+                result.Add(tokenList.Peek(1).Text);
+                tokenList.Advance(2);
+            }
+
             return result;
         }
     }

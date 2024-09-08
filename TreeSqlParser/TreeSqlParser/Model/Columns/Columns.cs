@@ -66,6 +66,7 @@ namespace TreeSqlParser.Model.Columns
     [DebuggerDisplay("{DebuggerDisplay}")]
     public class StarColumn : Column
     {
+        public SqlIdentifier TableAlias { get; set; }
         public override string DebuggerDisplay => "*";
     }
 
